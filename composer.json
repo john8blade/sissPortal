@@ -1,0 +1,7 @@
+{
+    "repositories": [],
+    "require": {
+        "phpoffice/phpspreadsheet": "^1.8"
+    },
+    "require-dev": {}
+}

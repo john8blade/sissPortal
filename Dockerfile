@@ -12,7 +12,8 @@ RUN apt-get update && apt-get install -y \
     libpng-dev \
     libjpeg-dev \
     libzip-dev \
-    --no-install-recommends
+    --no-install-recommends \
+	--allow-unauthenticated
 
 # Instalar extensões PHP necessárias (incluindo GD e ZIP)
 RUN docker-php-ext-install mysqli pdo pdo_mysql gd zip
