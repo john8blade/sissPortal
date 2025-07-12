@@ -1,0 +1,1 @@
+UPDATE  `controleagendamento` SET  `controleagendamento_quantidade` =  '60', `controleagendamento_data` = NULL WHERE  `controleagendamento`.`controleagendamento_id` =2 LIMIT 1;

@@ -1,0 +1,94 @@
+<?php
+
+function excel($registros, $filtros) {
+    header('Expires: Mon, 26 Jul 1997 05:00:00 GMT');
+    header('Last-Modified: ' . gmdate('D,d M YH:i:s') . ' GMT');
+    header('Cache-Control: no-cache, must-revalidate');
+    header('Pragma: no-cache');
+    header('Content-type: application/x-msexcel');
+    header('Content-Disposition: attachment; filename="siss-convocacao-de-periodico-' . date('YmdHis') . '.xls"');
+    header('Content-Description: PHP Generated Data');
+
+    $dominio = $_SERVER['HTTP_HOST'];
+
+    $html = <<<HTML
+<!DOCTYPE html>
+<html lang="pt-br">
+    <head>
+        <title>Convocação de Periódicos</title>
+        <meta charset="UTF-8"/>
+        <style>
+            table { font: 12px Arial; }
+            table td { height: 16px; }
+            table th { background: #ddd; }
+        </style>
+    </head>
+    <body>
+        <table border="1">
+            <tr>
+                <td rowspan="5" width="120">
+                    <img src="http://{$dominio}/img/logoHiestExcel.png"/>
+                </td>
+                <td colspan="5" align="center">
+                    <strong>RELATÓRIO DE CONVOCAÇÃO DE PERIÓDICOS</strong>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="5"></td>
+            </tr>
+            <tr>
+                <td colspan="5"><strong>PERÍODO:</strong>&nbsp;{$filtros['data1']} à {$filtros['data2']}</td>
+            </tr>
+            <tr>
+                <td colspan="5"><strong>EMPRESA:</strong>&nbsp;{$filtros['empresa']}</td>
+            </tr>
+            <tr>
+                <td colspan="5"><strong>CONTRATO:</strong>&nbsp;{$filtros['contrato']}</td>
+            </tr>
+            {$registros}
+        </table>
+    </body>
+</html>
+HTML;
+
+    echo ($html);
+}
+
+if (is_array($this->resultado)) {
+    $registros = '<tr>'
+#            . '<th>CNPJ</th>'
+#            . '<th>Razão social</th>'
+#            . '<th>Nome Fantasia</th>'
+            . '<th>CPF</th>'
+            . '<th>Nome</th>'
+            . '<th>Função</th>'
+            . '<th>Tipo do último exame</th>'
+            . '<th>Data do último exame</th>'
+#            . '<th>Médico</th>'
+#            . '<th>Resultado de aptidão</th>'
+#            . '<th>Apto para trabalho em altura</th>'
+            . '<th>Data do próximo exame</th>'
+#            . '<th>Encaminhamento</th>'
+            . '</tr>';
+    foreach ($this->resultado as $item) {
+        $registros = $registros
+                . '<tr>'
+#                . '<td>' . Util::cnpj($item['empresa_cnpj']) . '</td>'
+#                . '<td>' . $item['empresa_razao'] . '</td>'
+#                . '<td>' . $item['empresa_fantasia'] . '</td>'
+                . '<td align="center">' . Util::cpf($item['pessoa_cpf']) . '</td>'
+                . '<td>' . $item['pessoa_nome'] . '</td>'
+                . '<td>' . $item['funcao_nome'] . '</td>'
+                . '<td>' . $item['tipoexame_nome'] . '</td>'
+                . '<td align="center">' . $item['agenda_data_exame'] . '</td>'
+#                . '<td>' . $item['medico'] . '</td>'
+#                . '<td>' . ($item['fichamedica_resultado_aptidao'] == '0' ? 'INAPTO' : ($item['fichamedica_resultado_aptidao'] == '1' ? 'APTO' : 'PENDENTE')) . '</td>'
+#                . '<td>' . ($item['fichamedica_liberado_trabalho_altura'] == '0' ? 'NÃO' : 'SIM') . '</td>'
+                . '<td>' . $item['fichamedica_data_proximo_exame'] . '</td>'
+#                . '<td>' . $item['encaminhado'] . '</td>'
+                . '</tr>';
+    }
+    excel($registros, $this->filtros);
+} else {
+    die($this->resultado);
+}

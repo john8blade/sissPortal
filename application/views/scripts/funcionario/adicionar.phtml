@@ -1,0 +1,568 @@
+<?php $colecaoGruposSanguineo = array('A-', 'A+', 'AB-', 'AB+', 'B-', 'B+', 'O-', 'O+'); ?>
+<script type="text/javascript">
+$(function() {
+    <?php if ((int) $this->atributos["funcionario_id"] == 0 && 1 == 3): ?>
+    $("#pessoa_cpf").blur(function() {
+        var cpf = this.value;
+        if (cpf === '')
+            return;
+        var url = '/ajax/json/servico/ajax-obter-pessoa-pelo-cpf/';
+        var imprimirRetorno = function(resposta) {
+            if (resposta) {
+                $('input[name=pessoa_nome]').val(resposta.pessoa_nome);
+                $('input[name=pessoa_identidade]').val(resposta.pessoa_identidade);
+                $('input[name=pessoa_data_nascimento]').val(resposta.pessoa_data_nascimento);
+                $("#fk_pessoa_id").val(resposta.pessoa_id);
+            }
+        };
+        $.post(url, {
+            cpf: cpf
+        }, imprimirRetorno, 'json');
+    });
+    <?php endif ?>
+
+    $("#botao-salvar-padrao").click(function() {
+        $("#formulario-padrao-salvar").submit();
+    });
+
+    $(function() {
+
+        $("#pessoa_cpf").blur(function() {
+            var cpf = this.value;
+            if (cpf != '' && !validarCPF(cpf)) {
+                msgCpf();
+                $("#pessoa_cpf").val('');
+                $("#pessoa_cpf").focus();
+                e.preventDefault();
+                return false;
+            }
+            if (this.value !== '' && ($('#funcionario_id').val() === '' || $('#funcionario_id')
+                    .val() === '0')) {
+                var url = '/ajax/html/servico/obter-pessoa-pelo-cpf/cpf/' + this.value;
+                $.getJSON(url, null, function(Resposta) {
+                    if (Resposta) {
+                        $("#pessoa_nome").val(Resposta.pessoa_nome);
+                        $("#fk_pessoa_id").val(Resposta.pessoa_id);
+                        $("#pessoa_identidade").val(Resposta.pessoa_identidade);
+                        $("#pessoa_data_nascimento").val(Resposta
+                            .pessoa_data_nascimento);
+                        $('#pessoa_sexo option[value=' + Resposta.pessoa_sexo + ']')
+                            .prop('selected', true);
+                        $('#funcionario_grupo_sanguineo').focus();
+                    }
+                });
+            }
+        });
+
+        function msgCpf() {
+            swal({
+                html: true,
+                title: "<div style='background-color: #2979FF; color: #fff; padding: 15px; text-align: center; border-radius: 10px;'>CPF Inválido</div>",
+                type: 'warning',
+                text: `Por favor, insira um CPF válido.`,
+                confirmButtonText: "OK",
+                closeOnConfirm: true,
+                showLoaderOnConfirm: false
+            });
+        }
+
+        // Validação do CPF
+        function validarCPF(cpf) {
+            cpf = cpf.replace(/[^\d]+/g, '');
+            if (cpf == '') return false;
+            if (cpf.length != 11 ||
+                cpf == "00000000000" ||
+                cpf == "11111111111" ||
+                cpf == "22222222222" ||
+                cpf == "33333333333" ||
+                cpf == "44444444444" ||
+                cpf == "55555555555" ||
+                cpf == "66666666666" ||
+                cpf == "77777777777" ||
+                cpf == "88888888888" ||
+                cpf == "99999999999")
+                return false;
+
+            let soma = 0;
+            for (let i = 0; i < 9; i++)
+                soma += parseInt(cpf.charAt(i)) * (10 - i);
+            let resto = 11 - (soma % 11);
+            if (resto == 10 || resto == 11) resto = 0;
+            if (resto != parseInt(cpf.charAt(9))) return false;
+
+            soma = 0;
+            for (let i = 0; i < 10; i++)
+                soma += parseInt(cpf.charAt(i)) * (11 - i);
+            resto = 11 - (soma % 11);
+            if (resto == 10 || resto == 11) resto = 0;
+            if (resto != parseInt(cpf.charAt(10))) return false;
+
+            return true;
+        }
+
+    });
+
+});
+</script>
+
+<div class="panel panel-primary">
+
+    <div class="panel-heading"><i class="fa fa-user"></i>Cadastro de Funcionário</div>
+
+    <div class="panel-body">
+
+        <form id="formulario-padrao-salvar" action="/funcionario/salvar" method="post" target="iframe-receptor"
+            onsubmit="Util.requisicao();">
+
+            <input type="hidden" name="funcionario_id" id="funcionario_id"
+                value="<?php echo $this->atributos["funcionario_id"]; ?>" />
+            <input type="hidden" name="fk_pessoa_id" id="fk_pessoa_id"
+                value="<?php echo $this->atributos["fk_pessoa_id"]; ?>" />
+            <input type="hidden" name="alocacao_id" id="alocacao_id"
+                value="<?php echo $this->atributos["alocacao_id"]; ?>" />
+            <input type="hidden" name="fk_contrato_id" id="fk_contrato_id"
+                value="<?php echo $this->atributos["contrato_id"]; ?>" />
+            <input type="hidden" name="fk_empresa_id" id="fk_empresa_id"
+                value="<?php echo $this->atributos["empresa_id"]; ?>" />
+            <input type="hidden" name="fk_ppra_item_id" id="fk_ppra_item_id"
+                value="<?php echo $this->atributos["fk_ppra_item_id"]; ?>" />
+
+            <div class="panel panel-default">
+
+                <div class="panel-heading">Dados do Funcionário</div>
+
+                <div class="panel-body">
+
+                    <div class="row">
+                        <div class="col-md-2">
+                            <div class="form-group">
+                                <label for="pessoa_cpf">CPF</label>
+                                <input class="form-control mask-cpf ignora-ucase" type="text" name="pessoa_cpf"
+                                    id="pessoa_cpf" value="<?php echo $this->atributos['pessoa_cpf']; ?>" />
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label>Nome</label>
+                                <input class="form-control" type="text" name="pessoa_nome" id="pessoa_nome"
+                                    value="<?php echo $this->atributos['pessoa_nome']; ?>" />
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <div class="form-group">
+                                <label>RG</label>
+                                <input class="form-control" type="text" name="pessoa_identidade" id="pessoa_identidade"
+                                    value="<?php echo $this->atributos['pessoa_identidade']; ?>" />
+                            </div>
+                        </div>
+
+                        <div class="col-md-2">
+                            <div class="form-group">
+                                <label>Data Nascimento</label>
+                                <input class="form-control mask-data ignora-ucase" type="text"
+                                    name="pessoa_data_nascimento" id="pessoa_data_nascimento"
+                                    value="<?php echo $this->atributos['pessoa_data_nascimento']; ?>" />
+                            </div>
+                        </div>
+
+                        <div class="col-md-2">
+                            <div class="form-group">
+                                <label>G.Sanguineo / Fator RH</label>
+                                <select class="form-control" name="funcionario_grupo_sanguineo"
+                                    id="funcionario_grupo_sanguineo">
+                                    <option value="">---</option>
+                                    <?php foreach ($colecaoGruposSanguineo as $tipo): ?>
+                                    <option
+                                        <?php echo ($this->atributos['funcionario_grupo_sanguineo'] == $tipo) ? "selected='selected'" : "" ?>
+                                        value="<?php echo $tipo ?>"><?php echo $tipo ?></option>
+                                    <?php endforeach ?>
+                                </select>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <div class="row">
+
+                        <div class="col-md-2">
+                            <div class="form-group">
+                                <label>
+                                    <font color="blue"><a rel="tooltip"
+                                            title="Preenchimento essencial para eventos do eSocial">Matrícula
+                                            eSocial</a></font>
+                                </label>
+                                <input class="form-control" type="text" name="funcionario_matricula"
+                                    id="funcionario_matricula"
+                                    value="<?php echo $this->atributos['funcionario_matricula']; ?>" />
+                            </div>
+                        </div>
+
+                        <div class="col-md-1">
+                            <div class="form-group">
+                                <label>Sexo</label>
+                                <select class="form-control" name="pessoa_sexo" id="pessoa_sexo">
+                                    <option value="">---</option>
+                                    <option
+                                        <?php echo ($this->atributos['pessoa_sexo'] == "FEMININO") ? "selected='selected'" : "" ?>
+                                        value="FEMININO">Feminino</option>
+                                    <option
+                                        <?php echo ($this->atributos['pessoa_sexo'] == "MASCULINO") ? "selected='selected'" : "" ?>
+                                        value="MASCULINO">Masculino</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="col-md-2">
+                            <div class="form-group">
+                                <label>
+                                    <font color="blue"><a rel="tooltip"
+                                            title="Preenchimento essencial para eventos do eSocial S2240">Data de
+                                            Admissão</a></font>
+                                </label>
+                                <input class="form-control mask-data ignora-ucase" type="text"
+                                    name="funcionario_data_admissao" id="funcionario_data_admissao"
+                                    value="<?php echo (@$this->atributos['funcionario_data_admissao'] != '00/00/0000') ? @$this->atributos['funcionario_data_admissao'] : "";?> " />
+                            </div>
+                        </div>
+
+                        <div class="col-md-2">
+                            <div class="form-group">
+                                <label>H.Trabalho</label>
+                                <input class="form-control ignora-ucase" type="text" name="funcionario_horario_trabalho"
+                                    placeholder="ex:escala de 7 por 7 ou 8 horas" id="funcionario_horario_trabalho"
+                                    value="<?php echo $this->atributos['funcionario_horario_trabalho']; ?>" />
+                            </div>
+                        </div>
+                        <?php
+                        $empresaSelecionada = "";
+
+                        if (isset($this->ppra_itens[0])) {
+                            $empresaSelecionada = isset($this->atributos["empresaAlocadas"]) ? $this->atributos["empresaAlocadas"] : "";
+                        } else {
+                            $empresaSelecionada = $this->rascunho['rascunho_ppra_obra'];
+                        }
+                        ?>
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label>OBRA</label>
+                                <select name="obra" id="obra " class="form-control">
+                                    <option value="">---</option>
+                                    <?php foreach ($this->empresas as $empresa) : ?>
+                                    <?php if (isset($empresa['empresa_fantasia'])) : ?>
+                                    <option
+                                        <?php echo ($empresa["empresa_id"] == $empresaSelecionada) ? 'selected="selected"' : ""; ?>
+                                        value="<?php echo $empresa["empresa_id"]; ?>">
+                                        <?php echo $empresa['empresa_fantasia'] ?></option>
+                                    <?php endif; ?>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
+                        </div>
+
+                        <?php if (isset($this->ppra_itens[0])) { ?>
+                        <div class="col-md-2">
+                            <div class="form-group">
+                                <label>Centro Custo</label>
+                                <input class="form-control ignora-ucase" type="text" name="alocacao_centro_custo"
+                                    id="alocacao_centro_custo"
+                                    value="<?php echo $this->atributos['alocacao_centro_custo']; ?>" />
+                            </div>
+                        </div>
+                        <?php } else { ?>
+                        <div class="col-md-2">
+                            <div class="form-group">
+                                <label>CC</label>
+                                <input class="form-control ignora-ucase" type="text" name="rascunho_ppra_cc"
+                                    id="rascunho_ppra_cc"
+                                    value="<?php echo isset($this->rascunho['rascunho_ppra_cc']) ? $this->rascunho['rascunho_ppra_cc'] : ""; ?>" />
+                            </div>
+                        </div>
+                        <?php } ?>
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div class="panel panel-default">
+
+                <div class="panel-heading">Cargos / Funções</div>
+
+                <div class="panel-body">
+
+                    <div class="row">
+
+                        <div class="col-md-12 table-responsive">
+                            <table class="table table-condensed table-hover">
+                                <thead>
+                                    <tr>
+                                        <th width="10">#</th>
+                                        <th>GHE</th>
+                                        <th>SETOR</th>
+                                        <th>CARGO</th>
+                                        <th>FUNÇÃO</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <?php $p = $this->atributos ?>
+                                    <?php foreach ($this->ppra_itens as $ppra_item): ?>
+                                    <?php //util::dump($ppra_item) ?>
+                                    <?php #$checar = ($ppra_item['fk_ghe_id'] == $p['fk_ghe_id'] && $ppra_item['fk_setor_id'] == $p['fk_setor_id'] && $ppra_item['fk_funcao_id'] == $p['fk_funcao_id'] && $ppra_item['fk_cargo_id'] == $p['fk_cargo_id']) ? true : false ?>
+                                    <?php $checar = ($ppra_item['item_pcmso_id'] == $p['fk_item_pcmso_id']) ? true : false ?>
+                                    <tr>
+                                        <td><input <?php echo $checar ? 'checked="checked"' : '' ?> class="ppra_item"
+                                                type="radio" name="item_pcmso_id"
+                                                value="<?php echo $ppra_item['item_pcmso_id'] ?>"
+                                                onclick="$('#fk_ghe_id').val(<?php echo $ppra_item['ghe_id'] ?>);$('#fk_setor_id').val(<?php echo $ppra_item['setor_id'] ?>);$('#fk_cargo_id').val(<?php echo $ppra_item['cargo_id'] ?>);$('#fk_ppra_item_id').val(<?php echo $ppra_item['ppra_item_id'] ?>);" />
+                                        </td>
+                                        <td><?php echo $ppra_item['ghe_nome'] ?></td>
+                                        <td><?php echo $ppra_item['setor_nome'] ?></td>
+                                        <td><?php echo $ppra_item['cargo_nome'] ?></td>
+                                        <td><?php if ($ppra_item['ppra_item_funcao'] == NULL || $ppra_item['ppra_item_funcao'] == '') {
+                                                    echo $ppra_item['cargo_nome'];
+                                                }else{
+                                                    echo $ppra_item['ppra_item_funcao'];
+                                                }
+                                                ?>
+                                        </td>
+                                    </tr>
+                                    <?php endforeach ?>
+                                </tbody>
+                            </table>
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div class="panel panel-default">
+                <div class="panel-heading">Ações</div>
+                <div class="panel-body">
+
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="form-group">
+                                <a class="btn btn-success" href="#" id="botao-salvar-padrao"><i
+                                        class="fa fa-check"></i>Salvar</a>
+                                <a class="btn btn-primary" href="/funcionario/" onclick="window.history.go(-1);"><i
+                                        class="fa fa-arrow-left"></i>Voltar</a>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+        </form>
+
+        <?php if ((int) $this->atributos['funcionario_id'] > 0) : ?>
+
+        <div class="panel panel-default">
+            <div class="panel-heading">EPI's<a target="_blank"
+                    href="/documento-operacional/imprimir-ficha-de-epis/funcionario/<?php echo $this->atributos['funcionario_id'] ?>"
+                    class="pull-right btn btn-xs btn-primary"><i class="fa fa-print"></i>Imprimir Ficha</a></div>
+
+            <div id="alerta-epi"></div>
+
+            <div class="panel-body" id="alocacao-epi">
+
+                <input type="hidden" class="span" id="funcionario_epi" value="0" />
+
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label>Responsável pela Entrega</label>
+                            <input type="text" class="form-control" id="responsavel-entrega" value="" />
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <div class="form-group">
+                            <label>Data Entrega</label>
+                            <input type="text" class="form-control mask-data" id="data-entrega" value="" />
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <div class="form-group">
+                            <label>EPI</label>
+                            <input type="text" class="form-control" id="nome" value="" />
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <div class="form-group">
+                            <label>CA</label>
+                            <input type="text" class="form-control" id="ca" value="" />
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <div class="form-group">
+                            <label>Data Vencimento</label>
+                            <input type="text" class="form-control mask-data" id="data-vencimento" value="" />
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-8">
+                        <div class="form-group">
+                            <label>Responsável pela Devolução</label>
+                            <input type="text" class="form-control" id="responsavel-devolucao" value="" />
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <div class="form-group">
+                            <label>Data Devolução</label>
+                            <input type="text" class="form-control mask-data" id="data-devolucao" value="" />
+                        </div>
+                    </div>
+                    <div class="col-md-1">
+                        <div class="form-group">
+                            <label>&nbsp;</label>
+                            <a rel="tooltip" title="Salvar" href="javascript:;" class="form-control btn btn-primary"
+                                onclick="salvarEPI()"><i class="fa fa-plus no-margin"></i></a>
+                        </div>
+                    </div>
+                    <div class="col-md-1">
+                        <div class="form-group">
+                            <label>&nbsp;</label>
+                            <a rel="tooltip" title="Novo" href="javascript:;" class="form-control btn btn-default"
+                                onclick="resetarEPI()"><i class="fa fa-refresh no-margin"></i></a>
+                        </div>
+                    </div>
+                </div>
+
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th class="text-center"><i class="fa fa-bolt no-margin"></i></th>
+                            <th>EPI</th>
+                            <th>CA</th>
+                            <th>Data Entrega</th>
+                            <th>Data Vencimento</th>
+                            <th>Data Devolução</th>
+                        </tr>
+                    </thead>
+                    <tbody id="lista-epi"></tbody>
+                </table>
+
+                <script>
+                $(document).ready(function() {
+                    <?php if ($this->atributos['funcionario_status'] == 0 AND strlen($this->atributos['funcionario_motivo_inativacao']) == 0 AND !$this->atributos['fk_ppra_item_id'] > 0 OR !$this->atributos['fk_item_pcmso_id'] > 0) : ?>
+                    checkaloc();
+                    <?php endif ; ?>
+                })
+
+                $.post('/ajax/html/servico/obter-epis-do-funcionario', {
+                    funcionario: $('#funcionario_id').val()
+                }, function(r) {
+                    $('#lista-epi').html(r);
+                });
+
+                function resetarEPI() {
+                    $('#funcionario_epi').val('0');
+                    //$('#ppra_item_risco_epi').val('0');
+                    $('#ca').val('');
+                    $('#nome').val('');
+                    $('#responsavel-entrega').val('');
+                    $('#responsavel-devolucao').val('');
+                    $('#data-entrega').val('');
+                    $('#data-vencimento').val('');
+                    $('#data-devolucao').val('');
+                }
+
+                function salvarEPI() {
+                    $.post('/ajax/html/servico/adicionar-epi-para-funcionario', {
+                        funcionario_epi: $('#funcionario_epi').val(),
+                        funcionario: $('#funcionario_id').val(),
+                        //ppra_item_risco_epi: $('#ppra_item_risco_epi').val(),
+                        ca: $('#ca').val(),
+                        nome: $('#nome').val(),
+                        responsavel_entrega: $('#responsavel-entrega').val(),
+                        responsavel_devolucao: $('#responsavel-devolucao').val(),
+                        data_entrega: $('#data-entrega').val(),
+                        data_vencimento: $('#data-vencimento').val(),
+                        data_devolucao: $('#data-devolucao').val()
+                    }, function(r) {
+                        $('#lista-epi').html(r);
+                    });
+                }
+
+                function alterarEPI(id) {
+                    $.post('/ajax/html/servico/obter-epi-do-funcionario', {
+                        funcionario_epi: id
+                    }, function(funcionario_epi) {
+                        $('#funcionario_epi').val(funcionario_epi.funcionario_epi_id);
+                        //$('#ppra_item_risco_epi').val(funcionario_epi.ppra_item_risco_epi_id);
+                        $('#ca').val(funcionario_epi.funcionario_epi_ca);
+                        $('#nome').val(funcionario_epi.funcionario_epi_nome);
+                        $('#responsavel-entrega').val(funcionario_epi.funcionario_epi_responsavel_entrega);
+                        $('#responsavel-devolucao').val(funcionario_epi.funcionario_epi_responsavel_devolucao);
+                        $('#data-entrega').val(funcionario_epi.funcionario_epi_data_entrega);
+                        $('#data-vencimento').val(funcionario_epi.funcionario_epi_data_vencimento);
+                        $('#data-devolucao').val(funcionario_epi.funcionario_epi_data_devolucao);
+                    }, 'json');
+                }
+
+                function checkaloc() {
+                    swal({
+                            html: true,
+                            title: "Atenção",
+                            type: 'warning',
+                            text: `Favor atualizar a função do funcionário <b>clicando novamente na alocação desejada</b>, e <b>salvar</b> seu registro.`,
+                            confirmButtonText: "OK",
+                            closeOnConfirm: true,
+                            showLoaderOnConfirm: false
+                        },
+                        function() {
+
+                        });
+                }
+                </script>
+
+            </div>
+        </div>
+
+        <?php endif; ?>
+
+    </div>
+</div>
+<!--
+<div class="modal fade" id="cpfInvalidoModal" tabindex="-1" role="dialog" aria-labelledby="cpfInvalidoModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="cpfInvalidoModalLabel">CPF Inválido</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                Por favor, insira um CPF válido.
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Fechar</button>
+            </div>
+        </div>
+    </div>
+</div>
+            -->
+<div class="modal fade" id="cpfInvalidoModal" tabindex="-1" role="dialog" data-remote="false"
+    aria-labelledby="cpfInvalidoModalLabel" aria-hidden="true" data-backdrop="static">
+    <div class="modal-dialog modal-dialog-scrollable" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title" id="cpfInvalidoModalLabel">CPF Inválido</h3>
+            </div>
+            <div class="modal-body" role="dialog">
+                <div style="width: 100%; text-transform: none;">
+                    <p align="center"><b><u>Por favor, insira um CPF válido.</u></b></p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Fechar</button>
+            </div>
+        </div>
+    </div>
+</div>

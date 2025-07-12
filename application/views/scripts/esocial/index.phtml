@@ -1,0 +1,348 @@
+<?php
+    $acesso = $this->atributos['usuario_portal_esocial_autoriza'];
+?>
+
+<?php if ($acesso == 1 OR $acesso == 3) : //Verificando se o contrato está autorizado a ter acesso ao esocial ?>
+
+    <div class="panel panel-primary">
+
+        <div class="panel-heading"><i class="fa fa-arrow-down"></i>Exportar arquivo XML</div>
+
+        <div class="panel-body">
+
+            <form action="/esocial/baixar" method="post" target="iframe-receptor" onsubmit="">
+
+                <div class="row">
+
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label>Evento</label>
+                            <select class="form-control pesquisa" id="evento" name="evento">
+                                <option value="0">-- Todos --</option>
+                                <?php foreach ($this->eventos as $evento): ?>
+                                    <option value="<?= $evento['id'] ?>"><?= "{$evento['nome']} - {$evento['detalhe']}" ?></option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="col-md-2">
+                        <div class="form-group">
+                            <label for="funcionario">Funcionário</label>
+                            <select name="funcionario" id="funcionario" class="form-control pesquisa">
+                                <option value="0">TODOS</option>
+                                <?php foreach ($this->funcionarios as $value): ?>
+                                    <option value="<?= $value['id']; ?>"><?= $value['nome']; ?></option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="col-md-2">
+                        <div class="form-group">
+                            <label>Data Início *</label>
+                            <input class="form-control mask-data" type="text" name="data_inicio" id="data_inicio" value="01/<?= date('m/Y') ?>" />
+                        </div>
+                    </div>
+
+                    <div class="col-md-2">
+                        <div class="form-group">
+                            <label>Data Fim *</label>
+                            <input class="form-control mask-data" type="text" name="data_fim" id="data_fim" value="31/<?= date('m/Y') ?>" />
+                        </div>
+                    </div>
+
+                    <div class="col-md-2">
+                        <div class="form-group">
+                            <label>&nbsp;</label>
+                            <button class="form-control btn btn-success" type="submit"><i class="icon-print"></i>&nbsp;Gerar</button>
+                        </div>
+                    </div>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+    <script type="text/javascript">
+
+    ConstrutorUrlConsulta.PrefixoUrl = '/esocial/index/?';
+
+    function ParametrizarExecutarUrlConsulta(pagina) {
+        $(function () {
+            var Params = {
+                paramModalidade: $('#paramEvento').val(),
+                paramData: $('#paramData').val(),
+                page: (pagina) ? pagina : '1'
+            };
+            ConstrutorUrlConsulta.MapearParametro(Params);
+            ConstrutorUrlConsulta.ExecutarChamadaUrl();
+        });
+    }
+
+    $(function () {
+        $('#paramEvento, #paramData').blur(function () {
+            ParametrizarExecutarUrlConsulta('1');
+        });
+        $('#filtar-item-grid').click(function () {
+            ParametrizarExecutarUrlConsulta('1');
+        });
+    });
+
+    </script>
+
+    <style type="text/css">
+        .item-filtro-pesquisa { 
+            box-shadow: none !important; 
+            background: transparent !important; 
+            border: none !important; 
+            border-radius: 0px !important; 
+            margin: 0px !important; 
+            padding: 0px !important; 
+            width: 100%; 
+            float: left;
+            font-size: 11px !important
+        }
+    </style>
+
+    <?php $like = (isset($_GET["like"]) && !empty($_GET["like"])) ? $_GET["like"] : ''; ?>
+
+    <div class="panel panel-primary">
+
+        <div class="panel-heading"><i class="fa fa-send"></i>Histórico de Envios</div>
+      
+        <div class="span8">
+
+            <?php $this->render('configuracao-paginador.php'); ?>
+
+                <table class="table table-hover table-bordered table-condensed">
+                    <thead>
+                        <tr>
+                            <th>Evento</th>
+                            <th>Enviado em</th>
+                            <th>Registro de envio</th>
+                            <th>Recibo de envio</th>
+                        </tr>
+                        <tr style="background: #f5f5f5 !important">                      
+                            <th><input placeholder="Pesquisar Evento" value="<?= $this->form['paramEvento'] ?>" class="item-filtro-pesquisa" type="text" id="paramEvento"/></th>
+                            <th><input placeholder="Pesquisar Enviado em" maxlength="10" style="text-align: center;" value="<?= $this->form['paramData'] ?>" class="item-filtro-pesquisa mask-data" type="text" id="paramData"/></th>
+                            <th><input class="item-filtro-pesquisa" disabled="true" id="paramReciboeSocial"/></th>
+                            <th></th>
+                            
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php $paginados = []; ?>
+                        <?php foreach ($this->itensPaginados as $i => $item): 
+                            $break = explode(' ', $item['esocial_envio_tecnospeed_datahora']);
+                            $data = array_shift($break);
+                            $hora = array_shift($break);
+                            $paginados[] = $i; ?>
+
+                            <tr id="tr<?= $i ?>">
+                                <td style="text-align: center;">
+                                    <a rel="tooltip" title="Lote do Evento Enviado" href="" data-toggle="modal" data-target="#modal-loteenviado" onclick="loteenviado(<?php echo $item['esocial_envio_tecnospeed_id']; ?>,'<?php echo $item['esocial_tipoevento_nome']; ?>')"><u><?= $item['esocial_tipoevento_nome'] ?></u></a>
+                                    <!--<a><u><?= $item['esocial_tipoevento_nome'] ?></u></a>-->
+                                </td>
+                                <td style="text-align: center;"><?= Util::dataBR($data) . ' às ' . $hora ?></td>                                
+                                <!--<td style="text-align: center;"><a target="_blank" href="/esocial/baixar-recibo/id/<?= $item['esocial_envio_tecnospeed_id']; ?>">Baixar</a></td>-->
+                                <td><?= htmlentities($item['esocial_envio_tecnospeed_disparo_id']) ?></td>
+                                <td style="text-align: center;" class="">
+                                    <a data-toggle="tooltip" title="Prontuário Eletrônico" class="btn btn-xs btn-default" href="/documento-operacional/esocial-recibo/<?php echo $item['esocial_envio_tecnospeed_id']; ?>" target="_blank"><i class="fa fa-print no-margin"></i></a>
+                                </td>
+                            </tr>
+                        <?php endforeach ?>
+                    </tbody>
+                </table>
+
+            <?php if (isset($this->itensPaginados) && $this->itensPaginados instanceof Zend_Paginator): ?>
+
+            <style type="text/css">
+
+                .pagination table {
+                    /*width: 100%;*/
+                }
+                .pagination table tr td {
+                }
+                .pagination table tr td a {
+                    -moz-border-bottom-colors: none;
+                    -moz-border-left-colors: none;
+                    -moz-border-right-colors: none;
+                    -moz-border-top-colors: none;
+                    background: none repeat scroll 0 0 #FFFFFF;
+                    border-color: #DDDDDD #DDDDDD #DDDDDD -moz-use-text-color;
+                    border-image: none;
+                    border-style: solid solid solid none;
+                    border-width: 1px 1px 1px medium;
+                    display: block;
+                    padding: 4px 10px;
+                    text-align: center;
+                    text-decoration: none;
+                }
+                .pagination table tr td a.item-inicial {
+                    border: 1px solid #DDDDDD;
+                    border-radius: 4px 0 0 4px;
+                }
+                .pagination table tr td a.item-final {
+                    border: 1px solid #DDDDDD;
+                    border-radius: 0 4px 4px 0;
+                }
+                .pagination table tr td a.inativo {
+                    background: none repeat scroll 0 0 #EEEEEE;
+                    color: #AAAAAA;
+                    cursor: default;
+                }
+                .pagination table tr td a.ativo, .pagination table tr td a.ativo:hover {
+                    background: none repeat scroll 0 0 #0099FF;
+                    border: 1px solid #006699;
+                    color: #FFFFFF;
+                }
+                .pagination table tr td a:hover {
+                    background: none repeat scroll 0 0 #EEEEEE;
+                }
+            </style>
+
+                <?php $paginator = $this->itensPaginados->getPages() ?>
+
+                <?php if ($paginator->pageCount): ?>
+                    <div class="pagination">
+                        <table>
+                            <tr>
+                                <?php if (isset($paginator->previous)): ?>
+                                    <td><a class="item-inicial" onclick="ParametrizarExecutarUrlConsulta('<?= $paginator->previous ?>')" href="javascript:;">«</a></td>
+                                <?php else: ?>
+                                    <td><a class="item-inicial inativo" href="javascript:void(0);">«</a></td>
+                                <?php endif; ?>
+
+                                <?php foreach ($paginator->pagesInRange as $page): ?>
+                                    <?php if ($page != $paginator->current): ?>
+                                        <td><a onclick="ParametrizarExecutarUrlConsulta('<?= $page ?>')" href="javascript:;"><?= $page ?></a></td>
+                                    <?php else: ?>
+                                        <td><a class="ativo" href="javascript:void(0);"><?= $page ?></a></td>
+                                    <?php endif; ?>
+                                <?php endforeach; ?>
+
+                                <?php if (isset($paginator->next)): ?>
+                                    <td><a class="item-final" onclick="ParametrizarExecutarUrlConsulta('<?= $paginator->next ?>')" href="javascript:;">»</a></td>
+                                <?php else: ?>
+                                    <td><a class="item-final inativo" href="javascript:void(0);">»</a></td>
+                                <?php endif ?>
+
+                            </tr>
+                        </table>
+                    </div>
+                <?php endif; ?>
+            <?php endif; ?>
+            <?php #endif ?>
+
+        </div>
+
+    </div>
+
+    <!-- MODAL CPFs -->
+    <div id="modal-loteenviado" class="modal fade" tabindex="-1" data-remote="false" role="dialog" aria-labelledby="modal-loteenviado"  data-keyboard="false" data-backdrop="static">
+        <div class="modal-dialog " role="document">
+            <div class="modal-content ">
+                <div class="modal-header btn-primary">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true" style="z-index: 100">&times;</button>
+                    <h5 class="modal-title" id="modal-loteenviado"><div class="text-center">Eventos do Lote Enviado</div></h5>
+                </div>
+                <div class="modal-body" align="center">
+
+                    <input type="hidden" name="idevento" id="idevento" class="text-center">
+                    <input type="hidden" name="dataevento" id="dataevento" class="text-center">
+                    <div class="row-fluid">
+                        <table class="table table-striped table-condensed table-bordered">
+                            <thead>
+                                <!--<th class="text-center">ID Evento eSocial</th>-->
+                                <th class="text-center">CPF</th>
+                                <th class="text-center">Nome</th>                                
+                            </thead>
+                            <tbody id="listalote">
+                            </tbody>
+                        </table>                 
+                    </div>  
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="text/javascript">
+        const linhas = <?= json_encode($paginados); ?>;
+
+        $(() => {
+
+            (function pintaDataMaior() {
+                let data      // string
+                let timestamp // number
+
+                linhas.forEach(element => {
+                    data = $(`#data${element}`).attr('value');
+                    timestamp = new Date(data).getTime();
+
+                    if (timestamp > Date.now())
+                        $(`#tr${element}`).css('background-color', '#4d94ff');
+                });
+            })();
+
+            <?php # funcao para travar as datas em caso de evento != de s2220 ?>
+            $('#evento').change(() => $('#data_inicio, #data_fim').attr('disabled', (parseInt($('#evento').val()) > 1) ? true : false));
+        });
+
+        function loteenviado(esocial_envio_tecnospeed_id, esocial_tipoevento_nome) {
+
+            $.get('/ajax/json/servico/evento-enviado/id/' + esocial_envio_tecnospeed_id + '/tipo/' + esocial_tipoevento_nome, function(resposta) {
+                $("#listalote").html("");
+                console.log(resposta);
+                resposta = JSON.parse(resposta);
+                if (resposta.length) {
+                    for (var i in resposta) {
+
+                        var json = resposta[i];
+                        var nome = json.pessoa_nome;
+                        var cpf = util.cpf(json.pessoa_cpf);
+                        var id = json.esocial_detalhe_envio_id;
+
+                        $html = '<tr>'
+                                    //+ `<td style="text-align:center !important;">`+ id +`</td>`
+                                    + `<td style="text-align:center !important;">`+ cpf +`</td>`
+                                    + `<td style="text-align:left !important;">`+ nome +`</td>`                                               
+                                + '</tr>';
+
+                        $("#listalote").append($html);                        
+                    }                
+                } else {
+                    $("#listalote").html('<tr><td colspan="3" class="alert-danger">Sem dados</td></tr>');
+                }                
+
+            });
+
+        }
+
+    </script>
+
+<?php else : ?>
+
+    <div class="col-md-12" align="center">
+        <br>
+        <br>
+        <br>
+        <br>
+        <br>
+        <br>
+        <b><font size="4">Contrato não autorizado ao acesso do eSocial.</font></b>
+        <br>
+        <?= $this->textoContato ?: ''; ?>
+        <br>
+        <br>
+        <br>
+        <br>
+        <br>
+        <br>
+        <br>
+    </div>
+
+<?php endif; ?>

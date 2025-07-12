@@ -1,0 +1,520 @@
+<?php
+$ano = $this->ano;
+$anoanterior = $this->anoanterior;
+$dadosmedico = $this->dadosmedico;
+$nexameclinico = $this->nexameclinico;
+$nexamecomp = $this->nexamecomp;
+$nexamecompalter = $this->nexamecompalter;
+$catdoencas = $this->catdoencas;
+$cattipos = $this->cattipos;
+
+$_meses = [
+    '01' => 'Janeiro',
+    '02' => 'Fevereiro',
+    '03' => 'Março',
+    '04' => 'Abril',
+    '05' => 'Maio',
+    '06' => 'Junho',
+    '07' => 'Julho',
+    '08' => 'Agosto',
+    '09' => 'Setembro',
+    '10' => 'Outubro',
+    '11' => 'Novembro',
+    '12' => 'Dezembro',
+];
+
+$data_vigente = new DateTime();
+$dt_dia = $data_vigente->format('d');
+$dt_mes = isset($_meses[$data_vigente->format('m')]) ? $_meses[$data_vigente->format('m')] : '';
+$dt_ano = $data_vigente->format('Y');
+
+require_once 'MPDF/mpdf.php';
+$p = new mPDF('', 'A4', 0, '', 8, 8, 28, 20, 9, 9);
+ini_set('memory_limit', -1);
+ob_clean();
+error_reporting(0);
+ob_start();
+?>
+
+<html>
+
+    <head>
+        <meta charset="UTF-8"/>
+    </head>
+    <body>
+
+    <?php
+    echo $partePagina['inicio'] = ob_get_clean();
+    ob_start();
+    ?>
+
+    <p>&nbsp;</p>
+    <h1 style="margin-top: 100px; font-size: 25px; text-align: center;">Relatório Analítico do Pcmso</h1>
+    <h4 style="margin-top: 10px; font-size: 20px; text-align: center;">Acompanhamento do Programa de Controle Médico de Saúde Ocupacional</h4>
+    <h1 style="margin-top: 260px; font-size: 30px; text-align: center;"> <?php echo $_SESSION['empresa']['empresa_razao'] ?> </h1>
+    <h1 style="margin-top: 150px; font-size: 30px; text-align: center;">ANO BASE <?php echo $ano ?> </h1>
+    <h4 style="margin-top: 100px; text-align: center;">Médico Responsável: <?php echo $dadosmedico['coordenacao_medico'] ?> </h4>
+    <h4 style="margin-top: 15px; text-align: center;"> Data da Elaboração: <?php echo $dt_dia ?> / <?php echo $dt_mes ?> / <?php echo $dt_ano ?> </h4>
+
+    <!-- CAPA:FIM -->
+    <?php
+    $partePagina['capa'] = ob_get_clean();
+    ob_start();    
+    ?>
+
+    <br>
+    <p class="titulo" align="center"><b> IDENTIFICAÇÃO DA EMPRESA</b></p>
+    
+    <div class="pb-5">
+        <table class="tabela-full" border="0">
+                <tr>
+                    <td colspan="2"><b>Razão Social:</b> <?php echo $_SESSION['empresa']['empresa_razao'] ?> </td> 
+                </tr>
+                <tr>
+                    <td>&nbsp;</td>                
+                </tr>
+                <tr>
+                    <td colspan="2"><b>Nome de Fantasia:</b> <?php echo $_SESSION['empresa']['empresa_fantasia'] ?> </td>          
+                </tr>
+                <tr>
+                    <td>&nbsp;</td>                
+                </tr>
+                <tr>
+                    <td colspan="2"><b>Endereço:</b> <?php echo $_SESSION['empresa']['endereco_logradouro'] ?> </td>                
+                </tr>
+                <tr>
+                    <td>&nbsp;</td>                
+                </tr>
+                <tr>
+                    <td><b>Bairro:</b> <?php echo $_SESSION['empresa']['endereco_bairro'] ?></td>
+                    <?php echo $num ?>                    
+                </tr>
+                <tr>
+                    <td>&nbsp;</td> 
+                </tr>
+                <tr>
+                    <td><b>Estado:</b> <?php echo $_SESSION['empresa']['endereco_uf'] ?> </td>
+                    <td><b>Cidade:</b> <?php echo $_SESSION['empresa']['endereco_cidade'] ?> </td>
+                    <td><b>CEP:</b> <?php echo Util::cep($_SESSION['empresa']['endereco_cep']) ?> </td>
+                </tr>
+                <tr>
+                    <td>&nbsp;</td> 
+                </tr>
+                <tr>
+                    <td><b>CNPJ:</b> <?php echo Util::cnpj($_SESSION['empresa']['empresa_cnpj']) ?> </td>
+                    <td><b>Grau de Risco:</b> <?php echo $_SESSION['empresa']['empresa_grau_risco'] ?> </td>
+                    <td><b>CNAE:</b> <?php echo $_SESSION['empresa']['empresa_cnae'] ?> </td>
+                </tr>
+                <tr>
+                    <td>&nbsp;</td> 
+                </tr>
+                <tr>                    
+                    <?php echo $comple ?>
+                </tr>
+        </table>
+        <br>
+    </div>
+
+    <?php
+    $partePagina['info'] = ob_get_clean();
+    ob_start();
+    ?>
+
+    <br>
+    <p class="titulo" align="center"><b> RELAÇÃO DE EXAMES</b></p>
+
+    <div class="pb-5">
+        <p class="txt-justify">
+            a) nº de exames clínicos realizados;
+        </p>
+    </div>
+    <div class="pb-5">
+        <table border="1" style="width: 100%; border-collapse: collapse; font-size: 10px;" cellpadding="4">
+            <thead>
+                <tr style="background-color: #2f5496;">
+                    <th class="perc-15"><font color="#FFFFFF">EXAME</font></th>
+                    <th class="perc-15"><font color="#FFFFFF">TOTAL</font></th>
+                </tr>
+            </thead>
+            <tbody>
+            <?php if ($nexameclinico) : ?>
+                <tr>
+                    <td align="left"> <?php echo $nexameclinico['produto_nome'] ?> </td>
+                    <td align="center"> <?php echo $nexameclinico['qtd_exames'] ?> </td>
+               </tr>
+            <?php else : ?>
+                <tr>
+                    <td align="center" colspan="2"> Não há resultados de exame realizados </td>
+                </tr>
+            <?php endif; ?>    
+            </tbody>
+        </table>
+    </div>
+
+    <p>
+    <div class="pb-5">
+        <p class="txt-justify">
+            b) nº e tipos de exames complementares realizados;
+        </p>
+    </div>
+    <div class="pb-5">
+            <table border="1" style="width: 100%; border-collapse: collapse; font-size: 10px;" cellpadding="4">
+                <thead>
+                    <tr style="background-color: #2f5496;">
+                        <th class="perc-15"><font color="#FFFFFF">EXAME</font></th>
+                        <th class="perc-15"><font color="#FFFFFF">TIPO DE EXAME</font></th>
+                        <th class="perc-15"><font color="#FFFFFF">QUANTIDADE</font></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php $qtdexcomp = 0; ?>
+                    <?php if (count($nexamecomp) > 0) : ?>
+                        <?php foreach ($nexamecomp as $exame) : ?>
+                            <tr>
+                               <td align="left"> <?php echo $exame['produto_nome'] ?> </td>
+                               <td align="center"> <?php echo $exame['tipoexame_nome'] ?> </td>
+                               <td align="center"> <?php echo $exame['qtd_exames'] ?> </td>                    
+                           </tr>
+                        <?php endforeach; ?>
+                            <tr>
+                               <td align="center" colspan="2"> <b>TOTAL</b> </td>
+                               <td align="center"> <?php echo $qtdexcomp ?> </td>
+                            </tr>
+                    <?php else : ?>
+                        <tr>
+                            <td align="center" colspan="3"> Não há resultados de exames complementares realizados </td>
+                       </tr>
+                    <?php endif; ?>
+                </tbody>
+            </table>
+    </div>
+
+    <p>
+    <div class="pb-5">
+        <p class="txt-justify">
+            c)  estatística de resultados anormais dos exames complementares, categorizados por tipo do exame e por função;
+        </p>
+    </div>
+    <div class="pb-5">
+            <table border="1" style="width: 100%; border-collapse: collapse; font-size: 10px;" cellpadding="4">
+                <thead>
+                    <tr style="background-color: #2f5496;">
+                        <th class="perc-15"><font color="#FFFFFF">FUNÇÃO</font></th>
+                        <th class="perc-15"><font color="#FFFFFF">EXAME</font></th>
+                        <th class="perc-15"><font color="#FFFFFF">TIPO DE EXAME</font></th>
+                        <th class="perc-15"><font color="#FFFFFF">NORMAL</font></th>
+                        <th class="perc-15"><font color="#FFFFFF">ALTERADOS</font></th>
+                        <th class="perc-15" align="center"><font color="#FFFFFF">% ALTERADOS</font></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php 
+                        $sum = 0;
+                        $tnormal = 0;
+                        $talterado = 0; 
+                    ?>
+                    <?php if (count($nexamecompalter) > 0) : ?>
+                        <?php foreach ($nexamecompalter as $item) :
+
+                                $normal = 0;
+                                $alterado = 0;
+                                $tnormal = array_count_values(array_column($nexamecompalter, 'alterado'))[$item['alterado']];
+                                $talterado = array_count_values(array_column($nexamecompalter, 'alterado'))[$item['alterado'] == 0];
+
+                                if ($item['alterado'] == 0) {
+                                    $normal = 1;
+                                }else{
+                                    $alterado = 1;
+                                }
+
+                                $sum = $tnormal + $talterado;
+                                $count = $count+1;
+
+                                if ($count > $rows_func) {
+                                    $count = 1;
+                                }
+                        ?>
+                        <tr>
+                            <?php if ($count == 1) : ?>
+                                <?php $rows_func = array_count_values(array_column($nexamecompalter, 'funcao'))[$item['funcao']]; ?>
+                                <td align="center" rowspan="<?php echo $rows_func ?>"> <?php echo $item['funcao'] ?> </td>
+                            <?php endif; ?>
+                            <td align="left"> <?php echo $item['produto_nome'] ?> </td>
+                            <td align="center"> <?php echo $item['tipoexame_nome'] ?> </td>
+                            <td align="center"> <?php echo $normal ?> </td>
+                            <td align="center"> <?php echo $alterado ?> </td>                        
+                            <td align="center"> <?php echo @number_format(($alterado / $normal + $alterado) * 100, 2, ',', '.') ?>%</td>
+                        </tr>
+                        <?php endforeach; ?>
+                        <?php if ($talterado == NULL) { $talterado = 0; } ?>
+                        <tr>
+                           <td align="center" colspan="3"> <b>TOTAL</b> </td>
+                           <td align="center"> <?php echo $tnormal ?> </td>
+                           <td align="center"> <?php echo $talterado ?> </td>
+                           <td align="center"> <?php echo @number_format($talterado * 100 / $sum, 2, ',', '.') ?>%</td>
+                       </tr>
+                    <?php else : ?>
+                        <tr>
+                            <td align="center" colspan="6"> Não há resultados </td>
+                        </tr>
+                    <?php endif; ?>
+                </tbody>
+            </table>
+    </div>
+
+    <?php
+    $partePagina['exames_p1'] = ob_get_clean();
+    ob_start();
+    ?>
+
+    <p>
+    <div class="pb-5">
+        <p class="txt-justify">
+            d) incidência e prevalência de doenças relacionadas ao trabalho, categorizadas por função;
+        </p>
+    </div>
+    <div class="pb-5">
+        <table border="1" style="width: 100%; border-collapse: collapse; font-size: 10px;" cellpadding="4">
+            <thead>
+                <tr style="background-color: #2f5496;">
+                    <th class="perc-15"><font color="#FFFFFF">FUNÇÃO</font></th>
+                    <th class="perc-15"><font color="#FFFFFF">TOTAL</font></th>
+                </tr>
+            </thead>
+                <tbody>
+                    <?php if (!empty($catdoencas) AND $catdoencas[0]['qts_cat'] != 0) : ?>
+                        <?php foreach ($catdoencas as $doenca) : ?>
+                           <tr>
+                               <td align="left"> <?php echo $doenca['funcao'] ?> </td>
+                               <td align="center"> <?php echo $doenca['qts_cat'] ?> </td>                    
+                           </tr>
+                        <?php endforeach; ?>
+                    <?php else : ?>
+                        <tr>
+                            <td align="center" colspan="2"> Não houve incidentes ou doenças </td>
+                       </tr>
+                    <?php endif; ?>
+                </tbody>
+        </table>
+    </div>
+
+    <p>
+    <div class="pb-5">
+        <p class="txt-justify">
+            e)  informações sobre o número, tipo de eventos e doenças informadas nas CAT, emitidas pela organização, referentes a seus empregados;
+        </p>
+    </div>
+    <div class="pb-5">
+        <table border="1" style="width: 100%; border-collapse: collapse; font-size: 10px;" cellpadding="4">
+            <thead>
+                <tr style="background-color: #2f5496;">
+                    <th class="perc-15"><font color="#FFFFFF">FUNÇÃO</font></th>
+                    <th class="perc-15"><font color="#FFFFFF">TIPO CAT</font></th>
+                    <th class="perc-15"><font color="#FFFFFF">TOTAL</font></th>
+                </tr>
+            </thead>
+                <tbody>
+                    <?php if (count($cattipos) > 0) : ?>
+                        <?php foreach ($cattipos as $tipo) : ?>
+                           <tr>
+                               <td align="left"> <?php echo $tipo['funcao'] ?> </td>
+                               <td align="center"> <?php echo $tipo['tpAcid'] ?> </td>
+                               <td align="center"> <?php echo $tipo['qts_cat'] ?> </td>                    
+                           </tr>
+                        <?php endforeach; ?>
+                    <?php else : ?>
+                        <tr>
+                            <td align="center" colspan="3"> Não houve abertura de CAT(s) </td>
+                       </tr>
+                    <?php endif; ?>
+                </tbody>
+        </table>
+    </div>
+
+    <?php
+    $partePagina['exames_p2'] = ob_get_clean();
+    ob_start();
+    ?>
+
+    <br>
+    <p class="titulo" align="center"><b> COMPARATIVO COM ANO ANTERIOR</b></p>
+
+    <?php 
+        if ($nexameclinico['qtd_exames'] == null) {
+            $nexameclinico['qtd_exames'] = 0;
+        }
+        if ($talterado == NULL) {
+            $talterado = 0;
+        }
+        $ano_ant = $ano -1;
+    ?>
+    <div class="pb-5">
+        <p class="txt-center">
+            Análise comparativa em relação ao relatório anterior.
+        </p>
+    </div>
+    <div class="row">
+        <table border="0" style="width: 100%; border-collapse: collapse; font-size: 10px; float: left" cellpadding="4">
+            <thead>
+                <tr>
+                   <th>
+                        <div class="pb-5">
+                            <table border="1" style="width: 100%; border-collapse: collapse; font-size: 10px; float: left" cellpadding="4">
+                                <thead>
+                                    <tr style="background-color: #2f5496;">
+                                        <th class="perc-15" colspan="2"><font color="#FFFFFF"> ANO BASE '.$ano.'</font></th>
+                                    </tr>
+                                    <tr style="background-color: #2f5496;">
+                                        <th class="perc-15"><font color="#FFFFFF">RESUMO</font></th>
+                                        <th class="perc-15"><font color="#FFFFFF">TOTAL</font></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td align="left"> EXAMES CLÍNICOS REALIZADOS </td>
+                                        <td align="center"> <?php echo $nexameclinico['qtd_exames'] ?> </td>
+                                    </tr>
+                                    <tr>
+                                        <td align="left"> EXAMES COMPLEMENTARES </td>
+                                        <td align="center"> <?php echo $qtdexcomp ?> </td>
+                                    </tr>
+                                    <tr>                        
+                                        <td align="left"> EXAMES ALTERADOS </td>
+                                        <td align="center"> <?php echo $talterado ?> / <?php echo @number_format($talterado * 100 / $sum, 2, ',', '.') ?>% </td>
+                                    </tr>
+                                    <tr>
+                                        <td align="left"> DOENÇAS TRABALHISTAS </td>
+                                        <td align="center"> <?php echo count(@$catdoencas[0]['qts_cat'] != 0) ?> </td>
+                                    </tr>
+                                    <tr>
+                                        <td align="left"> ABERTURA DE CATs </td>
+                                        <td align="center"> <?php echo count(@$cattipos) ?> </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                   </th>
+                   <th>
+                        <div class="pb-5">
+                            <table border="1" style="width: 100%; border-collapse: collapse; font-size: 10px; float: left" cellpadding="4">
+                                <thead>
+                                    <tr style="background-color: #2f5496;">
+                                        <th class="perc-15" colspan="2"><font color="#FFFFFF"> ANO ANTERIOR <?php echo $ano_ant ?> </font></th>
+                                    </tr>
+                                    <tr style="background-color: #2f5496;">
+                                        <th class="perc-15"><font color="#FFFFFF">RESUMO</font></th>
+                                        <th class="perc-15"><font color="#FFFFFF">TOTAL</font></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td align="left"> EXAMES CLÍNICOS REALIZADOS </td>
+                                        <td align="center"> <?php echo $anoanterior['CLINICO'] ?> </td>
+                                    </tr>
+                                    <tr>
+                                        <td align="left"> EXAMES COMPLEMENTARES </td>
+                                        <td align="center"> <?php echo $anoanterior['COMPLEMENTAR'] ?> </td>
+                                    </tr>
+                                    <tr>                        
+                                        <td align="left"> EXAMES ALTERADOS </td>
+                                        <td align="center"> <?php echo $anoanterior['ALTERADOS_A'] ?>  / <?php echo $anoanterior['ALTERADOS_%'] ?>% </td>
+                                    </tr>
+                                    <tr>
+                                        <td align="left"> DOENÇAS TRABALHISTAS </td>
+                                        <td align="center"> <?php echo $anoanterior['DOENÇAS'] ?> </td>
+                                    </tr>
+                                    <tr>
+                                        <td align="left"> ABERTURA DE CATs </td>
+                                        <td align="center"> <?php echo $anoanterior['CAT'] ?> </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                   </th>
+                </tr>
+            </thead>
+        </table>    
+    </div>
+
+    <br>
+    <p class="titulo" align="center"><b> ANÁLISE E PARECER DO MÉDICO</b></p>
+    <br>
+    <br>
+    <div class="pb-5">
+        <p class="txt-justify">
+            
+        </p>
+    </div>
+    <br>
+    <br>
+    <div class="pb-5">
+        <p class="txt-justify" align="center">
+           <b>MÉDICO RESPONSÁVEL</b>
+        </p>
+    </div>
+    <br>
+    <br>
+    <br>
+    <br>
+    <div class="pb-5">
+        <table border="0" style="width: 100%; border-collapse: collapse;">
+        <thead>
+          <tr>
+            <th>____________________________________________</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td align="center"> <?php echo $dadosmedico['coordenacao_medico'] ?> </td>
+          </tr>
+          <tr>
+            <td align="center"> CRM: <?php echo $dadosmedico['coordenacao_crm'] ?> </td>
+          </tr>
+        </tbody>
+        </table>
+    </div>
+
+    <?php
+    $partePagina['comparativo'] = ob_get_clean();
+    ob_start();
+    ?>
+
+    </body>
+<html>    
+
+<?php
+$partePagina['fim'] = ob_get_clean();
+ob_start();
+
+$htmlRodape = <<<FOOTER
+    <table width="100%">
+        <tr>
+            <td width="33%"></td>
+            <td width="33%" align="center">{PAGENO}</td>
+            <td width="33%" style="text-align: right;"></td>
+        </tr>
+    </table>
+FOOTER;
+$p->SetHTMLFooter($htmlRodape);
+$p->packTableData = true;
+$p->simpleTables = true;
+$p->shrink_tables_to_fit = 0;
+$p->setAutoTopMargin = false;
+$p->setAutoBottomMargin = false;
+$p->allow_charset_conversion = false;
+$p->SetImportUse();
+$nomeClinica = 'HIEST ASSESSORIA';
+$p->SetDocTemplate('template/timbrado_hiestgroup.pdf', true);
+$p->SetTitle($_SESSION['empresa']['empresa_razao'].' - Rel. Analitico do Pcmso');
+$p->WriteHTML($partePagina['inicio']);
+$p->WriteHTML($partePagina['capa']);
+$p->AddPage();
+$p->WriteHTML($partePagina['info']);
+$p->AddPage();
+$p->WriteHTML($partePagina['exames_p1']);
+$p->AddPage();
+$p->WriteHTML($partePagina['exames_p2']);
+$p->AddPage();
+$p->WriteHTML($partePagina['comparativo']);
+$p->WriteHTML($partePagina['fim']);
+$p->Output();

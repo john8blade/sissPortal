@@ -1,0 +1,26 @@
+<?php foreach ($this->produtoExame as $k => $produtoExame): ?>
+    <?php
+    $idProduto = $produtoExame['produto_id'];
+    $encontrouIndice = false;
+    $indice = null;
+    if (array_key_exists("P-$idProduto", $this->itensProdutoAgenda)) {
+        $encontrouIndice = true;
+        $indice = "P-$idProduto";
+    }
+    ?>
+
+    <tr id="tr-<?php echo $k ?>">
+        <td class="icones-td"><input class="produto-agenda-id" <?php if ($encontrouIndice): ?> checked="checked"  <?php endif ?> value="<?php echo $idProduto ?>" type="checkbox" name="produto_id[<?php echo $idProduto ?>]" /></td>
+        <td><?php echo $produtoExame['produto_nome']; ?></td>
+        <td><input value="<?php echo Util::dataBR($this->itensProdutoAgenda[$indice]['produto_agenda_data_programada']) ?> "style="width: 75px;" class="mask-data produto-agenda-data-programada" type="text" name="dataProgramada[<?php echo $idProduto ?>]" /></td>
+        <td  class="produto-agenda-executado" style="text-align: center"><input <?php if ($encontrouIndice && $this->itensProdutoAgenda[$indice]['produto_agenda_executado'] == '1'): ?> checked="checked"  <?php endif ?> name="produto_agenda_executado[<?php echo $idProduto ?>]" type="checkbox" value="1"/></td>
+        <td>
+            <select name="fornecedor[<?php echo $idProduto ?>]" class="span">
+                <option value="">--</option>
+                <?php foreach ($produtoExame['fornecedores'] as $itemFornecedor): ?>
+                    <option <?php if ($encontrouIndice && $this->itensProdutoAgenda[$indice]['fk_precificacao_id'] == $itemFornecedor['precificacao_id']): ?> selected="selected" <?php endif ?> value="<?php echo $itemFornecedor['precificacao_id'] ?>"><?php echo $itemFornecedor['empresa_razao'], ' - ', $itemFornecedor['tabela_nome'] ?></option>
+                <?php endforeach; ?>
+            </select>
+        </td>
+    </tr>
+<?php endforeach; ?>

@@ -1,0 +1,245 @@
+<?php
+
+require_once 'MPDF/mpdf.php';
+$localScripts = '../application/views/scripts/documento/';
+require_once "{$localScripts}include/funcoes.php";
+
+
+$htmlCabecalho = file_get_contents($localScripts . 'proposta/' . 'cabecalho.html');
+$htmlCabecalho = str_replace('<[atributoNumeroContrato]>', $this->proposta['os_id'], $htmlCabecalho);
+$htmlRodape = obterHtmlDoRodapeEmPdf();
+
+$paginas = array();
+$paginas[0] = file_get_contents($localScripts . 'proposta/' . 'pagina-1.html');
+$dataCriarproposta2 = explode(" ", $this->proposta['os_data_hora_criacao']);
+$dataCriarproposta = Util::dataBR($dataCriarproposta2[0]);
+
+$meses = array(
+    '/01/' => 'Janeiro',
+    '/02/' => 'Fevereiro',
+    '/03/' => 'Março',
+    '/04/' => 'Abril',
+    '/05/' => 'Maio',
+    '/06/' => 'Junho',
+    '/07/' => 'Julho',
+    '/08/' => 'Agosto',
+    '/09/' => 'Setembro',
+    '/10/' => 'Outubro',
+    '/11/' => 'Novembro',
+    '/12/' => 'Dezembro',
+);
+
+$localizar = $alterePor = array();
+foreach ($meses as $mes => $extenso) {
+    $localizar[] = $mes;
+    $alterePor[] = " de {$extenso} de ";
+}
+
+$dataCriarproposta = str_replace($localizar, $alterePor, $dataCriarproposta);
+
+$localize = array(
+    '<[atributoData]>',
+    '<[atributoRazaoSocial]>',
+    '<[atributoResponsavel]>'
+);
+
+$alterePor = array(
+    $dataCriarproposta,
+    $this->proposta['empresa_razao'],
+    $this->proposta['contrato_responsavel_nome']
+);
+
+$novoHtml = str_replace($localize, $alterePor, $paginas[0]);
+$paginas[0] = $novoHtml;
+
+$paginas[1] = file_get_contents($localScripts . 'proposta/' . 'pagina-2.html');
+$paginas[2] = file_get_contents($localScripts . 'proposta/' . 'pagina-3.html');
+$paginas[3] = file_get_contents($localScripts . 'proposta/' . 'pagina-4.html');
+
+
+$tabela = array();
+$total = 0;
+
+$tabela[] = '<style type="text/css">.tabela tr td { padding: 2px; white-space: nowrap; }</style>';
+$tabela[] = '<table class="tabela" width="100%" cellspacing="0" cellpadding="0">';
+
+foreach ($this->produtos as $k => $categoria) {
+
+    $somar = 0;
+
+    $tabela[] = '<tr>
+                    <td colspan="2">&nbsp;</td>
+                </tr>
+                <tr bgcolor="#ddd">
+                    <td><strong>' . $categoria['categoriadoproduto_nome'] . '</strong></td>
+                    <td>INVESTIMENTO</td>
+                </tr>';
+
+    foreach ($categoria['produtos'] as $m => $produto) {
+
+        $tabela[] = '<tr>
+                        <td>' . $produto['produto_nome'] . '</td>
+                        <td>R$ ' . number_format($produto['produto_contratado_valor_venda'], 2) . '</td>
+                    </tr>';
+
+        $somar += (float) $produto['produto_contratado_valor_venda'];
+    }
+
+    $total += (float) $somar;
+
+    $tabela[] = '<tr>
+                    <td colspan="3">&nbsp;</td>
+                </tr>
+                <tr>
+                    <td>
+                        <table class="tabela">
+                            <tr>
+                                <td><strong>Tipo Cobr.:</strong></td><td>' . $categoria['cobranca']['tipo_cobranca_nome'] . '</td>
+                                <td><strong>Forma Pagto.:</strong></td><td>' . $categoria['formapagamento']['formapagamento_nome'] . '</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Parcelas:</strong></td><td>' . $categoria['cobranca']['cobrancaos_quantidade_parcela'] . '</td>
+                                <td><strong>Primeira Parc.:</strong></td><td>' . util::dataBR($categoria['cobranca']['cobrancaos_primeira_parcela']) . '</td>
+                            </tr>
+                        </table>
+                    </td>
+                    <td><b>R$ ' . $somar . '</b></td>
+                </tr>';
+}
+
+$tabela[] = '<tr>
+                <td colspan="2">&nbsp;</td>
+            </tr>
+            <tr>
+                <td></td>
+                <td bgcolor="#ddd"><b>R$ ' . $total . '</b></td>
+            </tr>';
+
+$tabela[] = '</table>';
+$tabela[] = '</table>';
+foreach ($this->produtos as $k => $categoria) {
+
+    $somar = 0;
+
+    $tabela[] = '<tr>
+                    <td colspan="2">&nbsp;</td>
+                </tr>
+                <tr bgcolor="#ddd">
+                    <td><strong>' . $categoria['categoriadoproduto_nome'] . '</strong></td>
+                    <td>INVESTIMENTO</td>
+                </tr>';
+
+    foreach ($categoria['produtos'] as $m => $produto) {
+
+        $tabela[] = '<tr>
+                        <td>' . $produto['produto_nome'] . '</td>
+                        <td>R$ ' . number_format($produto['produto_contratado_valor_venda'], 2) . '</td>
+                    </tr>';
+
+        $somar += (float) $produto['produto_contratado_valor_venda'];
+    }
+
+    $total += (float) $somar;
+
+    $tabela[] = '<tr>
+                    <td colspan="3">&nbsp;</td>
+                </tr>
+                <tr>
+                    <td>
+                        <table class="tabela">
+                            <tr>
+                                <td><strong>Tipo Cobr.:</strong></td><td>' . $categoria['cobranca']['tipo_cobranca_nome'] . '</td>
+                                <td><strong>Forma Pagto.:</strong></td><td>' . $categoria['formapagamento']['formapagamento_nome'] . '</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Parcelas:</strong></td><td>' . $categoria['cobranca']['cobrancaos_quantidade_parcela'] . '</td>
+                                <td><strong>Primeira Parc.:</strong></td><td>' . util::dataBR($categoria['cobranca']['cobrancaos_primeira_parcela']) . '</td>
+                            </tr>
+                        </table>
+                    </td>
+                    <td><b>R$ ' . $somar . '</b></td>
+                </tr>';
+}
+
+$tabela[] = '<tr>
+                <td colspan="2">&nbsp;</td>
+            </tr>
+            <tr>
+                <td></td>
+                <td bgcolor="#ddd"><b>R$ ' . $total . '</b></td>
+            </tr>';
+
+$tabela[] = '</table>';
+$tabela[] = '</table>';
+
+
+//--------------------------------------------------------------------------------------------------------------//
+//foreach ($this->produtos as $k => $categoria) {
+//
+////$tabela[] = '<table style="width: 100%;">';
+////    $tabela[] = '<tr>
+////                    <td colspan="2">&nbsp;</td>
+////                </tr>
+////                <tr bgcolor="#ddd">
+////                    <td><strong>' . $categoria['categoriadoproduto_nome'] . '</strong></td>
+////                    <td><strong>Descrição<strong></td>
+////                </tr>';
+//
+////    foreach ($categoria['produtos'] as $m => $produto) {
+////
+////        $tabela[] = '<tr>
+////                        <td>' . $produto['produto_nome'] . '</td>
+////                        <td>' . $produto['produto_descricao'] . '</td>
+////                    </tr>';
+////
+////        $somar += (float) $produto['produto_contratado_valor_venda'];
+////    }
+//    //$tabela[] = '</table>';
+//    //$tabela[] = '</table>';
+//    $tabela[] = '</table>';
+//}
+
+
+$corpoTabela = implode('', $tabela);
+$telefoneVendedor = '';
+$nomeVendedor = $this->proposta['pessoa_nome'];
+$emailVendedor = $this->proposta['usuario_email'];
+$localize = array(
+    '<[atributoConteudoCorpoTabela]>',
+    '<[atributoNomeVendedor]>',
+    '<[atributoTelefoneVendedor]>',
+    '<[atributoEmailVendedor]>'
+);
+
+$telefones = (isset($this->telefone['telefones']) && is_array($this->telefone['telefones'])) ? $this->telefone['telefones'] : array();
+
+$novosTelefones = array();
+foreach ($telefones as $t) {
+    $novosTelefones[] = "({$t['telefone_ddd']}) {$t['telefone_numero']}";
+}
+$telefoneVendedor = implode(' / ', $novosTelefones);
+$alterePor = array(
+    $corpoTabela,
+    $nomeVendedor,
+    $telefoneVendedor,
+    $emailVendedor
+);
+$novoHtml = str_replace($localize, $alterePor, $paginas[3]);
+$paginas[3] = $novoHtml;
+
+$margemEsquerda = $margemDireita = 10;
+$margemTopo = 2;
+$margemRodape = 20;
+$topo = $rodape = 9;
+$paginas = array();
+$p = new mPDF('utf-8', 'A4', 0, 'Arial', 10, 10, 35, 30, 8, 8);
+
+$p->SetHTMLHeader($htmlCabecalho);
+$p->SetHTMLFooter($htmlRodape);
+$p->setAutoTopMargin = false;
+$p->setAutoBottomMargin = false;
+$html = implode('', $paginas);
+
+
+$p->WriteHTML($html);
+$p->Output();

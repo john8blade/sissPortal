@@ -1,0 +1,47 @@
+<input type="hidden" id="data" value="" />
+
+<table class="table table-condensed table-bordered table-hover">
+    <thead>
+        <tr>
+            <th class="text-center">Horário</th>
+            <th class="text-center">Vagas</th>
+            <th class="text-center">Agendar</th>
+        </tr>
+    </thead>
+    <tbody>
+        <?php foreach ($this->horarios as $horario): ?>
+        <tr>
+            <td class="text-center"><?php echo Util::horarioGlobal($horario) ?></td>
+            <td class="text-center"><?php echo $horario['vagas'] ?></td>
+            <td class="text-center">
+                <?php if ($horario['vagas'] > 0): ?>
+                <a href="javascript:void(0);" class="btn btn-default bt-agendar-modal btn-xs" onclick="agendarNaData(this)" hora="" horario="<?php echo Util::horarioGlobal($horario) ?>" horario-id="<?php echo $horario['id'] ?>">Agendar</a>
+                <?php endif;?>
+            </td>
+        </tr>
+        <?php endforeach;?>
+    </tbody>
+</table>
+
+<script>
+
+    function agendarNaData(a) {
+
+        var horario_id = a.getAttribute('horario-id');
+        var horario = a.getAttribute('horario');
+        $("#horario_id").val(horario_id);
+        $("#horario").val(horario);
+
+        var bts = $(".bt-agendar-modal");
+
+        for (var i = 0; i < bts.length; i++)
+
+            bts[i].className = 'btn btn-default btn-xs bt-agendar';
+
+        a.className = 'btn btn-success bt-agendar btn-xs';
+
+        $("#modalHorarios").modal("hide");
+
+    }
+
+</script>

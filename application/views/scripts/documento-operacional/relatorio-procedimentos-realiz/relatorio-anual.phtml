@@ -1,0 +1,300 @@
+<?php
+
+function ient($n) {
+    for ($i = 0; $i < $n; $i++) :
+        echo '<tr><td>&nbsp;</td></tr>';
+    endfor;
+}
+
+$htmlheader = <<<HTML
+<table>
+    <tbody>
+        <tr><td>&nbsp;</td></tr>
+        <tr><td>&nbsp;</td></tr>
+        <tr><td>&nbsp;</td></tr>
+        <tr><td>&nbsp;</td></tr>
+        <tr><td>&nbsp;</td></tr>
+        <tr><td>&nbsp;</td></tr>
+        <tr>
+            <td align="center"><h2>RELATÓRIO ANUAL</h2></td>
+        </tr>
+        <tr>
+            <td align="center"><h3>ACOMPANHAMENTO DO PROGRAMA DE CONTROLE MÉDICO DE SAÚDE OCUPACIONAL</h3></td>
+        </tr>
+    </tbody>
+</table>
+HTML;
+
+$htmlfooter = <<<HTML
+<table>
+    <tbody>
+        <tr>
+            <td align="right">{PAGENO}/{nbpg}</td>
+        </tr>
+    </tbody>
+</table>
+HTML;
+
+include 'MPDF/mpdf.php';
+$mpdf = new mPDF('', 'A4', 10, 'Arial', 15, 15, 55, 16, 9, 9, 'P');
+$mpdf->DefHTMLHeaderByName('normal', $htmlheader);
+$mpdf->DefHTMLHeaderByName('vazio', '');
+$mpdf->SetHTMLFooter($htmlfooter);
+
+$mpdf->WriteHTML('<style>' . file_get_contents('css/documento.css') . '</style>');
+
+$mpdf->TOCpagebreakByArray(array('toc_preHTML' => '<h1>SUMÁRIO</h1>'));
+$mpdf->PageNumSubstitutions[] = array('from' => 1, 'reset' => 0, 'type' => '1', 'suppress' => 'on');
+
+ob_start();
+?>
+
+<table>
+    <tbody>
+        <tr>
+            <td align="center"><h1>RELATÓRIO ANUAL</h1></td>
+        </tr>
+        <tr>
+            <td align="center">ACOMPANHAMENTO DO PROGRAMA DE CONTROLE MÉDICO DE SAÚDE OCUPACIONAL</td>
+        </tr>
+        <?php ient(20) ?>
+        <tr>
+            <td align="center"><h1><?php echo $this->empresa['empresa_fantasia'] ?></h1></td>
+        </tr>
+        <?php ient(25) ?>
+        <tr>
+            <td align="center"><strong>Médico do Trabalho:</strong> <?php echo $this->contrato['coordenacao_medico'] ?></td>
+        </tr>
+        <tr>
+            <td align="center"><strong>Data:</strong> <?php echo Util::nomeDoMes(date('m', strtotime($this->contrato['vigencia_data_inicio']))) . '/' . date('Y', strtotime($this->contrato['vigencia_data_inicio'])) . ' à ' . Util::nomeDoMes(date('m', strtotime($this->contrato['vigencia_data_fim']))) . '/' . date('Y', strtotime($this->contrato['vigencia_data_fim'])) ?></td>
+        </tr>
+    </tbody>
+</table>
+
+<?php $mpdf->WriteHTML(ob_get_clean()); ?>
+<?php ob_start(); ?>
+
+<pagebreak type="NEXT-ODD" resetpagenum="3" pagenumstyle="1" suppress="off"/>
+
+<sethtmlpageheader name="normal" value="on" show-this-page="1" />
+
+<tocentry content="1 - Identificação da Empresa"/>
+<h1 class="underline">1 - Identificação da Empresa</h1>
+
+<table class="letramaior">
+    <tbody>
+        <tr>
+            <td><strong>1.1- Razão Social:</strong></td>
+        </tr>
+        <tr>
+            <td><?php echo $this->empresa['empresa_razao'] ?></td>
+        </tr>
+        <?php ient(1) ?>
+        <tr>
+            <td><strong>1.2 - Endereço:</strong></td>
+        </tr>
+        <tr>
+            <td><?php echo $this->empresa['endereco']['endereco_logradouro'] . ', ' . $this->empresa['empresa_numero'] . ', ' . $this->empresa['endereco']['endereco_bairro'] . ', ' . $this->empresa['endereco']['endereco_cidade'] . ', ' . Util::cep($this->empresa['endereco']['endereco_cep']) . ' ' . $this->empresa['endereco']['endereco_uf'] ?></td>
+        </tr>
+        <?php ient(1) ?>
+        <tr>
+            <td><strong>1.3 - CNPJ:</strong></td>
+        </tr>
+        <tr>
+            <td><?php echo Util::cnpj($this->empresa['empresa_cnpj']) ?></td>
+        </tr>
+        <?php ient(1) ?>
+        <tr>
+            <td><strong>1.4 - CNAE:</strong></td>
+        </tr>
+        <tr>
+            <td><?php echo $this->empresa['empresa_cnae'] ?></td>
+        </tr>
+        <?php ient(1) ?>
+        <tr>
+            <td><strong>1.5 - Atividade Principal:</strong></td>
+        </tr>
+        <tr>
+            <td><?php echo '...' ?></td>
+        </tr>
+        <?php ient(1) ?>
+        <tr>
+            <td><strong>1.6 - Grau de Risco:</strong></td>
+        </tr>
+        <tr>
+            <td><?php echo $this->empresa['empresa_grau_risco'] ?></td>
+        </tr>
+    </tbody>
+</table>
+
+<?php $mpdf->WriteHTML(ob_get_clean()); ?>
+<?php ob_start(); ?>
+
+<pagebreak />
+
+<tocentry content="2 - Quadro III da NR-07"/>
+<h1 class="underline">2 - Quadro III da NR-07</h1>
+
+<table border="1">
+    <thead>
+        <tr>
+            <th>EXAME</th>
+            <th colspan="2">NORMAIS</th>
+            <th colspan="2">ALTERADOS</th>
+            <th>TOTAL</th>
+        </tr>
+    </thead>
+    <tbody>
+        <?php $tn = 0; ?>
+        <?php $ta = 0; ?>
+        <?php $tg = 0; ?>
+        <?php foreach ($this->quadro3nr07 as $exame => $dados): ?>
+            <?php $n = (int) ($dados['N']); ?>
+            <?php $a = (int) ($dados['A']); ?>
+            <?php $t = (int) ($dados['N']) + (int) ($dados['A']); ?>
+            <tr>
+                <td><?php echo $exame; ?></td>
+                <td align="center"><?php echo $n; ?></td>
+                <td align="right"><?php echo @number_format(($n / $t) * 100, 2, ',', '.'); ?>%</td>
+                <td align="center"><?php echo $a; ?></td>
+                <td align="right"><?php echo @number_format(($a / $t) * 100, 2, ',', '.'); ?>%</td>
+                <td align="center"><?php echo $t; ?></td>
+            </tr>
+            <?php $tn += $n; ?>
+            <?php $ta += $a; ?>
+            <?php $tg += $t; ?>
+        <?php endforeach; ?>
+    </tbody>
+    <tfoot>
+        <tr>
+            <th><strong>TOTAL GERAL</strong></th>
+            <th align="center"><?php echo $tn; ?></th>
+            <th align="right"><?php echo @number_format(($tn / $tg) * 100, 2, ',', '.'); ?>%</th>
+            <th align="center"><?php echo $ta; ?></th>
+            <th align="right"><?php echo @number_format(($ta / $tg) * 100, 2, ',', '.'); ?>%</th>
+            <th align="center"><?php echo $tg; ?></th>
+        </tr>
+    </tfoot>
+</table>
+
+<?php $mpdf->WriteHTML(ob_get_clean()); ?>
+<?php ob_start(); ?>
+
+<pagebreak />
+
+<tocentry content="2.1 - Relação por Exames Clínicos"/>
+<h1 class="underline">2.1 - Relação por Exames Clínicos</h1>
+
+<table border="1">
+    <?php foreach ($this->relacaoExamesClinicos as $empresa => $contratos): ?>
+        <thead>
+            <tr>
+                <th>SETOR</th>
+                <th>TIPO DE EXAME</th>
+                <th>NORMAIS</th>
+                <th>ANORMAIS</th>
+                <th>TOTAL</th>
+                <th>ANORMAIS %</th>
+                <th>Nº EXAMES P/ ANO SEG.</th>
+            </tr>
+        </thead>
+        <tbody>
+            <?php foreach ($contratos as $contrato => $setores): ?>
+                <?php foreach ($setores as $setor => $tipos): ?>
+                    <tr>
+                        <td valign="top" rowspan="<?php echo count($tipos) + 1 ?>"><?php echo $setor ?></td>
+                    </tr>
+                    <?php foreach ($tipos as $tipo => $dados): ?>
+                        <?php $n = (int) $dados['NORMAIS']; ?>
+                        <?php $a = (int) $dados['ANORMAIS']; ?>
+                        <?php $t = (int) $dados['TOTAL']; ?>
+                        <?php $p = @number_format($a * 100 / $t, 2, ',', '.'); ?>
+                        <tr>
+                            <td><?php echo $tipo ?></td>
+                            <td align="center"><?php echo $n; ?></td>
+                            <td align="center"><?php echo $a; ?></td>
+                            <td align="center"><?php echo $t; ?></td>
+                            <td align="center"><?php echo $p; ?>%</td>
+                            <td align="center"><?php echo $t; ?></td>
+                        </tr>
+                    <?php endforeach; ?>
+                <?php endforeach; ?>
+            <?php endforeach; ?>
+        </tbody>
+    <?php endforeach; ?>
+</table>
+
+<?php $mpdf->WriteHTML(ob_get_clean()); ?>
+<?php ob_start(); ?>
+
+<pagebreak />
+
+<tocentry content="2.2 - Relação por Exames Complementares / Laboratoriais"/>
+<h1 class="underline">2.2 - Relação por Exames Complementares / Laboratoriais</h1>
+
+<strong>N:</strong> NORMAIS - <strong>A:</strong> ANORMAIS - <strong>T:</strong> TOTAL <br/> <strong>A%:</strong> Nº de Resultados Anormais X 100 / Nº Anual de Exames - <strong>AS:</strong> Nº de Exames para o Ano Seguinte
+
+<!-- ESTA PRÓXIMA TABELA TEVE QUE SER DIVIDA EM VÁRIAS TABELAS, POIS O MPDF, NÃO CONSEGUE RENDERIZAR UMA TABELA GIGANTESCA. -->
+
+<?php $mpdf->WriteHTML(ob_get_clean()); ?>
+
+<?php foreach ($this->relacaoExames as $empresa => $contratos): ?>
+    <?php foreach ($contratos as $contrato => $setores): ?>
+        <?php foreach ($setores as $setor => $exames): ?>
+            <?php $tnp = 0; ?>
+            <?php $tap = 0; ?>
+            <?php $ttp = 0; ?>
+            <?php $tpp = 0; ?>
+            <?php ob_start(); ?>
+            <table border="1">
+                <thead>
+                    <tr>
+                        <th width="40%">SETOR</th>
+                        <th width="60%">EXAME</th>
+                        <th>N</th>
+                        <th>A</th>
+                        <th>T</th>
+                        <th>A%</th>
+                        <th>AS</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td valign="top" rowspan="<?php echo count($exames) + 1 ?>"><?php echo $setor ?></td>
+                    </tr>
+                    <?php foreach ($exames as $exame => $dados): ?>
+                        <?php $n = (int) $dados['NORMAIS']; ?>
+                        <?php $a = (int) $dados['ANORMAIS']; ?>
+                        <?php $t = (int) $dados['TOTAL']; ?>
+                        <?php $p = @number_format($a * 100 / $t, 2, ',', '.'); ?>
+                        <tr>
+                            <td><?php echo $exame ?></td>
+                            <td align="center"><?php echo Util::preencherComZero($n, 2) ?></td>
+                            <td align="center"><?php echo Util::preencherComZero($a, 2) ?></td>
+                            <td align="center"><?php echo Util::preencherComZero($t, 2) ?></td>
+                            <td align="center"><?php echo $p; ?>%</td>
+                            <td align="center"><?php echo $t; ?></td>
+                        </tr>
+                        <?php $tnp += $n; ?>
+                        <?php $tap += $a; ?>
+                        <?php $ttp += $t; ?>
+                        <?php $tpp += $p; ?>
+                    <?php endforeach; ?>
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <th colspan="2"></th>
+                        <th align="center"><?php echo Util::preencherComZero($tnp, 2); ?></th>
+                        <th align="center"><?php echo Util::preencherComZero($tap, 2); ?></th>
+                        <th align="center"><?php echo Util::preencherComZero($ttp, 2); ?></th>
+                        <th align="right"><?php echo @number_format($tpp, 2, ',', '.'); ?>%</th>
+                        <th align="center"><?php echo $t; ?></th>
+                    </tr>
+                </tfoot>
+            </table>
+            <?php $mpdf->WriteHTML(ob_get_clean()); ?>
+        <?php endforeach; ?>
+    <?php endforeach; ?>
+<?php endforeach; ?>
+
+<?php $mpdf->Output(); ?>

@@ -1,0 +1,97 @@
+<?php $dominio = (substr($_SERVER['HTTP_HOST'], 0, 6) == "develop") ? 'developsiss.htmed.com.br' : 'siss.htmed.com.br' ?>
+<?php ob_start(); ?>
+
+<?php if (isset($this->resultado)) : ?>
+
+    <table class="table table-hover table-condensed">
+
+        <thead>
+            <tr>
+                <th class="fit">#</th>
+                <th class="text-center">Data do Exame</th>
+                <th class="text-center">Presente Exame</th>
+                <th class="text-center">Data Clínico</th>
+                <th class="text-center">Presente Clínico</th>
+                <th>Tipo de Exame</th>
+                <th class="text-center">H. Entrada</th>
+                <th class="text-center">H. Saída</th>
+                <th class="text-center">Tempo de Perm.</th>
+            </tr>
+        </thead>
+
+        <tbody>
+
+            <?php foreach ($this->resultado as $resultado): ?>
+
+                <?php $tipoexame = $resultado['tipoexame_nome']; ?>
+                <?php $resultadoNumerico = isset($resultado['resultados'][0]['fichamedica_resultado_aptidao']) ? (int) $resultado['resultados'][0]['fichamedica_resultado_aptidao'] : 999 ?>
+                <?php $resultadoTexto = $resultadoNumerico == 0 ? "INAPTO" : ($resultadoNumerico == 1 ? "APTO" : ($resultadoNumerico == 2 ? "PENDENTE" : "CONSULTA NÃO REALIZADA")); ?>
+
+                <?php $times = Util::timeDiffByUnix($resultado['agenda_hora1'], $resultado['agenda_hora2']); ?>
+
+                <tr>
+                    <td class="fit">
+                        <?php if (strlen($resultado['agenda_observacao'])) : ?>
+                            <a class="btn btn-xs btn-default" href="#" rel="popover" data-toggle="popover" title="Informativo" data-content="<?php echo $resultado['agenda_observacao'] ?>"><i class="fa fa-info-circle no-margin"></i></a>
+                        <?php endif; ?>
+                        <?php if ($resultadoNumerico < 3): ?>
+                                <!--<a class="btn btn-xs btn-default" rel="tooltip" title="ASO" href="http://<?php echo $dominio; ?>/documento-operacional/imprimir-aso/agendaid/<?php echo $resultado['agenda_id'] ?>" target="_blank"><i class="fa fa-list-alt no-margin"></i></a>-->
+                        <?php endif; ?>
+                    </td>
+                    <td class="text-center"><?php echo Util::dataBR($resultado['agenda_data_exame']); ?></td>
+                    <td class="text-center"><?php echo $resultado['agenda_presente_exame'] == '1' ? 'SIM' : 'NÃO' ?></td>
+                    <td class="text-center"><?php echo Util::dataBR($resultado['agenda_data_exame']); ?></td>
+                    <td class="text-center"><?php echo $resultado['agenda_presente_clinico'] == '1' ? 'SIM' : 'NÃO' ?></td>
+                    <td><?php echo $tipoexame ?></td>
+                    <td class="text-center"><?php echo $times['time1'] ?></td>
+                    <td class="text-center"><?php echo $times['time2'] ?></td>
+                    <td class="text-center"><?php echo $times['time3'] ?></td>
+                </tr>
+
+            <?php endforeach; ?>
+
+        </tbody>
+
+    </table>
+
+    <table class="table table-hover table-condensed">
+
+        <thead>
+            <tr>
+                <th class="fit">#</th>
+                <th class="text-center">Data do Treinamento</th>
+                <th>Treinamento</th>
+            </tr>
+        </thead>
+
+        <tbody>
+
+            <?php foreach ($this->lista as $item): ?>
+
+                <tr>
+                    <td class="fit">
+                        <?php $dominio = (substr($_SERVER['HTTP_HOST'], 0, 6) == "develop") ? 'developsiss.htmed.com.br' : 'siss.htmed.com.br' ?>
+                        <?php if ((int) $item['treinamento_agendado_aprovado'] == 1): ?>
+                            <a rel="tooltip" title="Certificado" href="http://<?php echo $dominio; ?>/treinamento/imprimir-certificado/agendamento/<?php echo $item['treinamento_agendado_id'] ?>" target="_blank"><i class="icon-print"></i></a>
+                        <?php endif; ?>
+                    </td>
+                    <td class="text-center"><?php echo Util::dataBR($item['treinamento_agenda_data_inicio']) ?></td>
+                    <td><?php echo $item['produto_nome'] ?></td>
+                </tr>
+
+            <?php endforeach; ?>
+
+        </tbody>
+    </table>
+
+    <div>
+        <p><?php echo date("d/m/Y") . " - " . date("H:i:s"); ?></p>
+    </div>
+
+    <script>
+        $('[data-toggle="popover"]').popover({trigger: 'focus'});
+    </script>
+
+<?php endif; ?>
+<?php $html = ob_get_clean(); ?>
+<?php echo json_encode(array('nome' => $this->funcionario['pessoa_nome'], 'cpf' => Util::cpf($this->funcionario['pessoa_cpf']), 'html' => $html)); ?>

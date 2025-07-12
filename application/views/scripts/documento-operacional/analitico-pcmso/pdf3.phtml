@@ -1,0 +1,568 @@
+<?php
+    error_reporting(0);
+    error_reporting(E_ERROR | E_PARSE);
+    // require_once "../application/views/scripts/documento-operacional/include/funcoes.php";
+   
+    // $localScripts = '../application/views/scripts/documento-operacional/';
+    // require_once "{$localScripts}include/funcoes.php";
+    // $cabecalho = file_get_contents($localScripts . 'recibo-esocial/' . 'cabecalho.phtml');
+    include 'MPDF/mpdf.php';
+
+    $mpdf = new mPDF('utf-8', 'A4', 0, '', 25, 15, 40, 5, 9, 9);
+    $mpdf->SetImportUse();
+    // $mpdf->SetHTMLHeader($cabecalho);
+    $mpdf->setAutoTopMargin = false;
+    $mpdf->setAutoBottomMargin = false;
+
+
+    $ano             = $this->ano;
+    $anoanterior     = $this->anoanterior;
+    $dadosmedico     = $this->dadosmedico;
+    $nexameclinico   = $this->nexameclinico;
+    $nexamecomp      = $this->nexamecomp;
+    $nexamecompalter = $this->nexamecompalter;
+    $catdoencas      = $this->catdoencas;
+    $cattipos        = $this->cattipos;
+    
+    $totalCatDoencas = $catdoencas[0]['qts_cat'];
+
+    $somaExames = 0;
+    foreach($nexameclinico as $cval) {
+        $somaExames += $cval['qtd_exames'];
+    }
+
+    // new variables
+    $tiposExamesComplementares = $this->tiposExamesComplementares;
+    $resultadosAnormaisComplementares = $this->resultadosAnormaisComplementares;
+
+    $_meses = [
+        '01' => 'Janeiro',
+        '02' => 'Fevereiro',
+        '03' => 'Março',
+        '04' => 'Abril',
+        '05' => 'Maio',
+        '06' => 'Junho',
+        '07' => 'Julho',
+        '08' => 'Agosto',
+        '09' => 'Setembro',
+        '10' => 'Outubro',
+        '11' => 'Novembro',
+        '12' => 'Dezembro',
+    ];
+
+    $data_vigente = new DateTime();
+    $dt_dia       = $data_vigente->format('d');
+    $dt_mes       = isset($_meses[$data_vigente->format('m')]) ? $_meses[$data_vigente->format('m')] : '';
+    $dt_ano       = $data_vigente->format('Y');
+
+    $empresaCep  = Util::cep($_SESSION['empresa']['endereco_cep']);
+    $empresaCNPJ = Util::cnpj($_SESSION['empresa']['empresa_cnpj']);
+
+    echo $partePagina['inicio'] = ob_get_clean();
+    ob_start();
+
+$pagina = <<<HTML
+
+    <!-- CAPA  -->
+   <p>&nbsp;</p>
+    <h1 style="margin-top: 100px; font-size: 25px; text-align: center;">Relatório Analítico do Pcmso</h1>
+    <h4 style="margin-top: 10px; font-size: 20px; text-align: center;">Acompanhamento do Programa de Controle Médico de Saúde Ocupacional</h4>
+    <h1 style="margin-top: 260px; font-size: 30px; text-align: center;"> {$_SESSION['empresa']['empresa_razao']}</h1>
+    <h1 style="margin-top: 150px; font-size: 30px; text-align: center;">ANO BASE {$ano}</h1>
+    <h4 style="margin-top: 100px; text-align: center;">Médico Responsável: {$dadosmedico['coordenacao_medico']} </h4>
+    <h4 style="margin-top: 15px; text-align: center;"> Data da Elaboração: {$dt_dia} / {$dt_mes} / {$dt_ano} </h4>
+
+    <br>
+
+    <!-- IDENTIFICAÇÃO DA EMPRESA -->
+    <p class="titulo" align="center"><b> IDENTIFICAÇÃO DA EMPRESA</b></p>
+    
+    <div class="pb-5">
+        <table class="tabela-full" border="0">
+                <tr>
+                    <td colspan="2"><b>Razão Social:</b> {$_SESSION['empresa']['empresa_razao']} </td> 
+                </tr>
+                <tr>
+                    <td>&nbsp;</td>                
+                </tr>
+                <tr>
+                    <td colspan="2"><b>Nome de Fantasia:</b> {$_SESSION['empresa']['empresa_fantasia']} </td>          
+                </tr>
+                <tr>
+                    <td>&nbsp;</td>                
+                </tr>
+                <tr>
+                    <td colspan="2"><b>Endereço:</b> {$_SESSION['empresa']['endereco_logradouro']} </td>                
+                </tr>
+                <tr>
+                    <td>&nbsp;</td>                
+                </tr>
+                <tr>
+                    <td><b>Bairro:</b> {$_SESSION['empresa']['endereco_bairro']}</td>
+                    {$num}                    
+                </tr>
+                <tr>
+                    <td>&nbsp;</td> 
+                </tr>
+                <tr>
+                    <td><b>Estado:</b>  {$_SESSION['empresa']['endereco_uf']} </td>
+                    <td><b>Cidade:</b>  {$_SESSION['empresa']['endereco_cidade']} </td>
+                    <td><b>CEP:</b> {$empresaCep} </td>
+                </tr>
+                <tr>
+                    <td>&nbsp;</td> 
+                </tr>
+                <tr>
+                    <td><b>CNPJ:</b> {$empresaCNPJ} </td>
+                    <td><b>Grau de Risco:</b>  {$_SESSION['empresa']['empresa_grau_risco']} </td>
+                    <td><b>CNAE:</b>  {$_SESSION['empresa']['empresa_cnae']} </td>
+                </tr>
+                <tr>
+                    <td>&nbsp;</td> 
+                </tr>
+                <tr>                    
+                     {$comple}
+                </tr>
+        </table>
+        <br>
+    </div>
+
+HTML;
+
+$paginaRelacaoExames = <<<HTML
+
+<br>
+<p class="titulo" align="center"><b> RELAÇÃO DE EXAMES</b></p>
+
+<div class="pb-5">
+    <p class="txt-justify">
+        a) nº de exames clínicos realizados;
+    </p>
+</div>
+
+<div class="pb-5">
+    <table border="1" style="width: 100%; border-collapse: collapse; font-size: 10px;" cellpadding="4">
+        <thead>
+            <tr style="background-color: #2f5496;">
+                <th class="perc-15"><font color="#FFFFFF">EXAME</font></th>
+                <th class="perc-15"><font color="#FFFFFF">TOTAL</font></th>
+            </tr>
+        </thead>
+        <tbody>
+HTML;
+
+// Verificar se $nexameclinico está definido e não vazio
+if ($nexameclinico) {
+    $paginaRelacaoExames .= <<<HTML
+        <tr>
+            <td align="left"> AVALIAÇÃO CLÍNICA OCUPACIONAL </td>
+            <td align="center"> {$somaExames} </td>
+        </tr>
+HTML;
+} else {
+    $paginaRelacaoExames .= <<<HTML
+        <tr>
+            <td align="center" colspan="2"> Não há resultados de exame realizados </td>
+        </tr>
+HTML;
+}
+
+$paginaRelacaoExames .= <<<HTML
+        </tbody>
+    </table>
+</div>
+HTML;
+
+$paginaRelacaoExames .= <<<HTML
+    <p>
+    <div class="pb-5">
+        <p class="txt-justify">
+            b) nº e tipos de exames complementares realizados;
+        </p>
+    </div>
+
+    <div class="pb-5">
+        <table border="1" style="width: 100%; border-collapse: collapse; font-size: 10px;" cellpadding="4">
+            <thead>
+                <tr style="background-color: #2f5496;">
+                    <th class="perc-15"><font color="#FFFFFF">EXAME</font></th>
+                    <th class="perc-15"><font color="#FFFFFF">TIPO DE EXAME</font></th>
+                    <th class="perc-15"><font color="#FFFFFF">QUANTIDADE</font></th>
+                </tr>
+            </thead>
+            <tbody>
+HTML;
+
+$qtdexcomp = 0;
+if(count($tiposExamesComplementares) > 0) {
+    foreach($tiposExamesComplementares as $exame) {
+        $qtdexcomp = $qtdexcomp + $exame['qtd_exames'];
+        $paginaRelacaoExames .= <<<HTML
+            <tr>
+                <td align="left"> {$exame['produto_nome']} </td>
+                <td align="center"> {$exame['tipoexame_nome']} </td>
+                <td align="center"> {$exame['qtd_exames']} </td>                    
+            </tr>
+HTML;
+    }
+
+    $paginaRelacaoExames .= <<<HTML
+        <tr>
+            <td align="center" colspan="2"> <b>TOTAL</b> </td>
+            <td align="center"> {$qtdexcomp} </td>
+        </tr>
+        </tbody>
+        </table>
+    </div>
+
+HTML;
+} else {
+    $paginaRelacaoExames .= <<<HTML
+                <tr>
+                    <td align="center" colspan="3"> Não há resultados de exames complementares realizados </td>
+                </tr>
+            </table>
+        </div>
+HTML;
+}
+
+$paginaRelacaoComplementares .= <<<HTML
+
+    <p>
+    <div class="pb-5">
+        <p class="txt-justify">
+            c)  estatística de resultados anormais dos exames complementares, categorizados por tipo do exame e por função;
+        </p>
+    </div>
+
+    <div class="pb-5">
+        <table border="1" style="width: 100%; border-collapse: collapse; font-size: 10px;" cellpadding="4">
+            <thead>
+                <tr style="background-color: #2f5496;">
+                    <th class="perc-15"><font color="#FFFFFF">FUNÇÃO</font></th>
+                    <th class="perc-15"><font color="#FFFFFF">EXAME</font></th>
+                    <th class="perc-15"><font color="#FFFFFF">TIPO DE EXAME</font></th>
+                    <th class="perc-15"><font color="#FFFFFF">NORMAL</font></th>
+                    <th class="perc-15"><font color="#FFFFFF">ALTERADOS</font></th>
+                    <th class="perc-15" align="center"><font color="#FFFFFF">% ALTERADOS</font></th>
+                </tr>
+            </thead>
+            <tbody>
+HTML;
+
+$sum       = 0;
+$tnormal   = 0;
+$talterado = 0; 
+
+if ($resultadosAnormaisComplementares > 0) {
+    foreach ($resultadosAnormaisComplementares as $item) {
+        $paginaRelacaoComplementares .= "<tr>";
+        $normal    = 0;
+        $alterado  = 0;
+        $tnormal   = array_count_values(array_column($resultadosAnormaisComplementares, 'alterado'))[$item['alterado']];
+        $talterado = array_count_values(array_column($resultadosAnormaisComplementares, 'alterado'))[$item['alterado'] == 0];
+
+        if ($item['alterado'] == 0) {
+            $normal = 1;
+        }else{
+            $alterado = 1;
+        }
+
+        $sum = $tnormal + $talterado;
+        $count = $count+1;
+
+        if ($count > $rows_func) {
+            $count = 1;
+        }
+
+        if ($count == 1) {
+            $rows_func = array_count_values(array_column($resultadosAnormaisComplementares, 'funcao'))[$item['funcao']];
+            // Util::dump($rows_func);
+            $paginaRelacaoComplementares .= "<td align='center' rowspan='{$rows_func}'>{$item['funcao']}</td>";
+        }
+
+        $teste = @number_format(($alterado / $normal + $alterado) * 100, 2, ',', '.');
+        $paginaRelacaoComplementares .= <<<HTML
+                <td align="left"> {$item['produto_nome']} </td>
+                <td align="center"> {$item['tipoexame_nome']} </td>
+                <td align="center"> {$normal} </td>
+                <td align="center"> {$alterado} </td>
+                <td align="center"> {$teste} %</td>
+            </tr>
+HTML;
+    }
+
+    if ($talterado == NULL) { $talterado = 0; }
+    $teste2 = @number_format($talterado * 100 / $sum, 2, ',', '.');
+    $paginaRelacaoComplementares .= <<<HTML
+        <tr>
+            <td align="center" colspan="3"> <b>TOTAL</b> </td>
+            <td align="center"> {$tnormal} </td>
+            <td align="center"> {$talterado} </td>
+            <td align="center"> {$teste} %</td>
+        </tr>
+HTML;
+} else {
+    $paginaRelacaoComplementares .= <<<HTML
+                <tr>
+                    <td align="center" colspan="6"> Não há resultados </td>
+                </tr>
+HTML;
+}
+
+$paginaRelacaoComplementares .= <<<HTML
+            </tbody>
+        </table>
+    </div>
+HTML;
+
+$c .= <<<HTML
+    <p>
+    <div class="pb-5">
+        <p class="txt-justify">
+            d) incidência e prevalência de doenças relacionadas ao trabalho, categorizadas por função;
+        </p>
+    </div>
+
+    <div class="pb-5">
+        <table border="1" style="width: 100%; border-collapse: collapse; font-size: 10px;" cellpadding="4">
+            <thead>
+                <tr style="background-color: #2f5496;">
+                    <th class="perc-15"><font color="#FFFFFF">FUNÇÃO</font></th>
+                    <th class="perc-15"><font color="#FFFFFF">TOTAL</font></th>
+                </tr>
+            </thead>
+                <tbody>
+HTML;
+
+if (!empty($catdoencas) AND $catdoencas[0]['qts_cat'] != 0) {
+    foreach($catdoencas as $doenca) {
+        $c .= <<<HTML
+         <tr>
+            <td align="left"> {$doenca['funcao']} </td>
+            <td align="center"> {$doenca['qts_cat']} </td>                    
+        </tr>
+HTML;
+    }
+} else {
+    $c .= <<<HTML
+        <tr>
+            <td align="center" colspan="2"> Não houve incidentes ou doenças </td>
+        </tr>
+HTML;
+}
+
+$c .= <<<HTML
+            </tbody>
+        </table>
+    </div>
+HTML;
+
+$d .= <<<HTML
+    <p>
+    <div class="pb-5">
+        <p class="txt-justify">
+            e)  informações sobre o número, tipo de eventos e doenças informadas nas CAT, emitidas pela organização, referentes a seus empregados;
+        </p>
+    </div>
+    <div class="pb-5">
+        <table border="1" style="width: 100%; border-collapse: collapse; font-size: 10px;" cellpadding="4">
+            <thead>
+                <tr style="background-color: #2f5496;">
+                    <th class="perc-15"><font color="#FFFFFF">FUNÇÃO</font></th>
+                    <th class="perc-15"><font color="#FFFFFF">TIPO CAT</font></th>
+                    <th class="perc-15"><font color="#FFFFFF">TOTAL</font></th>
+                </tr>
+            </thead>
+                <tbody>
+HTML;
+
+if (count($cattipos) > 0) {
+    foreach($cattipos as $tipo) {
+        $d .= <<<HTML
+        <tr>
+            <td align="left"> {$tipo['funcao']} </td>
+            <td align="center"> {$tipo['tpAcid']} </td>
+            <td align="center"> {$tipo['qts_cat']} </td>                    
+        </tr>
+HTML;
+    }
+} else {
+    $d .= <<<HTML
+        <tr>
+            <td align="center" colspan="3"> Não houve abertura de CAT(s) </td>
+        </tr>
+HTML;
+}
+
+$d .= <<<HTML
+            </tbody>
+        </table>
+    </div>
+HTML;
+
+$f .= <<<HTML
+    <br>
+    <p class="titulo" align="center"><b> COMPARATIVO COM ANO ANTERIOR</b></p>
+HTML;
+
+if ($nexameclinico['qtd_exames'] == null) {
+    $nexameclinico['qtd_exames'] = 0;
+}
+
+if ($alterado == null) {
+    $talterado = 0;
+}
+$ano_ant = $ano -1;
+
+$catdoencas = count(@$catdoencas[0]['qts_cat']);
+$cattipos = count(@$cattipos);
+
+$f .= <<<HTML
+    <div class="pb-5">
+        <p class="txt-center">
+            Análise comparativa em relação ao relatório anterior.
+        </p>
+    </div>
+        <div class="row">
+            <table border="0" style="width: 100%; border-collapse: collapse; font-size: 10px; float: left" cellpadding="4">
+                <thead>
+                    <tr>
+                        <th>
+                            <div class="pb-5">
+                                <table border="1" style="width: 100%; border-collapse: collapse; font-size: 10px; float: left" cellpadding="4">
+                                    <thead>
+                                        <tr style="background-color: #2f5496;">
+                                            <th class="perc-15" colspan="2"><font color="#FFFFFF"> ANO BASE $ano </font></th>
+                                        </tr>
+                                        <tr style="background-color: #2f5496;">
+                                            <th class="perc-15"><font color="#FFFFFF">RESUMO</font></th>
+                                            <th class="perc-15"><font color="#FFFFFF">TOTAL</font></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td align="left"> EXAMES CLÍNICOS REALIZADOS </td>
+                                            <td align="center"> {$somaExames} </td>
+                                        </tr>
+                                        <tr>
+                                            <td align="left"> EXAMES COMPLEMENTARES </td>
+                                            <td align="center"> {$qtdexcomp} </td>
+                                        </tr>
+                                        <tr>                        
+                                            <td align="left"> EXAMES ALTERADOS </td>
+                                            <td align="center"> {$talterado} / {$teste2} % </td>
+                                        </tr>
+                                        <tr>
+                                            <td align="left"> DOENÇAS TRABALHISTAS </td>
+                                            <td align="center"> {$totalCatDoencas} </td>
+                                        </tr>
+                                        <tr>
+                                            <td align="left"> ABERTURA DE CATs </td>
+                                            <td align="center"> {$cattipos} </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </th>
+                        <th>
+                            <div class="pb-5">
+                                <table border="1" style="width: 100%; border-collapse: collapse; font-size: 10px; float: left" cellpadding="4">
+                                    <thead>
+                                        <tr style="background-color: #2f5496;">
+                                            <th class="perc-15" colspan="2"><font color="#FFFFFF"> ANO ANTERIOR {$ano_ant} </font></th>
+                                        </tr>
+                                        <tr style="background-color: #2f5496;">
+                                            <th class="perc-15"><font color="#FFFFFF">RESUMO</font></th>
+                                            <th class="perc-15"><font color="#FFFFFF">TOTAL</font></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td align="left"> EXAMES CLÍNICOS REALIZADOS </td>
+                                            <td align="center"> {$anoanterior['CLINICO']} </td>
+                                        </tr>
+                                        <tr>
+                                            <td align="left"> EXAMES COMPLEMENTARES </td>
+                                            <td align="center"> {$anoanterior['COMPLEMENTAR']} </td>
+                                        </tr>
+                                        <tr>                        
+                                            <td align="left"> EXAMES ALTERADOS </td>
+                                            <td align="center"> {$anoanterior['ALTERADOS_A']}  / {$anoanterior['ALTERADOS_%']}% </td>
+                                        </tr>
+                                        <tr>
+                                            <td align="left"> DOENÇAS TRABALHISTAS </td>
+                                            <td align="center"> {$anoanterior['DOENÇAS']} </td>
+                                        </tr>
+                                        <tr>
+                                            <td align="left"> ABERTURA DE CATs </td>
+                                            <td align="center"> {$anoanterior['CAT']} </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </th>
+                    </tr>
+                </thead>
+            </table>    
+        </div>
+
+    <br>
+    <p class="titulo" align="center"><b> ANÁLISE E PARECER DO MÉDICO</b></p>
+    <br>
+    <br>
+    <div class="pb-5">
+        <p class="txt-justify">
+            
+        </p>
+    </div>
+    <br>
+    <br>
+    <div class="pb-5">
+        <p class="txt-justify" align="center">
+           <b>MÉDICO RESPONSÁVEL</b>
+        </p>
+    </div>
+    <br>
+    <br>
+    <br>
+    <br>
+    <div class="pb-5">
+        <table border="0" style="width: 100%; border-collapse: collapse;">
+        <thead>
+          <tr>
+            <th>____________________________________________</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td align="center"> {$dadosmedico['coordenacao_medico']} </td>
+          </tr>
+          <tr>
+            <td align="center"> CRM: {$dadosmedico['coordenacao_crm']} </td>
+          </tr>
+        </tbody>
+        </table>
+    </div>
+HTML;
+
+
+
+
+$mpdf->SetDocTemplate('template/timbrado_htmed.pdf', true);
+$mpdf->SetTitle($_SESSION['empresa']['empresa_razao'].' - Rel. Analitico do Pcmso');
+// $mpdf->WriteHTML($partePagina['inicio
+$mpdf->WriteHTML($pagina);
+$mpdf->AddPage();
+$mpdf->WriteHTML($paginaRelacaoExames);
+$mpdf->AddPage();
+$mpdf->WriteHTML($paginaRelacaoComplementares);
+$mpdf->WriteHTML($c);
+$mpdf->WriteHTML($d);
+$mpdf->AddPage();
+$mpdf->WriteHTML($f);
+
+if ($i < $total) {
+    $mpdf->AddPage();
+}
+$mpdf->Output();

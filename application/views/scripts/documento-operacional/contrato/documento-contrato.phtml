@@ -1,0 +1,958 @@
+<?php ob_start() ?>
+<style type="text/css">
+    body{font-family:Arial, Helvetica, sans-serif;font-size: 12px;}
+    p {line-height: 22px;}
+    td.separador { padding: 10px; border: none; }
+
+</style>
+
+<table border="0" style="width: 100%">
+    <tbody>
+        <tr>
+            <td style="width: 50%"></td>
+            <td style="width: 50%; text-align: right"><strong>CONTRATO Nº: <?php echo $this->contrato['contrato_numero']; ?></strong></td>
+        </tr>
+        <tr>
+            <td style="width: 50%;padding-top: 25px"></td>
+            <td style="width: 50%;padding-top: 25px; text-align: justify;">
+                <strong>CONTRATO DE COMPROMISSO DE PRESTAÇÃO DE SERVIÇOS EM MEDICINA E SEGURANÇA DO TRABALHO, QUE CELEBRAM A HTMED, E A <?php echo $this->contrato['empresa_razao']; ?> FORMA ABAIXO:</strong>
+            </td>
+        </tr>
+    </tbody>
+</table>
+
+<p style="text-align: justify;">
+    A <b>HTMED.</b> com sede à Avenida Abílio Machado, 1594, sala 101, Alípio de Melo - Belo Horizonte, inscrita no CNPJ sob número 03.070.274/0001-45, 
+    neste ato, representada por quem de direito e daqui por diante denominada <b>CONTRATADA</b>, e a <b><?php echo $this->contrato['empresa_razao']; ?></b>,
+    CNPJ: <?php echo Util::cnpj($this->contrato['empresa_cnpj']); ?>, com sede à <?php echo $this->contrato['endereco_logradouro']; ?> – <?php echo $this->contrato['endereco_bairro']; ?> – <?php echo $this->contrato['endereco_cidade']; ?> - <?php echo $this->contrato['endereco_uf']; ?>, CEP: <?php echo Util::cep($this->contrato['endereco_cep']); ?>, 
+    neste ato representada por quem de direito e daqui por diante denominada <b>CONTRATANTE</b>, tem justo e contratado, a prestação de serviços de segurança e medicina ocupacionais à 
+    CONTRATANTE e seus empregados, de acordo com as disposições que se seguem:
+</p>
+
+<!--É VÁLIDO LEMBRAR QUE PARA CRIAÇÃO DE CADA TÓPICO E SUBTÓPICO SÃO ESTABELECIDOS UM
+"ESPAÇAMENTO" OU "DISTÂNCIA" (WIDTH) DE 2% -->
+
+<!--BLOCO TÓPICO 1.1-->
+<p><strong>1. MEDICINA DO TRABALHO</strong></p>
+<table border="0" style="width: 100%">
+    <tbody>
+        <tr>
+            <td style="width: 1%;padding-top: 5px"></td>
+            <td style="width: 90%;padding-top: 5px; text-align: justify;">
+                <strong>1.1 DO OBJETO</strong>
+            </td>            
+        </tr>
+    </tbody>
+</table>
+
+<table border="0" style="width: 100%">
+    <tbody>
+        <tr>
+            <td style="width: 3%;padding-top: 5px"></td>
+            <td style="width: 90%;padding-top: 5px; text-align: justify;">
+                1.1.1. O presente contrato tem por objeto a prestação de serviços relacionados à Medicina do Trabalho para a sede da CONTRATANTE,
+                localizada no endereço supracitado, conforme disposições que se seguem.
+            </td>            
+        </tr>
+    </tbody>
+</table>
+<!--FIM DO BLOCO TÓPICO 1.1-->
+
+<br>
+
+<!--BLOCO TÓPICO 1.2-->
+<table border="0" style="width: 100%">
+    <tbody>
+        <tr>
+            <td style="width: 1%;padding-top: 5px"></td>
+            <td style="width: 90%;padding-top: 5px; text-align: justify;">
+                <strong>1.2. DOS SERVIÇOS DE MEDICINA OCUPACIONAL COBERTOS PELO CONTRATO</strong>
+            </td>            
+        </tr>
+    </tbody>
+</table>
+<table border="0" style="width: 100%">
+    <tbody>
+        <tr>
+            <td style="width: 3%;padding-top: 5px"></td>
+            <td style="width: 90%;padding-top: 5px; text-align: justify;">
+                1.2.1. Os serviços de Medicina Ocupacional cobertos por este contrato obedecem às normas estabelecidas pelo Ministério do Trabalho e abrangem:
+            </td>             
+        </tr>
+    </tbody>
+</table>
+<table border="0" style="width: 100%">
+    <tbody>
+        <tr>
+            <td style="width: 5%;padding-top: 5px"></td>
+            <td style="width: 90%;padding-top: 5px; text-align: justify;">
+                1.2.1.1. Elaboração do documento base de PCMSO – Programa de Controle Médico de Saúde Ocupacional conforme NR 7 e apresentação deste à empresa no prazo máximo de 60 dias após assinatura do contrato. 
+            </td>             
+        </tr>
+    </tbody>
+</table>
+<table border="0" style="width: 100%">
+    <tbody>
+        <tr>
+            <td style="width: 5%;padding-top: 5px"></td>
+            <td style="width: 90%;padding-top: 5px; text-align: justify;">
+                1.2.1.2. Indicação do Médico especializado em Medicina do Trabalho para ser o coordenador do Programa de Controle Médico e Saúde Ocupacional (PCMSO).
+            </td>             
+        </tr>
+    </tbody>
+</table>
+<table border="0" style="width: 100%">
+    <tbody>
+        <tr>
+            <td style="width: 5%;padding-top: 5px"></td>
+            <td style="width: 90%;padding-top: 5px; text-align: justify;">
+                1.2.1.3. Gestão do Programa de Controle Médico de Saúde Ocupacional (PCMSO).
+            </td>             
+        </tr>
+    </tbody>
+</table>
+<table border="0" style="width: 100%">
+    <tbody>
+        <tr>
+            <td style="width: 5%;padding-top: 5px"></td>
+            <td style="width: 90%;padding-top: 5px; text-align: justify;">
+                1.2.1.4. Anamnese clínica do beneficiário, observando a função que o mesmo exerce e as condições onde o mesmo realiza o seu trabalho, por meio da realização de exames clínicos exigidos pelos órgãos fiscalizadores ou médicos do trabalho (admissional, demissional, periódicos, de retorno ao trabalho e mudança de função).
+            </td>             
+        </tr>
+    </tbody>
+</table>
+<table border="0" style="width: 100%">
+    <tbody>
+        <tr>
+            <td style="width: 5%;padding-top: 5px"></td>
+            <td style="width: 90%;padding-top: 5px; text-align: justify;">
+                1.2.1.5. Convocação periódicas observando os prazos estabelecidos pela N.R.-7, do Ministério do Trabalho. Estes exames serão convocados pela CONTRATADA antes do vencimento dos exames e cobrados conforme tabela da CONTRATADA (ANEXO)
+            </td>             
+        </tr>
+    </tbody>
+</table>
+<table border="0" style="width: 100%">
+    <tbody>
+        <tr>
+            <td style="width: 7%;padding-top: 5px"></td>
+            <td style="width: 90%;padding-top: 5px; text-align: justify;">
+                1.2.1.5.1. É responsabilidade da CONTRATANTE, agendar as consultas junto à CONTRATADA com antecedência mínima de 36 horas.
+            </td>             
+        </tr>
+    </tbody>
+</table>
+<table border="0" style="width: 100%">
+    <tbody>
+        <tr>
+            <td style="width: 5%;padding-top: 5px"></td>
+            <td style="width: 90%;padding-top: 5px; text-align: justify;">
+                1.2.1.6. Fornecimento à CONTRATANTE do Atestado de Saúde Ocupacional em 02 (duas) vias, indicando a conclusão da avaliação do exame médico.
+            </td>             
+        </tr>
+    </tbody>
+</table>
+<table border="0" style="width: 100%">
+    <tbody>
+        <tr>
+            <td style="width: 5%;padding-top: 5px"></td>
+            <td style="width: 90%;padding-top: 5px; text-align: justify;">
+                1.2.1.7. Arquivamento e guarda dos resultados dos exames ocupacionais por 20 (vinte) anos conforme exige a legislação em vigor.
+            </td>             
+        </tr>
+    </tbody>
+</table>
+<table border="0" style="width: 100%">
+    <tbody>
+        <tr>
+            <td style="width: 5%;padding-top: 5px"></td>
+            <td style="width: 90%;padding-top: 5px; text-align: justify;">
+                1.2.1.8. Os exames laboratoriais, complementares ou outros especializados cuja obrigatoriedade esteja prevista pela NR-07 da Portaria N.º24 da SSST  de 29.12.94, aqueles exigidos pelos órgãos de saúde pública ou ainda aqueles indicados no PCMSO ou médico do trabalho. Os exames serão cobrados conforme Tabela da CONTRATADA, (ver tabela, Anexo).
+            </td>             
+        </tr>
+    </tbody>
+</table>
+<table border="0" style="width: 100%">
+    <tbody>
+        <tr>
+            <td style="width: 5%;padding-top: 5px"></td>
+            <td style="width: 90%;padding-top: 5px; text-align: justify;">
+                1.2.1.9. Elaboração de Relatório Anual, caso seja necessário, conforme a NR-07.
+            </td>             
+        </tr>
+    </tbody>
+</table>
+<!--FIM DO BLOCO TÓPICO 1.2-->
+
+<br>
+
+<!--BLOCO TÓPICO 1.3-->
+<table border="0" style="width: 100%">
+    <tbody>
+        <tr>
+            <td style="width: 1%;padding-top: 5px"></td>
+            <td style="width: 90%;padding-top: 5px; text-align: justify;">
+                <strong>1.3. DOS BENEFICIÁRIOS E DO DIREITO A UTILIZAÇÃO DOS SERVIÇOS</strong>
+            </td>            
+        </tr>
+    </tbody>
+</table>
+<table border="0" style="width: 100%">
+    <tbody>
+        <tr>
+            <td style="width: 3%;padding-top: 5px"></td>
+            <td style="width: 90%;padding-top: 5px; text-align: justify;">
+                1.3.1. Serão considerados beneficiários para fins de prestação de serviços ocupacionais pela CONTRATADA, os empregados com vínculo empregatício com a CONTRATANTE.
+            </td>             
+        </tr>
+    </tbody>
+</table>
+<!--FIM DO BLOCO TÓPICO 1.3-->
+
+<br>
+
+<!--BLOCO TÓPICO 1.4-->
+<table border="0" style="width: 100%">
+    <tbody>
+        <tr>
+            <td style="width: 1%;padding-top: 5px"></td>
+            <td style="width: 90%;padding-top: 5px; text-align: justify;">
+                <strong>1.4. DA INSCRIÇÃO DOS BENEFICIÁRIOS</strong>
+            </td>            
+        </tr>
+    </tbody>
+</table>
+<table border="0" style="width: 100%">
+    <tbody>
+        <tr>
+            <td style="width: 3%;padding-top: 5px"></td>
+            <td style="width: 90%;padding-top: 5px; text-align: justify;">
+                1.4.1. Serão considerados automaticamente inscritos na CONTRATADA, os empregados cujos nomes e demais elementos básicos constem no relatório (CAGED e/ou GFIP), juntamente com a relação dos funcionários da CONTRATANTE. Essas deverão ser encaminhadas a CONTRATADA, no prazo máximo de 10 dias corridos.
+            </td>             
+        </tr>
+    </tbody>
+</table>
+<table border="0" style="width: 100%">
+    <tbody>
+        <tr>
+            <td style="width: 3%;padding-top: 5px"></td>
+            <td style="width: 90%;padding-top: 5px; text-align: justify;">
+                1.4.2. As alterações nos quadros dos beneficiários em virtude de novas admissões ou demissões deverão ser comunicadas à CONTRATADA, através de relação mensal, que deverá ser encaminhada até o 17º (décimo sétimo) dia de cada mês, através de e-mail ou fax. Caso o décimo sétimo dia seja dia não útil, o prazo para o envio das informações será o dia útil imediatamente “anterior”.
+            </td>             
+        </tr>
+    </tbody>
+</table>
+<!--FIM DO BLOCO TÓPICO 1.4-->
+
+<br>
+
+<!--BLOCO TÓPICO 1.5-->
+<table border="0" style="width: 100%">
+    <tbody>
+        <tr>
+            <td style="width: 1%;padding-top: 5px"></td>
+            <td style="width: 90%;padding-top: 5px; text-align: justify;">
+                <strong>1.5. DA EXCLUSÃO DOS BENEFICIÁRIOS</strong>
+            </td>            
+        </tr>
+    </tbody>
+</table>
+<table border="0" style="width: 100%">
+    <tbody>
+        <tr>
+            <td style="width: 3%;padding-top: 5px"></td>
+            <td style="width: 90%;padding-top: 5px; text-align: justify;">
+                1.5.1. A exclusão dos beneficiários dar-se-á com a sua desvinculação da CONTRATANTE que, será automática no momento em que o colaborador realizar o exame demissional, nas dependências da CONTRATADA ou conforme item 1.4.2.
+            </td>             
+        </tr>
+    </tbody>
+</table>
+<!--FIM DO BLOCO TÓPICO 1.5-->
+
+
+<br>
+
+<!--BLOCO TÓPICO 1.6-->
+<table border="0" style="width: 100%">
+    <tbody>
+        <tr>
+            <td style="width: 1%;padding-top: 5px"></td>
+            <td style="width: 90%;padding-top: 5px; text-align: justify;">
+                <strong>1.6. DA IMPLANTAÇÃO E UTILIZAÇÃO DOS SERVIÇOS</strong>
+            </td>            
+        </tr>
+    </tbody>
+</table>
+<table border="0" style="width: 100%">
+    <tbody>
+        <tr>
+            <td style="width: 3%;padding-top: 5px"></td>
+            <td style="width: 90%;padding-top: 5px; text-align: justify;">
+                1.6.1. A CONTRATADA promoverá a implantação dos serviços, em acordo com a CONTRATANTE.
+            </td>             
+        </tr>
+    </tbody>
+</table>
+<table border="0" style="width: 100%">
+    <tbody>
+        <tr>
+            <td style="width: 3%;padding-top: 5px"></td>
+            <td style="width: 90%;padding-top: 5px; text-align: justify;">
+                1.6.2. Somente serão atendidos, para a prestação dos serviços, os beneficiários regularmente inscritos na CONTRATADA, de acordo com os itens anteriores.
+            </td>             
+        </tr>
+    </tbody>
+</table>
+<table border="0" style="width: 100%">
+    <tbody>
+        <tr>
+            <td style="width: 3%;padding-top: 5px"></td>
+            <td style="width: 90%;padding-top: 5px; text-align: justify;">
+                1.6.3. A responsabilidade de prestação dos serviços ocupacionais pela CONTRATADA extingue-se a partir da data de cancelamento dos programas (PCMSO). 
+            </td>             
+        </tr>
+    </tbody>
+</table>
+<!--FIM DO BLOCO TÓPICO 1.6-->
+
+
+<br>
+
+<!--BLOCO TÓPICO 1.7-->
+<table border="0" style="width: 100%">
+    <tbody>
+        <tr>
+            <td style="width: 1%;padding-top: 5px"></td>
+            <td style="width: 90%;padding-top: 5px; text-align: justify;">
+                <strong>1.7. DOS PROFISSIONAIS E ESTABELECIMENTOS QUE PRESTARÃO OS SERVIÇOS CONTRATADOS</strong>
+            </td>            
+        </tr>
+    </tbody>
+</table>
+<table border="0" style="width: 100%">
+    <tbody>
+        <tr>
+            <td style="width: 3%;padding-top: 5px"></td>
+            <td style="width: 90%;padding-top: 5px; text-align: justify;">
+                <?php if ($_SESSION['usuario']['unidadeativa']['unidade_sigla'] == "UBH") { ?>
+                    1.7.1. Os serviços serão prestados na unidade da CONTRATADA, à Av. Dom Pedro II, Nº 3973 – Pilotis – Bairro Caiçara, em Belo Horizonte / MG, conforme demanda da CONTRATANTE e regras estabelecidas neste contrato.
+                <?php } else { ?>
+                    1.7.1. Os serviços serão prestados na unidade da CONTRATADA, à R.Coelho Neto N°.1374 - Jardim Limoeiro - Serra / ES, conforme demanda da CONTRATANTE e regras estabelecidas neste contrato.
+                <?php } ?>
+            </td>             
+        </tr>
+    </tbody>
+</table>
+<!--FIM DO BLOCO TÓPICO 1.7-->
+
+
+<br>
+
+<!--BLOCO TÓPICO 1.8-->
+<table border="0" style="width: 100%">
+    <tbody>
+        <tr>
+            <td style="width: 1%;padding-top: 5px"></td>
+            <td style="width: 90%;padding-top: 5px; text-align: justify;">
+                <strong>1.8. DO USO DOS SERVIÇOS</strong>
+            </td>            
+        </tr>
+    </tbody>
+</table>
+<table border="0" style="width: 100%">
+    <tbody>
+        <tr>
+            <td style="width: 3%;padding-top: 5px"></td>
+            <td style="width: 90%;padding-top: 5px; text-align: justify;">
+                1.8.1. A inobservância das normas estabelecidas neste contrato responsabilizará o usuário ou seu responsável, através da CONTRATANTE, pelas despesas decorrentes dos serviços eventualmente utilizados inadequadamente.
+            </td>             
+        </tr>
+    </tbody>
+</table>
+<table border="0" style="width: 100%">
+    <tbody>
+        <tr>
+            <td style="width: 3%;padding-top: 5px"></td>
+            <td style="width: 90%;padding-top: 5px; text-align: justify;">
+                1.8.2. A CONTRATADA se responsabilizará por eventuais multas aplicadas pela fiscalização do Ministério do Trabalho, desde que seja comprovado o descumprimento do contrato.
+            </td>             
+        </tr>
+    </tbody>
+</table>
+<table border="0" style="width: 100%">
+    <tbody>
+        <tr>
+            <td style="width: 3%;padding-top: 5px"></td>
+            <td style="width: 90%;padding-top: 5px; text-align: justify;">
+                1.8.3. Será de exclusiva responsabilidade da CONTRATANTE o encaminhamento dos funcionários dentro do prazo legal para realização dos exames ocupacionais (exames clínicos e complementares de diagnóstico) conforme indicado no PCMSO, após solicitação de convocação enviada pela CONTRATADA, com antecedência mínima de 60 (sessenta dias) dias.
+            </td>             
+        </tr>
+    </tbody>
+</table>
+<!--FIM DO BLOCO TÓPICO 1.8-->
+
+
+<br>
+
+<!--BLOCO TÓPICO 1.9-->
+<table border="0" style="width: 100%">
+    <tbody>
+        <tr>
+            <td style="width: 1%;padding-top: 5px"></td>
+            <td style="width: 90%;padding-top: 5px; text-align: justify;">
+                <strong>1.9. DISPOSIÇÕES GERAIS</strong>
+            </td>            
+        </tr>
+    </tbody>
+</table>
+<table border="0" style="width: 100%">
+    <tbody>
+        <tr>
+            <td style="width: 3%;padding-top: 5px"></td>
+            <td style="width: 90%;padding-top: 5px; text-align: justify;">
+                1.9.1. As pendências que porventura possam existir no presente contrato serão acompanhadas pela CONTRANTE, através de representante idôneo e qualificado para tratar de assuntos relativos à medicina ocupacional. 
+            </td>             
+        </tr>
+    </tbody>
+</table>
+<table border="0" style="width: 100%">
+    <tbody>
+        <tr>
+            <td style="width: 3%;padding-top: 5px"></td>
+            <td style="width: 90%;padding-top: 5px; text-align: justify;">
+                1.9.2. Serviços não mencionados neste contrato poderão ser negociados posteriormente e contratados por meio de assinatura de Ordem de Serviço.
+            </td>             
+        </tr>
+    </tbody>
+</table>
+<!--FIM DO BLOCO TÓPICO 1.9-->
+
+<!--BLOCO TÓPICO 2.1-->
+<p><strong>2. ENGENHARIA SEGURANÇA DO TRABALHO </strong></p>
+<table border="0" style="width: 100%">
+    <tbody>
+        <tr>
+            <td style="width: 1%;padding-top: 5px"></td>
+            <td style="width: 90%;padding-top: 5px; text-align: justify;">
+                <strong>2.1. DO OBJETO:</strong>
+            </td>            
+        </tr>
+    </tbody>
+</table>
+<table border="0" style="width: 100%">
+    <tbody>
+        <tr>
+            <td style="width: 3%;padding-top: 5px"></td>
+            <td style="width: 90%;padding-top: 5px; text-align: justify;">
+                2.1.1. O presente contrato tem por objeto a prestação de serviços de engenharia de segurança para a CONTRATANTE, localizada no endereço supracitado, conforme disposições que se seguem. 
+            </td>            
+        </tr>
+    </tbody>
+</table>
+<!--FIM DO BLOCO TÓPICO 2.1-->
+
+<br>
+
+<!--BLOCO TÓPICO 2.2-->
+<table border="0" style="width: 100%">
+    <tbody>
+        <tr>
+            <td style="width: 1%;padding-top: 5px"></td>
+            <td style="width: 90%;padding-top: 5px; text-align: justify;">
+                <strong>2.2. DOS SERVIÇOS PRESTADOS PELA CONTRATADA:</strong>
+            </td>            
+        </tr>
+    </tbody>
+</table>
+<table border="0" style="width: 100%">
+    <tbody>
+        <tr>
+            <td style="width: 3%;padding-top: 5px"></td>
+            <td style="width: 90%;padding-top: 5px; text-align: justify;">
+                2.2.1. Reconhecimento dos riscos nos ambientes de trabalho.
+            </td>            
+        </tr>
+    </tbody>
+</table>
+<table border="0" style="width: 100%">
+    <tbody>
+        <tr>
+            <td style="width: 3%;padding-top: 5px"></td>
+            <td style="width: 90%;padding-top: 5px; text-align: justify;">
+                2.2.2. Confecção do PPRA (Programa de Prevenção de Riscos Ambientais) em conformidade com a NR-9, PGR (Programa de Gerenciamento de Riscos) em conformidade com a NR 22 ou PCMAT (Programa de Condições e Meio Ambiente do Trabalho na Indústria da Construção) em conformidade com a NR 18.
+            </td>            
+        </tr>
+    </tbody>
+</table>
+<table border="0" style="width: 100%">
+    <tbody>
+        <tr>
+            <td style="width: 5%;padding-top: 5px"></td>
+            <td style="width: 90%;padding-top: 5px; text-align: justify;">
+                2.2.2.1	A CONTRATADA apresentará os documentos (conforme item 2.2.2) no prazo 60 dias, podendo haver prorrogação do prazo no caso de análise ou serviço especial que se justifique, ou ainda, caso todas as informações solicitadas pela CONTRATADA não sejam encaminhadas em tempo hábil pela CONTRATANTE.  
+            </td>            
+        </tr>
+    </tbody>
+</table>
+<table border="0" style="width: 100%">
+    <tbody>
+        <tr>
+            <td style="width: 3%;padding-top: 5px"></td>
+            <td style="width: 90%;padding-top: 5px; text-align: justify;">
+                2.2.3. Avaliação e medição de possíveis agentes agressivos à saúde. As medições serão cobradas à parte, conforme tabela da contratada (ANEXO).
+            </td>            
+        </tr>
+    </tbody>
+</table>
+<table border="0" style="width: 100%">
+    <tbody>
+        <tr>
+            <td style="width: 3%;padding-top: 5px"></td>
+            <td style="width: 90%;padding-top: 5px; text-align: justify;">
+                2.2.4. Confecção de PPP – Perfil Profissiográfico Previdenciário conforme solicitação formal da CONTRATANTE (verificar Tabela Investimentos).
+            </td>            
+        </tr>
+    </tbody>
+</table>
+<table border="0" style="width: 100%">
+    <tbody>
+        <tr>
+            <td style="width: 3%;padding-top: 5px"></td>
+            <td style="width: 90%;padding-top: 5px; text-align: justify;">
+                2.2.5. Confecção de outros documentos de engenharia de segurança, exigidos pelas normas regulamentadoras ou por clientes da CONTRATANTE deverão ser orçadas, mediante solicitação formal da CONTRATANTE e autorizada sua elaboração por meio de assinatura da Ordem de Serviço.
+            </td>            
+        </tr>
+    </tbody>
+</table>
+<table border="0" style="width: 100%">
+    <tbody>
+        <tr>
+            <td style="width: 5%;padding-top: 5px"></td>
+            <td style="width: 90%;padding-top: 5px; text-align: justify;">
+                2.2.5.1. A confecção dos documentos solicitados será previamente acordada entre as partes e obedecerá às normas regulamentadoras e a legislação vigente.
+            </td>            
+        </tr>
+    </tbody>
+</table>
+<table border="0" style="width: 100%">
+    <tbody>
+        <tr>
+            <td style="width: 3%;padding-top: 5px"></td>
+            <td style="width: 90%;padding-top: 5px; text-align: justify;">
+                2.2.6. Constituição e curso CIPA, em conformidade com NR 5, deverá ser feito o orçamento deste serviço.
+            </td>            
+        </tr>
+    </tbody>
+</table>
+<table border="0" style="width: 100%">
+    <tbody>
+        <tr>
+            <td style="width: 5%;padding-top: 5px"></td>
+            <td style="width: 90%;padding-top: 5px; text-align: justify;">
+                2.2.6.1. A Orientação a respeito de: constituição, organização, funcionamento e processo eleitoral da CIPA. 
+            </td>            
+        </tr>
+    </tbody>
+</table>
+<!--FIM DO BLOCO TÓPICO 2.2-->
+
+
+<br>
+
+<!--BLOCO TÓPICO 2.3-->
+<table border="0" style="width: 100%">
+    <tbody>
+        <tr>
+            <td style="width: 1%;padding-top: 5px"></td>
+            <td style="width: 90%;padding-top: 5px; text-align: justify;">
+                <strong>2.3. DAS DISPOSIÇÕES GERAIS:</strong>
+            </td>            
+        </tr>
+    </tbody>
+</table>
+<table border="0" style="width: 100%">
+    <tbody>
+        <tr>
+            <td style="width: 3%;padding-top: 5px"></td>
+            <td style="width: 90%;padding-top: 5px; text-align: justify;">
+                2.3.1. Deixando a CONTRATANTE de pagar qualquer parcela mensal nos prazos aqui estabelecidos, a CONTRATADA poderá considerar rescindido o presente contrato, mediante simples comunicação, cessando de imediato a prestação dos serviços, continuando a CONTRATANTE na obrigação de saldar os débitos  existentes acrescidos 0,33 ao dia de juros e multa contratual de 2% ao mês (dois por cento) do valor do débito.
+            </td>            
+        </tr>
+    </tbody>
+</table>
+<table border="0" style="width: 100%">
+    <tbody>
+        <tr>
+            <td style="width: 3%;padding-top: 5px"></td>
+            <td style="width: 90%;padding-top: 5px; text-align: justify;">
+                2.3.2. Em caso de rescisão contratual antes do prazo estabelecido acima, a CONTRATANTE pagará à CONTRATADA na data do cancelamento, o valor equivalente ao restante dos documentos entregues. Caso o documento esteja em fase de elaboração, a CONTRATANTE pagará o contrato, na data do cancelamento o valor equivalente ao documento.
+            </td>            
+        </tr>
+    </tbody>
+</table>
+<table border="0" style="width: 100%">
+    <tbody>
+        <tr>
+            <td style="width: 3%;padding-top: 5px"></td>
+            <td style="width: 90%;padding-top: 5px; text-align: justify;">
+                2.3.3. A apresentação e elaboração do PCMSO no prazo acima ficam condicionadas a apresentação pela CONTRATANTE do PPRA (Programa de Prevenção de Riscos Ambientais), PGR (Programa de Gerenciamento de Riscos) ou PCMAT (Programa de Condições e Meio Ambiente do Trabalho na Indústria da Construção), que, caso seja elaborado também pela CONTRATADA, passa a ser de responsabilidade da mesma.
+            </td>            
+        </tr>
+    </tbody>
+</table>
+<table border="0" style="width: 100%">
+    <tbody>
+        <tr>
+            <td style="width: 3%;padding-top: 5px"></td>
+            <td style="width: 90%;padding-top: 5px; text-align: justify;">
+                2.3.4. A elaboração do PCMSO obedecerá estritamente as normas e condições estabelecidas no documento de engenharia de segurança apresentado.
+            </td>            
+        </tr>
+    </tbody>
+</table>
+<table border="0" style="width: 100%">
+    <tbody>
+        <tr>
+            <td style="width: 3%;padding-top: 5px"></td>
+            <td style="width: 90%;padding-top: 5px; text-align: justify;">
+                2.3.5. A CONTRATANTE se obriga a facilitar a realização dos serviços contratados.
+            </td>            
+        </tr>
+    </tbody>
+</table>
+<table border="0" style="width: 100%">
+    <tbody>
+        <tr>
+            <td style="width: 3%;padding-top: 5px"></td>
+            <td style="width: 90%;padding-top: 5px; text-align: justify;">
+                2.3.6. A CONTRATADA não se responsabilizará por multas aplicadas pelo Ministério do Trabalho, cuja data da notificação seja anterior a vigência do PPRA.
+            </td>            
+        </tr>
+    </tbody>
+</table>
+<table border="0" style="width: 100%">
+    <tbody>
+        <tr>
+            <td style="width: 3%;padding-top: 5px"></td>
+            <td style="width: 90%;padding-top: 5px; text-align: justify;">
+                2.3.7. Após a elaboração dos documentos, surgindo novas inclusões a CONTRATANTE deverá informar a CONTRATADA e a mesma fará a inclusão após a liberação da ordem de serviço autorizada pela CONTRATANTE, conforme a tabela da Hiest.  
+            </td>            
+        </tr>
+    </tbody>
+</table>
+<table border="0" style="width: 100%">
+    <tbody>
+        <tr>
+            <td style="width: 3%;padding-top: 5px"></td>
+            <td style="width: 90%;padding-top: 5px; text-align: justify;">
+                2.3.8. No caso da CONTRATANTE não fornecer os dados solicitados pela CONTRATADA, ou se os fornecer fora dos prazos, de tal maneira que retarde ou dificulte a elaboração do PPRA (Programa de Prevenção de Riscos Ambientais), a responsabilidade sobre eventuais multas será da CONTRATANTE.
+            </td>            
+        </tr>
+    </tbody>
+</table>
+<table border="0" style="width: 100%">
+    <tbody>
+        <tr>
+            <td style="width: 3%;padding-top: 5px"></td>
+            <td style="width: 90%;padding-top: 5px; text-align: justify;">
+                2.3.9. Outros serviços não contemplados neste contrato serão cobrados à parte mediante negociação prévia entre as partes e assinatura da Ordem de Serviço.
+            </td>            
+        </tr>
+    </tbody>
+</table>
+<!--FIM DO BLOCO TÓPICO 2.3-->
+
+<br>
+
+<!--BLOCO TÓPICO 3.1-->
+<p><strong>3. VIGÊNCIA, REAJUSTE E RESCISÃO</strong></p>
+<!--<table border="0" style="width: 100%">
+    <tbody>
+        <tr>
+            <td style="width: 1%;padding-top: 5px"></td>
+            <td style="width: 90%;padding-top: 5px; text-align: justify;">
+                <strong>3.1. ALGUMA COISA:</strong>
+            </td>            
+        </tr>
+    </tbody>
+</table>-->
+<table border="0" style="width: 100%">
+    <tbody>
+        <tr>
+            <td style="width: 3%;padding-top: 5px"></td>
+            <td style="width: 90%;padding-top: 5px; text-align: justify;">
+                3.1.1. O presente contrato vigorará a partir da data de assinatura, e terá duração mínima de 1 (um) ano, renovando-se automaticamente por igual período e assim sucessivamente, caso não haja denuncia por escrito por uma das partes, com antecedência de 30 (trinta) dias. 
+            </td>            
+        </tr>
+    </tbody>
+</table>
+<table border="0" style="width: 100%">
+    <tbody>
+        <tr>
+            <td style="width: 3%;padding-top: 5px"></td>
+            <td style="width: 90%;padding-top: 5px; text-align: justify;">
+                3.1.2. Havendo rescisão de contrato, nos casos de coordenação do PCMSO, a CONTRATANTE terá 30 dias para indicar novo coordenador do PCMSO (Médico habilitado), o qual se responsabilizará pela guarda dos prontuários médicos, que receberá mediante protocolo e apresentação de carta de solicitação e responsabilidade do novo coordenador.
+            </td>            
+        </tr>
+    </tbody>
+</table>
+<table border="0" style="width: 100%">
+    <tbody>
+        <tr>
+            <td style="width: 3%;padding-top: 5px"></td>
+            <td style="width: 90%;padding-top: 5px; text-align: justify;">
+                3.1.3. Expirado o prazo determinado no item 3.1.2, A CONTRATANTE pagará à CONTRATADA, pela guarda dos prontuários a quantia de R$ 1,00 (um real), por prontuário por mês.
+            </td>            
+        </tr>
+    </tbody>
+</table>
+<table border="0" style="width: 100%">
+    <tbody>
+        <tr>
+            <td style="width: 3%;padding-top: 5px"></td>
+            <td style="width: 90%;padding-top: 5px; text-align: justify;">
+                3.1.4. Deixando a CONTRATANTE de pagar qualquer parcela mensal nos prazos aqui estabelecidos, a CONTRATADA poderá considerar rescindido o presente contrato cessando, de imediato, a prestação dos serviços, continuando a CONTRATANTE na obrigação de saldar os débitos existentes acrescidos de 0,33 a.d de juros e multa contratual de 2% a.m (dois por cento) do valor do débito.
+            </td>            
+        </tr>
+    </tbody>
+</table>
+<table border="0" style="width: 100%">
+    <tbody>
+        <tr>
+            <td style="width: 3%;padding-top: 5px"></td>
+            <td style="width: 90%;padding-top: 5px; text-align: justify;">
+                3.1.5. Ao final de um período de 12 (doze) meses, esse contrato sofrerá reajuste conforme índice de IPCA - IBGE. Os valores serão informados à CONTRATANTE pela CONTRATADA.
+            </td>            
+        </tr>
+    </tbody>
+</table>
+<!--FIM DO BLOCO TÓPICO 3.1-->
+
+<br>
+
+<!--BLOCO TÓPICO 4-->
+<p><strong>4. GESTOR DO CONTRATO</strong></p>  
+<table border="0" style="width: 100%">
+    <tbody>
+        <tr>
+            <td style="width: 3%;padding-top: 5px"></td>
+            <td style="width: 90%;padding-top: 5px;">
+                Nome: Glauber Trindade Siqueira<br>
+                CPF: 047.074.996-27<br>
+                Telefones: (31) 3328-4500<br>
+                E-mail: glauber@eletromarbh.com.br 
+                <br><br>	
+                Nome: Adriano de Castro Lopes<br>
+                CPF: 943.940.756-53<br>
+                Telefones: (31) 3328-4500<br>
+                E-mail: financeiro@eletromarbh.com.br<br>
+            </td>            
+        </tr>
+    </tbody>
+</table>
+<!--FIM DO BLOCO TÓPICO 4-->
+
+<br>
+
+<!--BLOCO TÓPICO 5-->
+<p><strong>5. INVESTIMENTO</strong></p>  
+<table border="1" style="border-collapse: collapse; width: 100%">
+    <tbody>
+        <tr>
+            <td style="width: 3%; text-align: center; font-weight: bold;">Tipo de serviço</td>
+            <td style="width: 3%; text-align: center; font-weight: bold;">Local de realização</td>   
+            <td style="width: 3%; text-align: center; font-weight: bold;">Especificações</td>   
+            <td style="width: 3%; text-align: center; font-weight: bold;">Valor unitário</td>   
+            <td style="width: 3%; text-align: center; font-weight: bold;">Forma de pagamento</td>               
+        </tr>
+        <tr>
+            <td style="width: 3%; text-align: left;">PPRA</td>
+            <td style="width: 3%; text-align: center;">Sede da contratante</td>   
+            <td style="width: 3%; text-align: center;">Documento</td>   
+            <td style="width: 3%; text-align: center;">600,00</td>   
+            <td style="width: 3%; text-align: center;">7, 21 e 42 dias após autorização.</td>               
+        </tr>
+        <tr>
+            <td style="width: 3%; text-align: left;">PCMSO – Coordenação</td>
+            <td style="width: 3%; text-align: center;">Sede da contratante</td>   
+            <td style="width: 3%; text-align: center;">Conforme itens 1.2</td>   
+            <td style="width: 3%; text-align: center;">Conforme itens 3.1</td>   
+            <td style="width: 3%; text-align: center;">Mensal dia 5</td>               
+        </tr>
+        <tr>
+            <td style="width: 3%; text-align: left;">PPP</td>
+            <td style="width: 3%; text-align: center;">Sede da contratada</td>   
+            <td style="width: 3%; text-align: center;">Quando solicitado</td>   
+            <td style="width: 3%; text-align: center;">R$ 30,00</td>   
+            <td style="width: 3%; text-align: center;">A combinar</td>               
+        </tr>
+        <tr>
+            <td style="width: 3%; text-align: left;">Designado CIPA</td>
+            <td style="width: 3%; text-align: center;">Sede da contratada</td>   
+            <td style="width: 3%; text-align: center;">Quando solicitado</td>   
+            <td style="width: 3%; text-align: center;">R$ 200,00</td>   
+            <td style="width: 3%; text-align: center;">A combinar</td>               
+        </tr>
+        <tr>
+            <td style="width: 3%; text-align: left;">Taxa de Implantação</td>
+            <td style="width: 3%; text-align: center;">-</td>   
+            <td style="width: 3%; text-align: center;">Taxa única</td>   
+            <td style="width: 3%; text-align: center;">Inclusos na coordenação do PCMSO</td>   
+            <td style="width: 3%; text-align: center;">7 dias após autorização</td>               
+        </tr>
+        <tr>
+            <td style="width: 3%; text-align: left;">Exames clínicos ocupacionais</td>
+            <td style="width: 3%; text-align: center;">Sede da contratada</td>   
+            <td style="width: 3%; text-align: center;">Quando solicitado</td>   
+            <td style="width: 3%; text-align: center;">Preço Tabela Hiest - Anexo</td>   
+            <td style="width: 3%; text-align: center;">-</td>               
+        </tr>    
+    </tbody>
+</table>
+<!--FIM DO BLOCO TÓPICO 5-->
+
+<br><br><br>
+
+<!--BLOCO TÓPICO 5.1-->
+<p><strong>5.1.	INVESTIMENTO PARA PCMSO </strong></p>  
+<table border="1" style="border-collapse: collapse; width: 100%; ">
+    <tbody>
+        <tr>
+            <td style="width: 3%; text-align: center; font-weight: bold;">Descrição</td>
+            <td style="width: 3%; text-align: center; font-weight: bold;">Serviços incluídos</td>   
+            <td style="width: 3%; text-align: center; font-weight: bold;">Valor por funcionário/mês</td>   
+            <td style="width: 3%; text-align: center; font-weight: bold;">Número de funcionários</td>   
+            <td style="width: 3%; text-align: center; font-weight: bold;">Faturamento Mínimo Mensal</td>               
+        </tr>
+        <tr>
+            <td style="width: 3%; text-align: left;">PCMSO Coordenação</td>
+            <td style="width: 3%; text-align: center;">PCMSO, relatório anual, coordenação médica e convocação de periódicos, exames clínicos na unidade de Belo Horizonte.</td>   
+            <td style="width: 3%; text-align: center;">12 Parcelas de R$ 6,52*</td>   
+            <td style="width: 3%; text-align: center;">08</td>   
+            <td style="width: 3%; text-align: center;">R$ 95,00</td>               
+        </tr>             
+    </tbody>
+</table>
+(*) Acima de 14 funcionários será cobrado o valor mensal de R$ 6,52 por funcionário excedente.
+<!--FIM DO BLOCO TÓPICO 5.1-->
+
+<table>
+    <tr>
+        <td class="separador"></td >
+    </tr>
+</table>
+
+<!--BLOCO TÓPICO 6.1-->
+<p><strong>6. DO FORO:</strong></p>
+<table border="0" style="width: 100%">
+    <tbody>
+        <tr>
+            <td style="width: 1%;padding-top: 5px"></td>
+            <td style="width: 90%;padding-top: 5px; text-align: justify;">
+                6.1. As partes elegem o foro local para o caso de litígio ou pendência judicial, renunciando a qualquer outro por mais privilegiado que seja.
+            </td>            
+        </tr>
+    </tbody>
+</table>
+<!--FIM BLOCO TÓPICO 6.1-->
+
+
+<table>
+    <tr>
+        <td class="separador"></td >
+    </tr>
+</table>
+
+<!--BLOCO DATA-->
+<p>E, por assim acharem justos e contratados, fica eleito o Foro local, com 2 (duas) vias de igual  teor e forma, para um só efeito legal.</p>
+<br>
+<p style="text-align: right;">Belo Horizonte, _________ de ___________________  de 2013.</p>
+<!--FIM BLOCO DATA-->
+
+<br><br><br><br><br><br>
+
+<!-- Dados para assinatura da Contratada e Contratante-->
+<table style="border-collapse: collapse; width: 100%;">
+    <!-- área para assinatura -->
+    <tr>
+        <td style="width: 250px; border-top: none; border-left: none; border-right: none; text-align: left;">&nbsp;________________________________________</td>
+        <td style="width: 200px; border: none;"></td>
+        <td style="width: 250px; border-top: none; border-left: none; border-right: none; text-align: left;">&nbsp;________________________________________</td>
+    </tr>
+    <!-- FIM área para assinatura -->
+
+    <!-- frase contratada e contratante -->
+    <tr>
+        <td style="border: none; text-align: left">CONTRATADA</td>
+        <td style="border: none;"></td>
+        <td style="border: none; text-align: left;">CONTRATANTE</td>
+    </tr>
+    <!-- FIM frase contratada e contratante' -->
+
+    <!-- nome 'contratada(usuário que realizou o atendimento)' e 'contratante' -->
+    <tr>
+        <td style="border: none; text-align: left;">Nome: <?php echo $this->user[0]['pessoa_nome'] ?></td>
+        <td style="border: none;"></td>
+        <td style="border: none; text-align: left;">Nome: <?php echo $this->contrato['contrato_responsavel_nome']; ?></td>
+    </tr>
+    <!-- FIM nome 'contratada(usuário que realizou o atendimento)' e 'contratante' -->
+
+    <!-- exibe o CPF -->
+    <tr>
+        <td style="border: none; text-align: left;">CPF: <?php echo Util::cpf($this->user[0]['pessoa_cpf']); ?></td>
+        <td style="border: none;"></td>       
+    </tr>
+    <!-- FIM exibe o CPF -->    
+</table>
+<!-- FIM Dados para assinatura da Contratada e Contratante-->
+
+<br><br><br><br><br><br>
+
+<!-- Dados para assinatura das Testemunhas-->
+<p>TESTEMUNHAS</p>
+<br><br><br>
+
+<table style="border-collapse: collapse; width: 100%;">
+    <!-- área para assinatura -->
+    <tr>
+        <td style="width: 250px; border-top: none; border-left: none; border-right: none; text-align: left;">&nbsp;________________________________________</td>
+        <td style="width: 200px; border: none;"></td>
+        <td style="width: 250px; border-top: none; border-left: none; border-right: none; text-align: left;">&nbsp;________________________________________</td>
+    </tr>
+    <!-- FIM area para assinatura -->
+
+    <!-- frase NOME -->
+    <tr>
+        <td style="border: none;"> NOME</td>
+        <td style="border: none;"></td>
+        <td style="border: none;"> NOME</td>
+    </tr>
+    <!-- FIM frase NOME -->
+
+    <!-- frase CPF -->
+    <tr>
+        <td style="border: none;"> CPF:</td>
+        <td style="border: none;"></td>
+        <td style="border: none;"> CPF:</td>
+    </tr>
+    <!-- FIM frase CPF -->    
+</table>
+<!-- FIM Dados para assinatura das Testemunhas-->
+
+
+<?php
+require_once 'MPDF/mpdf.php';
+$localScripts = '../application/views/scripts/documento-operacional/';
+require_once "{$localScripts}include/funcoes.php";
+
+$htmlCabecalho = file_get_contents($localScripts . 'contrato/' . 'cabecalho.html');
+$htmlRodape = obterHtmlDoRodapeEmPdf();
+
+$p = new mPDF('utf-8', 'A4', 0, 'Arial', 10, 10, 35, 30, 8, 8);
+//$p->SetFontSize(9);
+$p->SetHTMLHeader($htmlCabecalho);
+$p->SetHTMLFooter($htmlRodape);
+$p->setAutoTopMargin = false;
+$p->setAutoBottomMargin = false;
+$html = ob_get_clean();
+$p->WriteHTML($html);
+$p->Output();

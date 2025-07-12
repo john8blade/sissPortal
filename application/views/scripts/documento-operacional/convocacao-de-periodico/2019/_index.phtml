@@ -1,0 +1,112 @@
+<?php #echo isset($this->erros) && !empty($this->erros) ? ('<div class="alert alert-danger">' . implode('<br/>', $this->erros) . '</div>') : '' ?>
+
+<?php 
+    $msg = $this->alertamsg;
+    if (!empty($msg)) {
+        echo $msg;
+        unset($msg);
+    }
+    $pesquisa = $this->dadospesquisa;
+    //Util::dump($_GET);
+?>
+
+<script type="text/javascript" src="/js/AjaxComResultadoJson.js"></script>
+
+<script type="text/javascript">
+    $(function () {
+        $("#empresa").change(function () {
+            var empresaId = this.value;
+            $("#contrato option").remove();
+            if (empresaId !== '') {
+                var imprimirRetorno = function (resposta) {
+                    if (resposta.Resultado) {
+                        var resposta = resposta.Resultado;
+                        var opcoes = '<option value="0">TODOS</option>';
+                        for (var i = 0; i < resposta.length; i++) {
+                            opcoes += '<option value="' + resposta[i].contrato_id + '">' + resposta[i].contrato_numero_custom + "</option>";
+                        }
+                        $('#contrato').append(opcoes);
+                    }
+                };
+                ResgatarColecaoDeContratosPeloIdEmpresa(empresaId, imprimirRetorno);
+            }
+        });
+    });
+</script>
+
+<div class="well well-small"><i class="icon-tasks"></i>&nbsp;<strong>Convocação de Periódico</strong></div>
+
+<!--<form action="" method="post" <?php if(!empty($msg)):?> target="_blank" <?php endif;?> >-->
+<form action="" method="post" target="_blank">
+
+    <div class="well well-small div-transparente">
+
+        <div class="row-fluid">
+            <!--
+            <div class="span1">
+                <label>SITUAÇÃO</label>
+                <select class="span" name="situacao">
+                    <option value="0">A VENCER</option>
+                    <option value="1">VENCIDOS</option>
+                </select>
+            </div>
+            -->
+            <div class="span3">
+                <label>Período</label>
+                <div class="row-fluid">
+                    <div class="span5">
+                        <input type="text" class="span mask-data" name="data1" <?php if(!empty($pesquisa['data1'])): ?> value="<?php echo util::dataBR($pesquisa['data1']) ?>" <?php else: ?> value="" <?php endif;?> />
+                    </div>
+                    <div class="span2">
+                        <input type="text" class="span" value="à" disabled="disabled" style="text-align: center;"/>
+                    </div>
+                    <div class="span5">
+                        <input type="text" class="span mask-data" name="data2" <?php if(!empty($pesquisa['data2'])): ?> value="<?php echo util::dataBR($pesquisa['data2']) ?>" <?php else: ?> value="" <?php endif;?> />
+                    </div>
+                </div>
+            </div>
+
+            <div class="span2">
+                <label>FILTRO</label>
+                <select class="span" name="tipo">
+                    <option value="0">PERIÓDICOS</option>
+                </select>
+            </div>
+
+            <?php $unidade = $_SESSION['usuario']['unidadeativa']['unidade_id']; ?>
+            <div class="span4">
+                <label>Empresa</label>
+                <select class="span" name="empresa" id="empresa">
+                    <option value="0">TODAS</option>                    
+                    <?php foreach (Util::consultaDireta("SELECT * FROM empresa WHERE empresa.empresa_status = 0 and empresa.empresa_tipo = 'CLIENTE' ORDER BY empresa.empresa_fantasia ASC") as $item): ?>
+                        <option value="<?php echo $item['empresa_id'] ?>"><?php echo $item["empresa_fantasia"] . ' (' . Util::preencherComZero($item['empresa_id'], 5) . ')' ?></option>
+                    <?php endforeach ?>
+                </select>
+            </div>
+
+            <div class="span1">
+                <label>Contrato</label>
+                <select id="contrato" name="contrato" class="span">
+                    <option <?php if(!empty($pesquisa['contrato'])): ?> value="<?php echo util::dataBR($pesquisa['contrato']) ?>" <?php else: ?> value="0" <?php endif;?> >---</option>
+                </select>
+            </div>
+
+            <div class="span1">
+                <label>Modo</label>
+                <select class="span" name="modo">                    
+                    <option value="1">PLANILHA</option>
+                    <!--<option value="0">VISUALIZAR</option>-->
+                </select>
+            </div>
+
+            <div class="span1">
+                <label>&nbsp;</label>
+                <input type="submit" onclick="document.getElementById('msgalerta').style.display = 'none';" class="span btn btn-success" value="Enviar"/>
+            </div>
+
+        </div>
+
+    </div>
+
+</form>
+

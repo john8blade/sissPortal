@@ -1,0 +1,19 @@
+<?php if ($this->mensagem != ""): ?>
+    <tr>
+        <td colspan="6" class="alert-danger">
+            <?php echo $this->mensagem ?>
+        </td>
+    </tr>
+<?php endif; ?>
+
+<?php foreach ($this->atestados as $item): ?>
+    <tr id="epi_<?php echo $item['atestado_id'] ?>">
+        <td class="fit">
+            <a rel="tooltip" data-toggle="tooltip" title="Alterar" class="btn btn-xs btn-default" href="javascript:;" onclick="alterarAtestado(<?php echo $item['atestado_id'] ?>)"><i class="fa fa-edit no-margin"></i></a>
+            <a rel="tooltip" data-toggle="tooltip" title="Excluir" class="btn btn-xs btn-danger" href="javascript:;" onclick="Util.confirma('Confirma excluir Atestado?', '/ajax/excluir/registro/atestado/id/<?php echo $item['atestado_id'] ?>', this)"><i class="fa fa-trash no-margin"></i></a>
+        </td>
+        <td><?php echo $item['atestado_cid'] ?></td>
+        <td><?php echo $item['atestado_data_inicial'] ?></td>
+        <td><?php echo $item['atestado_data_termino'] ?></td>
+    </tr>
+<?php endforeach; ?>

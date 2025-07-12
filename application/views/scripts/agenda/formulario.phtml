@@ -1,0 +1,443 @@
+<?php $meses = Util::obterVetorAssociativoDosMesesDoAno();  ?>
+
+<script type="text/javascript">
+    var UtilitariosAjax = new UtilitariosAjax();
+
+    $(document).ready(function () {
+        renderizarModalInformativo();
+        $('#tipoexame_id').change(function () {
+            ajaxResgataExamesDoPcmso();
+        });
+        listarDiasAtendimento();
+
+    });
+
+    function ajaxResgatarAtributosFuncionario() {
+        var data = new Date();
+        var url = '/ajax/json/servico/obter-funcionario-por-id-pessoa-empresa/';
+        var imprimirRetorno = function (resposta) {
+            if (resposta && resposta.length > 0) {
+                ajaxResgataExamesDoPcmso();
+            }
+        };
+        $.post(url, {pessoaId: funcionarioId, empresaId: empresaId}, imprimirRetorno, 'json');
+    }
+
+    function renderizarModalInformativo() {
+        $("#modalInformacao").modal('show');
+    }
+
+    function listarDiasAtendimento() {
+        var mes = $('#disponibilidade-mes').val();
+        var ano = $('#disponibilidade-ano').val();
+        var unidadeId = $('#fk_unidade_id').val();
+        UtilitariosAjax.obterDisponiblidadeMensalDeVagasParaAgendamento(mes, ano, unidadeId);
+    }
+
+    function ajaxResgatarAtributosFuncionario() {
+        var funcionarioId = $("#funcionario_id").val();
+        if (funcionarioId === '')
+            return;
+        var empresaId = $("#empresa_id").val();
+        var data = new Date();
+        var txt_idade = new Date();
+        txt_idade.setDate(txt_idade.getDate() + 62);
+        var diferenca = (txt_idade.getFullYear() * 12 + txt_idade.getMonth()) - (data.getFullYear() * 12 + data.getMonth());
+        var url = '/ajax/json/servico/obter-funcionario-por-id-pessoa-empresa/';
+        var imprimirRetorno = function (resposta) {
+            if (resposta && resposta.length > 0) {
+                $('#setor_id').val(resposta[0].setor_id);
+                $('#cargo_id').val(resposta[0].cargo_id);
+                $('#funcao_id').val(resposta[0].funcao_id);
+                $('input[name=pessoa_cpf]').attr('value', resposta[0].pessoa_cpf);
+                $('input[name=pessoa_identidade]').attr('value', resposta[0].pessoa_identidade);
+                $('input[name=funcionario_matricula]').attr('value', resposta[0].funcionario_matricula);
+                $('input[name=pessoa_data_nascimento]').attr('value', resposta[0].pessoa_data_nascimento);
+                $('input[name=alocacao_id]').attr('value', resposta[0].alocacao_id);
+                $('input[name=fk_pessoa_id]').attr('value', resposta[0].fk_pessoa_id);
+                $('input[name=cargo_nome]').attr('value', resposta[0].cargo_nome);
+                $('input[name=funcao_nome]').attr('value', resposta[0].funcao_nome);
+                ajaxResgataExamesDoPcmso();
+            }
+        };
+        $.post(url, {pessoaId: funcionarioId, empresaId: empresaId}, imprimirRetorno, 'json');
+    }
+
+
+    function UtilitariosAjax() {
+
+        this.obterAlocacaoPorId = function (alocacaoId) {
+            $('#pessoa_cpf', '#pessoa_identidade', '#funcionario_matricula', '#pessoa_data_nascimento', '#funcionario_data_admissao', '#setor_nome', '#cargo_nome', '#funcao_nome', '#fk_pessoa_id').val('');
+            var onde = "/ajax/json/servico/obter-alocacao-pelo-id/";
+            interpretarRetorno = function (itemResposta) {
+                if (itemResposta.alocacao) {
+                    if (itemResposta.quantidadeItemAlocado > 0) {
+          var alocacao = itemResposta.alocacao;
+          var tpexame = $("#fk_tipoexame_id").val();
+          var itempc = alocacao.fk_item_pcmso_id;
+          var itempr = alocacao.fk_ppra_item_id;
+          var atualizaralocacao = false;
+          if (!parseInt(itempc) > 0 || !parseInt(itempr) > 0) {
+            atualizaralocacao = true;
+          }
+          //console.log(!parseInt(itempc) > 0);
+          var text = '';
+          if (alocacao.funcionario_matricula === "" && tpexame != 1) {
+             text += ' <b>Matrícula eSocial</b>';
+          }
+          if (alocacao.funcionario_data_admissao === "" || alocacao.funcionario_data_admissao === "00/00/0000" && tpexame != 1) {
+            if (text.length > 0) {
+              text += ' e <b>Data de Admissão</b> ';
+            }else{
+              text += ' <b>Data de Admissão</b> ';
+            }
+          }
+          if (atualizaralocacao == true) {
+            if (text.length > 0) {
+              text += ' e <b>Alocação do Funcionário</b> ';
+            }else{
+              text += ' <b>Alocação do Funcionário</b> ';
+            }
+          }
+     
+          if (text.length > 0 ) {
+            
+            swal({
+              html: true,
+              title: "Atenção",
+              type: 'info',              
+              text: `Favor atualizar a `+ text +` na aba <b>Funcionários</b>.`,                  
+              confirmButtonText: "OK",
+              cancelButtonText: "Cancelar",
+              showCancelButton: false,
+              closeOnConfirm: true,
+              showLoaderOnConfirm: false
+              },
+              function(){
+                window.location.href = "/funcionario/alterar/id/"+alocacao.funcionario_id;
+            });
+
+          } else {
+
+              $("#pessoa_cpf").val(alocacao.pessoa_cpf);
+              $("#pessoa_identidade").val(alocacao.pessoa_identidade);
+              $("#funcionario_matricula").val(alocacao.funcionario_matricula);
+              $("#pessoa_data_nascimento").val(alocacao.pessoa_data_nascimento);
+              $("#funcionario_data_admissao").val(
+                alocacao.funcionario_data_admissao
+              );
+              $("#setor_nome").val(alocacao.setor_nome);
+              $("#cargo_nome").val(alocacao.cargo_nome);
+              if (alocacao.ppra_item_funcao == null || alocacao.ppra_item_funcao == '') {
+                  $("#funcao_nome").val(alocacao.funcao_nome);
+              }else{
+                  $("#funcao_nome").val(alocacao.ppra_item_funcao); 
+              }
+              $("#fk_pessoa_id").val(alocacao.pessoa_id);
+          }
+
+        }
+                }
+            };// fecha "interpretarRetorno"
+            $.post(onde, {alocacao_id: alocacaoId}, interpretarRetorno, 'json');
+        };
+
+
+        this.obterDisponiblidadeMensalDeVagasParaAgendamento = function (mes, ano, unidadeId) {
+            var url = '/ajax/html/servico/obter-dias-atendimento/';
+            var imprimirRetorno = function (resposta) {
+                if (resposta && resposta.length > 0) {
+                    $('#datas_atendimento').html(resposta);
+                }
+            };
+            $.post(url, {mes: mes, ano: ano, unidadeId: unidadeId}, imprimirRetorno);
+        }
+    }
+
+
+
+    $(function () {
+        $("#fk_tipoexame_id").change(function() {
+            document.getElementById("fk_alocacao_id").disabled = false;
+        });
+
+        $("#botao-salvar-padrao").click(function () {
+            $("#formulario-padrao-salvar").submit();
+        });
+
+        $("#fk_alocacao_id").change(function () {
+            UtilitariosAjax.obterAlocacaoPorId(this.value);
+        });
+
+        $("#verificar-disponibilidade").click(function () {
+            listarDiasAtendimento();
+        });
+        $("#disponibilidade-mes").click(function () {
+            listarDiasAtendimento();
+        });
+
+        $("#disponibilidade-ano").change(function () {
+            listarDiasAtendimento();
+        });
+
+    });
+
+
+<?php if (isset($this->atributos['agenda_id']) && is_numeric($this->atributos['agenda_id'])): ?>
+        /* Carrega a alocação do funcionario */
+        UtilitariosAjax.obterAlocacaoPorId('<?php echo $this->atributos['fk_alocacao_id'] ?>');
+<?php endif ?>
+
+</script>
+
+<style type="text/css">
+    .icone-chamar-atencao {
+        display: inline-block;
+        background-image: url("/img/warning-icon.png");
+        background-repeat: no-repeat;
+        background-size: 82%, 82%;
+        width: 30px;
+    }
+</style>
+
+<form id="formulario-padrao-salvar" action="/agenda/salvar" method="post" target="iframe-receptor" >
+
+    <input type="hidden" name="agenda_id"  id="agenda_id" value="<?php echo (int) $this->atributos['agenda_id'] ?>"/>
+    <input type="hidden" name="fk_pessoa_id"  id="fk_pessoa_id" value=""/>
+    <input type="hidden" name="fk_unidade_id"  id="fk_unidade_id" value="<?php echo $_SESSION['fk_unidade_id'] ?>"/>
+    <input type="hidden" name="data_antiga"  id="data_antiga" value="<?php echo $this->atributos['agenda_data_exame']; ?>"/>
+
+    <div class="row">
+
+        <div class="col-md-4">
+
+            <div class="panel panel-primary">
+
+                <div class="panel-heading"><i class="fa fa-calendar"></i>Disponibilidade de Vagas</div>
+
+                <div class="panel-body">
+
+                    <div class=" row">
+
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>Mês</label>
+                                <select class="form-control" id="disponibilidade-mes">
+                                    <?php foreach ($meses as $numero => $extenso): ?>
+                                        <option <?php echo (int) ($numero == (int) date('m')) ? 'selected="selected"' : ''; ?> value="<?php echo $numero ?>"><?php echo $extenso ?></option>
+                                    <?php endforeach ?>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>Ano</label>
+                                <input id="disponibilidade-ano" type="text" class="form-control" value="<?php echo date('Y') ?>"/>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <div id="datas_atendimento" style="text-align: center">
+                        <img src="/img/ajax.gif"/>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="col-md-8">
+
+            <div class="panel panel-primary">
+
+                <div class="panel-heading"><i class="fa fa-plus"></i>Agendamento</div>
+
+                <div class="panel-body">
+
+                    <div class="row">
+
+                        <div class="col-md-2">
+                            <div class="form-group">
+                                <label>Data</label>
+                                <input readonly="readonly" id="agenda_data_exame" data-format="dd/MM/yyyy" class="form-control mask-data ignora-ucase" type="text" value="<?php echo $this->atributos['agenda_data_exame'] ?>" name="agenda_data_exame">
+                            </div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label for="turno">Horário</label>
+                                <input type="text" id="horario" value="<?php echo Util::horarioGlobalCompleto($this->atributos) ?>" class="form-control input-sm" disabled />
+                                <input type="hidden" id="horario_id" name="fk_horario_global_id" value="<?php echo $this->atributos['fk_horario_global_id'] ?>" />
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>Tipo de Exame</label>
+                                <select class="form-control" name="fk_tipoexame_id" id="fk_tipoexame_id">
+                                    <option value="">---</option>
+                                    <?php foreach ($this->atributos['tipoExame'] as $item): ?>
+                                        <option <?php echo ($this->atributos['fk_tipoexame_id'] == $item['tipoexame_id']) ? ' selected="selected" ' : '' ?> value="<?php echo $item['tipoexame_id'] ?>"><?php echo $item['tipoexame_nome'] ?></option>
+                                    <?php endforeach ?>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <h4>Funcionário</h4>
+
+                    <div class="row">
+
+                        <div class="col-md-9">
+                            <div class="form-group">
+                                <label>Nome</label>
+                                <select class="form-control" name="fk_alocacao_id" id="fk_alocacao_id" disabled="true">
+                                    <option value="">---</option>
+                                    <?php foreach ($this->atributos['alocacao'] as $cargo) : ?>
+                                        <option <?php echo ($cargo["alocacao_id"] == $this->atributos['fk_alocacao_id']) ? 'selected="selected"' : ""; ?> value="<?php echo $cargo["alocacao_id"]; ?>"><?php echo $cargo["pessoa_nome"]; ?></option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label>CPF</label>
+                                <input disabled="disabled" class="form-control" type="text" name="pessoa_cpf" id="pessoa_cpf" value=""/>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <div class="row">
+
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label for="">Identidade</label>
+                                <input class="form-control" type="text" name="pessoa_identidade" id="pessoa_identidade" value="" readonly="readonly" required="true"/>
+                            </div>
+                        </div>
+
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label>Matrícula</label>
+                                <input disabled="disabled" class="form-control" type="text" name="funcionario_matricula" id="funcionario_matricula" value=""/>
+                            </div>
+                        </div>
+
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label>Data Nascimento</label>
+                                <input disabled="disabled" class="form-control mask-data ignora-ucase" type="text" name="pessoa_data_nascimento" id="pessoa_data_nascimento" value=""/>
+                            </div>
+                        </div>
+
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label>Data de Admissão</label>
+                                <input disabled="disabled" class="form-control mask-data ignora-ucase" type="text" name="funcionario_data_admissao" id="funcionario_data_admissao" value=""/>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <h4>Alocação</h4>
+
+                    <div class="row">
+
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label>Setor</label>
+                                <input disabled="disabled" class="form-control" type="text" id="setor_nome" name="setor_nome"  value=""/>
+                            </div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label>Cargo</label>
+                                <input disabled="disabled" class="form-control" type="text" id="cargo_nome" name="cargo_nome"  value=""/>
+                            </div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label>Função</label>
+                                <input disabled="disabled" class="form-control" type="text" id="funcao_nome" name="funcao_nome" value=""/>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <div class="row">
+
+                        <div class="col-md-12">
+                            <div class="form-group">
+                                <label>Observações</label>
+                                <textarea class="form-control" name="agenda_observacao" cols="" rows=""><?php echo (isset($this->atributos['agenda_observacao'])) ? $this->atributos['agenda_observacao'] : "" ?></textarea>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-12">
+                            <a class="btn btn-success" href="#" id="botao-salvar-padrao"><i class="fa fa-check"></i>Salvar</a>
+                            <a class="btn btn-primary" href="/agenda/" onclick="window.history.go(-1);"><i class="fa fa-arrow-left"></i>Voltar</a>
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</form>
+
+<!--
+<div id="modalInformacao" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+            <h3 id="myModalLabel"><i class="icone-chamar-atencao">&nbsp;</i> IMPORTANTE</h3>
+        </div>
+        <div class="modal-body" style="text-align: justify">
+            <p>Visando otimizar o tempo de permanência dos funcionários nas dependências dos locais de realização de exames e consulta clínica, a partir do dia <strong>04 de Agosto de 2014</strong> será necessário a apresentação dessa documentação para a realização dos procedimentos.</p>
+            <p>É importante salientar que os atendimentos foram divididos em 2 grupos, sendo o primeiro no horário das <strong>07hs00min</strong> para exames periódicos, mudança de função e retorno ao trabalho e outro grupo das <strong>09hs00min</strong> para exames admissionais e demissionais.</p>
+            <p>No documento de referência estão descritos a <strong>senha e o horário de atendimento</strong>. A senha por sua vez adota o critério de ordem de agendamento e não mais ordem de chegada.</p>
+            <p>O preenchimento prévio dos questionários também fará toda diferença no tempo de permanência do empregado no local, dessa maneira a orientação é que o funcionário já chegue com os formulários preenchidos. Caso haja alguma dificuldade no preenchimento dos formulários, o funcionário poderá esclarecer as dúvidas na recepção do local de atendimento.</p>
+        </div>
+        <div class="modal-footer">
+            <button class="btn" data-dismiss="modal" aria-hidden="true">Ok</button>
+        </div>
+    </div>
+</div>
+-->
+
+<div id="modalInformacao" class="modal fade" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title"><i class="icone-chamar-atencao">&nbsp;</i> IMPORTANTE</h4>
+            </div>
+            <div class="modal-body">
+                
+                <!--<p>A REALIZAÇÃO DO EXAME DE AUDIOMETRIA APARTIR DO DIA <strong>09</strong> ACONTECERÁ DE <strong>SEGUNDA</strong> A <strong->SEXTAS-FEIRAS.</strong></p>-->
+                <!--<p>A REALIZAÇÃO DOS EXAMES DE RAIO-X ACONTECERÁ DE <strong>SEGUNDA</strong> À <strong>QUINTAS-FEIRAS.</strong></p>-->
+                <p>ENDEREÇO DE ATENDIMENTO - AVENIDA ABÍLIO MACHADO, 1594.</p>
+                <p>Atenciosamente,</p>
+
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">OK</button>
+            </div>
+        </div>
+    </div>
+</div>
+

@@ -1,0 +1,452 @@
+<div class="panel panel-primary">
+    <div class="panel-heading"><i class="fa fa-pie-chart"></i>Relatórios Gráficos</div>
+    <div class="panel-body">
+        <div class="row">
+            <div class="col-md-4">
+                <select class="form-control" id="tipo" name="tipo">
+                    <option value="0">Selecione o Tipo de Gráfico</option>
+                    <option value="1">Gráfico Anual</option>
+                    <option value="2">Gráfico Periodo</option>
+                    <option value="3">Grafico de Faltas</option>
+                    <option value="4">Grafico Exames Realizados/Programado</option>
+                    <option value="5">Grafico Exames Realizados - Periodo</option>
+                    <option value="6">Grafico Exames Realizados - Anual</option>
+                </select>
+            </div>
+            <div style="display: none" id="div_data" class="col-md-2">
+                <input class="form-control" id="data" type="text" name="data" value="" placeholder="Digite o Ano">
+            </div>
+            <div style="display: none" id="div_dataInicio" class="col-md-2">
+                <input class="form-control" id="dataInicio" type="text" name="data1" placeholder="Informe o Ano" value="">
+            </div>
+            <div style="display: none" id="div_dataFim" class="col-md-2">
+                <input class="form-control" id="dataFim" type="text" name="data2" placeholder="Informe o Ano" value="">
+            </div>
+            <div class="col-md-2" style="display: none;" id="div_fases">
+                <select class="form-control" name="fases" id="fases">
+                    <option value="0">Informe a Fase</option>
+                    <option value="1">1° Fase - Exames</option>
+                    <option value="2">2° Fase - Clínico</option>
+                </select>
+            </div>
+            <div class="col-md-2" style="display: none;" id="div_tipo">
+                <select class="form-control" name="fases" id="tipoExame">
+                    <option value="0">Informe o Tipo</option>
+                    <option value="1">ADMISSIONAL</option>
+                    <option value="2">PERIODICO</option>
+                    <option value="3">DEMISSIONAL</option>
+                    <option value="4">MUDANÇA DE FUNÇÃO</option>
+                    <option value="5">RETORNO AO TRABALHO</option>
+                </select>
+            </div>
+            <!-- Lista de Produtos-Exames a serem exibidos -->
+            <div class="col-md-2" style="display: none;" id="div_produtos">
+                <select class="form-control" name="fases" id="produtoExame">
+                    <option value="0">Informe o Exame</option>
+                    <?php foreach ($this->produtos as $key => $value) : ?>
+                        <option value="<?php echo $value['produto_id'] ?>"><?php echo strtoupper($value['produto_nome']) ?></option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
+            <!-- fim da lista de exames -->
+            <div style="display: none" id="btn_Mensal" class="col-md-2">
+                <button class="btn" onclick="drawChart()" value="Graficar">Gerar Gráfico</button>
+            </div>
+            <div style="display: none" id="btn_anual" class="col-md-2">
+                <button class="btn" onclick="drawChartPeriodo()" value="Graficar">Gerar Gráfico</button>
+            </div>
+            <div style="display: none" id="btn_ExameRealizado" class="col-md-2">
+                <button class="btn" onclick="drawChartExamesRealizadosPeriodo()" value="Graficar">Gerar Gráfico</button>
+            </div>
+            <div style="display: none" id="btn_ExameRealizadoAnual" class="col-md-2">
+                <button class="btn" onclick="drawChartExamesRealizadosAnual()" value="Graficar">Gerar Gráfico</button>
+            </div>
+            <div style="display: none" id="btn_realizado" class="col-md-2">
+                <button class="btn" onclick="drawChartRealizadosProgramados()" value="Graficar">Gerar Gráfico</button>
+            </div>
+            <div style="display: none" id="btn_faltas" class="col-md-2">
+                <button class="btn" onclick="drawChartFaltas()" value="Graficar">Gerar Gráfico</button>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12"  id="chart_div" style="border: 0px solid; margin: 0px"></div>
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript" src="https://www.google.com/jsapi"></script>
+<script type="text/javascript">
+                    $(function () {
+                        $("#tipo").change(function () {
+                            if (this.value == 1) {
+                                //bloqueia os inputs de outros formularios
+                                //bloquear inputs 2
+                                if (document.getElementById("btn_anual").style.display == "block") {
+                                    document.getElementById("div_dataInicio").style.display = "none";
+                                    document.getElementById("div_dataFim").style.display = "none";
+                                    document.getElementById("btn_anual").style.display = "none";
+                                }
+                                //bloquear inputs 3
+                                if (document.getElementById("btn_faltas").style.display == "block") {
+                                    document.getElementById("div_data").style.display = "none";
+                                    document.getElementById("div_fases").style.display = "none";
+                                    document.getElementById("btn_faltas").style.display = "none";
+                                }
+                                //bloquear inputs 4
+                                if (document.getElementById("btn_realizado").style.display == "block") {
+                                    document.getElementById("div_tipo").style.display = "none";
+                                    document.getElementById("div_data").style.display = "none";
+                                    document.getElementById("btn_realizado").style.display = "none";
+                                }
+                                //bloquear inputs 5
+                                if (document.getElementById("btn_ExameRealizado").style.display == "block") {
+                                    document.getElementById("div_dataInicio").style.display = "none";
+                                    document.getElementById("div_dataFim").style.display = "none";
+                                    document.getElementById("div_produtos").style.display = "none";
+                                    document.getElementById("btn_ExameRealizado").style.display = "none";
+                                }
+                                //bloquear inputs 6
+                                if (document.getElementById("btn_ExameRealizadoAnual").style.display == "block") {
+                                    document.getElementById("div_data").style.display = "none";
+                                    document.getElementById("div_produtos").style.display = "none";
+                                    document.getElementById("btn_ExameRealizadoAnual").style.display = "none";
+                                }
+                                document.getElementById("div_data").style.display = "block";
+                                document.getElementById("btn_Mensal").style.display = "block";
+                            }
+                            if (this.value == 2) {
+                                //bloqueia os inputs de outros formularios
+                                //bloqueia inputs 1
+                                if (document.getElementById("btn_Mensal").style.display == "block") {
+                                    document.getElementById("btn_Mensal").style.display = "none";
+                                    document.getElementById("div_data").style.display = "none";
+                                }
+                                //bloquear inputs 3
+                                if (document.getElementById("btn_faltas").style.display == "block") {
+                                    document.getElementById("div_data").style.display = "none";
+                                    document.getElementById("div_fases").style.display = "none";
+                                    document.getElementById("btn_faltas").style.display = "none";
+                                }
+                                //bloquear inputs 4
+                                if (document.getElementById("btn_realizado").style.display == "block") {
+                                    document.getElementById("div_tipo").style.display = "none";
+                                    document.getElementById("div_data").style.display = "none";
+                                    document.getElementById("btn_realizado").style.display = "none";
+                                }
+                                //bloquear inputs 5
+                                if (document.getElementById("btn_ExameRealizado").style.display == "block") {
+                                    document.getElementById("div_dataInicio").style.display = "none";
+                                    document.getElementById("div_dataFim").style.display = "none";
+                                    document.getElementById("div_produtos").style.display = "none";
+                                    document.getElementById("btn_ExameRealizado").style.display = "none";
+                                }
+                                //bloquear inputs 6
+                                if (document.getElementById("btn_ExameRealizadoAnual").style.display == "block") {
+                                    document.getElementById("div_data").style.display = "none";
+                                    document.getElementById("div_produtos").style.display = "none";
+                                    document.getElementById("btn_ExameRealizadoAnual").style.display = "none";
+                                }
+                                document.getElementById("div_dataInicio").style.display = "block";
+                                document.getElementById("div_dataFim").style.display = "block";
+                                document.getElementById("btn_anual").style.display = "block";
+                            }
+                            if (this.value == 3) {
+                                //bloqueia os inputs de outros formularios
+                                if (document.getElementById("btn_Mensal").style.display == "block") {
+                                    document.getElementById("btn_Mensal").style.display = "none";
+                                    document.getElementById("div_data").style.display = "none";
+                                }
+                                //bloquear inputs 2
+                                if (document.getElementById("btn_anual").style.display == "block") {
+                                    document.getElementById("div_dataInicio").style.display = "none";
+                                    document.getElementById("div_dataFim").style.display = "none";
+                                    document.getElementById("btn_anual").style.display = "none";
+                                }
+                                //bloquear inputs 4
+                                if (document.getElementById("btn_realizado").style.display == "block") {
+                                    document.getElementById("div_tipo").style.display = "none";
+                                    document.getElementById("div_data").style.display = "none";
+                                    document.getElementById("btn_realizado").style.display = "none";
+                                }
+                                //bloquear inputs 5
+                                if (document.getElementById("btn_ExameRealizado").style.display == "block") {
+                                    document.getElementById("div_dataInicio").style.display = "none";
+                                    document.getElementById("div_dataFim").style.display = "none";
+                                    document.getElementById("div_produtos").style.display = "none";
+                                    document.getElementById("btn_ExameRealizado").style.display = "none";
+                                }
+                                //bloquear inputs 6
+                                if (document.getElementById("btn_ExameRealizadoAnual").style.display == "block") {
+                                    document.getElementById("div_data").style.display = "none";
+                                    document.getElementById("div_produtos").style.display = "none";
+                                    document.getElementById("btn_ExameRealizadoAnual").style.display = "none";
+                                }
+                                document.getElementById("div_data").style.display = "block";
+                                document.getElementById("div_fases").style.display = "block";
+                                document.getElementById("btn_faltas").style.display = "block";
+                            }
+                            if (this.value == 4) {
+                                //bloqueia os inputs de outros formularios
+                                if (document.getElementById("btn_Mensal").style.display == "block") {
+                                    document.getElementById("btn_Mensal").style.display = "none";
+                                    document.getElementById("div_data").style.display = "none";
+                                }
+                                //bloquear inputs 2
+                                if (document.getElementById("btn_anual").style.display == "block") {
+                                    document.getElementById("div_dataInicio").style.display = "none";
+                                    document.getElementById("div_dataFim").style.display = "none";
+                                    document.getElementById("btn_anual").style.display = "none";
+                                }
+                                //bloquear inputs 3
+                                if (document.getElementById("btn_faltas").style.display == "block") {
+                                    document.getElementById("div_data").style.display = "none";
+                                    document.getElementById("div_fases").style.display = "none";
+                                    document.getElementById("btn_faltas").style.display = "none";
+                                }
+                                //bloquear inputs 5
+                                if (document.getElementById("btn_ExameRealizado").style.display == "block") {
+                                    document.getElementById("div_dataInicio").style.display = "none";
+                                    document.getElementById("div_dataFim").style.display = "none";
+                                    document.getElementById("div_produtos").style.display = "none";
+                                    document.getElementById("btn_ExameRealizado").style.display = "none";
+                                }
+                                //bloquear inputs 6
+                                if (document.getElementById("btn_ExameRealizadoAnual").style.display == "block") {
+                                    document.getElementById("div_data").style.display = "none";
+                                    document.getElementById("div_produtos").style.display = "none";
+                                    document.getElementById("btn_ExameRealizadoAnual").style.display = "none";
+                                }
+
+                                document.getElementById("div_tipo").style.display = "block";
+                                document.getElementById("div_data").style.display = "block";
+                                document.getElementById("btn_realizado").style.display = "block";
+                            }
+                            if (this.value == 5) {
+                                //bloqueia os inputs de outros formularios
+                                if (document.getElementById("btn_Mensal").style.display == "block") {
+                                    document.getElementById("btn_Mensal").style.display = "none";
+                                    document.getElementById("div_data").style.display = "none";
+                                }
+                                //bloquear inputs 2
+                                if (document.getElementById("btn_anual").style.display == "block") {
+                                    document.getElementById("div_dataInicio").style.display = "none";
+                                    document.getElementById("div_dataFim").style.display = "none";
+                                    document.getElementById("btn_anual").style.display = "none";
+                                }
+                                //bloquear inputs 3
+                                if (document.getElementById("btn_faltas").style.display == "block") {
+                                    document.getElementById("div_data").style.display = "none";
+                                    document.getElementById("div_fases").style.display = "none";
+                                    document.getElementById("btn_faltas").style.display = "none";
+                                }
+                                //bloquear inputs 4
+                                if (document.getElementById("btn_realizado").style.display == "block") {
+                                    document.getElementById("div_tipo").style.display = "none";
+                                    document.getElementById("div_data").style.display = "none";
+                                    document.getElementById("btn_realizado").style.display = "none";
+                                }
+                                //bloquear inputs 6
+                                if (document.getElementById("btn_ExameRealizadoAnual").style.display == "block") {
+                                    document.getElementById("div_data").style.display = "none";
+                                    document.getElementById("div_produtos").style.display = "none";
+                                    document.getElementById("btn_ExameRealizadoAnual").style.display = "none";
+                                }
+                                document.getElementById("div_dataInicio").style.display = "block";
+                                document.getElementById("div_dataFim").style.display = "block";
+                                document.getElementById("div_produtos").style.display = "block";
+                                document.getElementById("btn_ExameRealizado").style.display = "block";
+                            }
+                            if (this.value == 6) {
+                                //bloqueia os inputs de outros formularios
+                                if (document.getElementById("btn_Mensal").style.display == "block") {
+                                    document.getElementById("btn_Mensal").style.display = "none";
+                                    document.getElementById("div_data").style.display = "none";
+                                }
+                                //bloquear inputs 2
+                                if (document.getElementById("btn_anual").style.display == "block") {
+                                    document.getElementById("div_dataInicio").style.display = "none";
+                                    document.getElementById("div_dataFim").style.display = "none";
+                                    document.getElementById("btn_anual").style.display = "none";
+                                }
+                                //bloquear inputs 3
+                                if (document.getElementById("btn_faltas").style.display == "block") {
+                                    document.getElementById("div_data").style.display = "none";
+                                    document.getElementById("div_fases").style.display = "none";
+                                    document.getElementById("btn_faltas").style.display = "none";
+                                }
+                                //bloquear inputs 4
+                                if (document.getElementById("btn_realizado").style.display == "block") {
+                                    document.getElementById("div_tipo").style.display = "none";
+                                    document.getElementById("div_data").style.display = "none";
+                                    document.getElementById("btn_realizado").style.display = "none";
+                                }
+                                //bloquear inputs 5
+                                if (document.getElementById("btn_ExameRealizado").style.display == "block") {
+                                    document.getElementById("div_dataInicio").style.display = "none";
+                                    document.getElementById("div_dataFim").style.display = "none";
+                                    document.getElementById("div_produtos").style.display = "none";
+                                    document.getElementById("btn_ExameRealizado").style.display = "none";
+                                }
+
+                                document.getElementById("div_data").style.display = "block";
+                                document.getElementById("div_produtos").style.display = "block";
+                                document.getElementById("btn_ExameRealizadoAnual").style.display = "block";
+                            }
+                            if (this.value == 0) {
+                                document.getElementById("div_data").style.display = "none";
+                                document.getElementById("btn_Mensal").style.display = "none";
+                                document.getElementById("div_dataInicio").style.display = "none";
+                                document.getElementById("div_dataFim").style.display = "none";
+                                document.getElementById("btn_anual").style.display = "none";
+                                document.getElementById("btn_faltas").style.display = "none";
+                                document.getElementById("fases").style.display = "none";
+                            }
+                        });
+                    });
+                    google.load('visualization', '1', {'packages': ['corechart']});
+                    //esse codigo comentado abaixo habilita a visualização automatica do grafico, nao habilite-o!
+                    //google.setOnLoadCallback(drawChart);
+                    function drawChart() {
+                        dataAno = $("#data").val();
+                        var jsonData = $.ajax({
+                            url: "/relatorio/grafico/",
+                            dataType: "json",
+                            data: {dataAno: dataAno},
+                            async: false
+                        }).responseText;
+                        var options = {'title': 'Gráfico: Quantidade de Exames Realizados Mensalmente',
+                            'width': 1200,
+                            'height': 380};
+                        var data = new google.visualization.DataTable(jsonData);
+                        var chart = new google.visualization.ColumnChart(document.getElementById('chart_div'));
+                        chart.draw(data, options);
+                    }
+
+                    function drawChartPeriodo() {
+                        dataInicio = $("#dataInicio").val();
+                        dataFim = $("#dataFim").val();
+                        var jsonData = $.ajax({
+                            url: "/relatorio/grafico-periodo/",
+                            dataType: "json",
+                            data: {dataInicio: dataInicio, dataFim: dataFim},
+                            async: false
+                        }).responseText;
+                        var options = {'title': 'Gráfico: Quantidade de Exames Realizados por Período',
+                            'width': 1200,
+                            'height': 380};
+                        var data = new google.visualization.DataTable(jsonData);
+                        var chart = new google.visualization.ColumnChart(document.getElementById('chart_div'));
+                        chart.draw(data, options);
+                    }
+
+                    function drawChartFaltas() {
+                        dataAno = $("#data").val();
+                        fases = $("#fases").val();
+                        if (fases == 0) {
+                            return alert("Informe o campo de Tipo");
+                        }
+                        if (fases == 1) {
+                            var jsonData = $.ajax({
+                                url: "/relatorio/grafico-faltas/",
+                                dataType: "json",
+                                data: {dataAno: dataAno, fases: fases},
+                                async: false
+                            }).responseText;
+                            var options = {'title': 'Gráfico: Quantidade de Faltas',
+                                'width': 1200,
+                                'height': 380};
+                            var data = new google.visualization.DataTable(jsonData);
+                            var chart = new google.visualization.ColumnChart(document.getElementById('chart_div'));
+                            chart.draw(data, options);
+                        }
+                        if (fases == 2) {
+                            var jsonData = $.ajax({
+                                url: "/relatorio/grafico-faltas/",
+                                dataType: "json",
+                                data: {dataAno: dataAno, fases: fases},
+                                async: false
+                            }).responseText;
+                            var options = {'title': 'Gráfico: Quantidade de Faltas',
+                                'width': 1200,
+                                'height': 380};
+                            var data = new google.visualization.DataTable(jsonData);
+                            var chart = new google.visualization.ColumnChart(document.getElementById('chart_div'));
+                            chart.draw(data, options);
+                        }
+                    }
+
+                    function drawChartRealizadosProgramados() {
+                        dataAno = $("#data").val();
+                        fases = $("#tipoExame").val();
+                        if (dataAno == "") {
+                            dataAno = 2014;
+                        }
+                        //alert(dataAno);
+                        var tipoExame = new Array('', 'ADMISSIONAL', 'PERIODICO', 'DEMISSIONAL', 'MUDANÇA DE FUNÇÃO', 'RETORNO AO TRABALHO');
+                        if (fases == 0) {
+                            return alert("Informe o campo de tipo de exames.");
+                        }
+                        var jsonData = $.ajax({
+                            url: "/relatorio/grafico-realizados-programados/",
+                            dataType: "json",
+                            data: {dataAno: dataAno, fases: fases},
+                            async: false
+                        }).responseText;
+                        var options = {'title': 'Gráfico: Quantidade de Exames Realizados/Programados: \n Filtros: Tipo Exame: ' + tipoExame[fases] + ", Ano: " + dataAno,
+                            'width': 1200,
+                            'height': 380};
+                        var data = new google.visualization.DataTable(jsonData);
+                        var chart = new google.visualization.ColumnChart(document.getElementById('chart_div'));
+                        chart.draw(data, options);
+                    }
+
+                    function drawChartExamesRealizadosPeriodo() {
+                        dataInicio = $("#dataInicio").val();
+                        dataFim = $("#dataFim").val();
+                        fases = $("#produtoExame").val();
+                        if (dataInicio == "") {
+                            dataInicio = 2014;
+                        }
+                        if (dataFim == "") {
+                            dataFim = 2020;
+                        }
+                        if (fases == 0) {
+                            return alert("Informe o campo de exames.");
+                        }
+                        var jsonData = $.ajax({
+                            url: "/relatorio/grafico-exames-realizados-periodo/",
+                            dataType: "json",
+                            data: {dataInicio: dataInicio, dataFim: dataFim, fases: fases},
+                            async: false
+                        }).responseText;
+                        var options = {'title': 'Gráfico: Quantidade de Exames Realizados',
+                            'width': 1200,
+                            'height': 380};
+                        var data = new google.visualization.DataTable(jsonData);
+                        var chart = new google.visualization.ColumnChart(document.getElementById('chart_div'));
+                        chart.draw(data, options);
+                    }
+
+                    function drawChartExamesRealizadosAnual() {
+                        dataAno = $("#data").val();
+                        fases = $("#produtoExame").val();
+                        if (dataAno == "") {
+                            dataAno = 2014;
+                        }
+                        if (fases == 0) {
+                            return alert("Informe o campo de tipo de exames.");
+                        }
+                        var jsonData = $.ajax({
+                            url: "/relatorio/grafico-exames-realizados-anual/",
+                            dataType: "json",
+                            data: {dataAno: dataAno, fases: fases},
+                            async: false
+                        }).responseText;
+                        var options = {'title': 'Gráfico: Quantidade de Exames Realizados: \n Filtros: Exame: ' + tipoExame[fases] + ", Ano: " + dataAno,
+                            'width': 1000,
+                            'height': 380};
+                        var data = new google.visualization.DataTable(jsonData);
+                        var chart = new google.visualization.ColumnChart(document.getElementById('chart_div'));
+                        chart.draw(data, options);
+                    }
+</script>

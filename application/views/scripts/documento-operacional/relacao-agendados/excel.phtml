@@ -1,0 +1,89 @@
+<?php
+if ($this->modo == 1):
+    header("Expires: Mon, 26 Jul 1997 05:00:00 GMT");
+    header("Last-Modified: " . gmdate("D,d M YH:i:s") . " GMT");
+    header("Cache-Control: no-cache, must-revalidate");
+    header("Pragma: no-cache");
+    header("Content-type: application/x-msexcel");
+    header("Content-Disposition: attachment; filename=\"siss" . str_replace("/", "-", $this->url()) . "-" . date("YmdHis") . ".xls\"");
+    header("Content-Description: PHP Generated Data");
+    ob_start();
+endif;
+$dados = $this->resultado['dados'];
+$lista = $this->resultado['lista'];
+$filtro = $this->filtro;
+$colspan = 6 + 2;
+?>
+<style>
+<?php include 'css/documento.css' ?>
+</style>
+
+<?php if ($this->modo == 0): ?>
+    <a href="javascript:window.history.go(-1);void(0);" class="btn btn-success">Voltar</a><hr/>
+<?php endif; ?>
+
+<table border="1" class="largo sem-margem">
+    <tbody>
+
+        <tr>
+            <td class="logo"><img src="http://desenvsiss.hiestgroup.com.br/img/logo-relatorio.png"/></td>
+            <td class="titulo" colspan="<?php echo $colspan - 1 ?>"><h1>RELAÇÃO DE AGENDADOS</h1></td>
+        </tr>
+
+        <tr><td colspan="<?php echo $colspan ?>">&nbsp;</td></tr>
+
+        <?php $i = 0 ?>
+        <?php foreach ($dados as $label => $valor): ?>
+            <tr>
+                <td class="etiqueta"><?php echo strtoupper($label) ?>:</td>
+                <td class="conteudo"><?php echo $valor ?></td>
+                <?php if (isset($filtro[$i])): ?>
+                    <td class="etiqueta"><?php echo $filtro[$i] ?>:</td>
+                    <td class="conteudo"><?php echo $filtro[$i + 1] ?></td>
+                    <?php $i += 2 ?>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                <?php else: ?>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                <?php endif ?>
+                <td></td>
+            </tr>
+        <?php endforeach; ?>
+
+        <tr><td colspan="<?php echo $colspan ?>">&nbsp;</td></tr>
+
+        <tr>
+            <th>DATA</th>
+            <th>H.EXAME</th>
+            <th>H.CLÍNICO</th>
+            <th>NOME</th>
+            <th>EMPRESA</th>
+            <th>TIPO</th>
+            <th>ESPECIALISTA</th>
+            <th>PRESENÇA</th>
+        </tr>
+
+        <?php foreach ($lista as $item): ?>
+            <tr>
+                <td align="center"><?php echo $item['data'] ?></td>
+                <td align="center"><?php echo str_replace('00:00:00', '', $item['agenda_hora_exame']) ?></td>
+                <td align="center"><?php echo str_replace('00:00:00', '', $item['agenda_hora_clinico']) ?></td>
+                <td><?php echo $item['empresa'] ?></td>
+                <td><?php echo $item['nome'] ?></td>
+                <td><?php echo $item['tipo'] ?></td>
+                <td><?php echo $item['especialista'] ?></td>
+                <td><?php echo $item['presenca'] ?></td>
+            </tr>
+        <?php endforeach; ?>
+
+    </tbody>
+</table>
+<?php
+if ($this->modo == 1):
+    echo utf8_decode(ob_get_clean());
+endif;

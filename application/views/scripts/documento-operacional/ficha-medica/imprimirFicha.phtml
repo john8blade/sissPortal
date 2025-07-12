@@ -1,0 +1,645 @@
+<?php
+
+function gerarIconeItemMarcado($valor, $padraoValorMarcado = 1, $padraoValorNaoMarcado = 0, $iconeMarcado = '<img src="/img/marcar.png">', $iconeNaoMarcado = '<img src="/img/naomarcar.png">') {
+    $resultado = $iconeNaoMarcado;
+    if ((int) $valor == $padraoValorMarcado) {
+        $resultado = $iconeMarcado;
+    }
+    return $resultado;
+}
+
+require_once 'MPDF/mpdf.php';
+$localScripts = '../application/views/scripts/documento-operacional/';
+require_once "{$localScripts}include/funcoes.php";
+
+$htmlRodape = obterHtmlDoRodapeEmPdf();
+ob_start();
+include($localScripts . 'ficha-medica/' . 'cabecalho.phtml');
+$htmlCabecalho = ob_get_clean();
+
+$tipoExame = $this->atributos['tipoexame']['tipoexame_nome'];
+$fichaMedica = $this->atributos;
+$htmlCabecalho = str_replace('<[atributoTipoExame]/>', $tipoExame, $htmlCabecalho);
+
+$Unidade = new Application_Model_Unidade();
+$unidade = $Unidade->obter($this->atributos['empresa']['fk_unidade_id']);
+$descricao = json_decode($unidade['unidade_descricao'], true);
+$htmlCabecalho = str_replace('{CIDADE}', $fichaMedica['fichamedica_cidade_emissao'], $htmlCabecalho);
+
+$p = new mPDF('utf-8', 'A4', 0, '', 10, 10, 35, 30, 8, 8);
+$p->SetHTMLHeader($htmlCabecalho);
+$p->SetHTMLFooter($htmlRodape);
+$p->setAutoTopMargin = false;
+$p->setAutoBottomMargin = false;
+$funcionario = $this->atributos['funcionario'];
+
+
+$empresa = $this->atributos['empresa'];
+$examesAlterados = $this->atributos['produto_alterado_fichamedica'];
+$medico = $this->atributos["medico"];
+ob_start();
+
+//verifica VALORES
+
+$etilismo = "";
+$atividadeFisica = "";
+$SistemaNervoso = "";
+$sistemaPsico = "";
+$apRespiratorio = "";
+$tabagismo = "";
+if ($fichaMedica['etilismo_classificacao'] == 1) {
+    $etilismo = "NÃO BEBE";
+}
+if ($fichaMedica['etilismo_classificacao'] == 2) {
+    $etilismo = "BEBE EVENTUAMENTE";
+}
+if ($fichaMedica['etilismo_classificacao'] == 3) {
+    $etilismo = "BEBE SEMANALMENTE";
+}
+if ($fichaMedica['etilismo_classificacao'] == 4) {
+    $etilismo = "BEBE DIARIAMENTE";
+}
+if ($fichaMedica['atividade_fisica_classificacao'] == 1) {
+    $atividadeFisica = "SEDENTÁRIO";
+}
+if ($fichaMedica['atividade_fisica_classificacao'] == 2) {
+    $atividadeFisica = "ATE 2 VEZES POR SEMANA";
+}
+if ($fichaMedica['atividade_fisica_classificacao'] == 3) {
+    $atividadeFisica = "3 VEZES POR SEMANA OU MAIS";
+}
+if ($fichaMedica['sistema_nervoso_classificacao'] == 1) {
+    $SistemaNervoso = "NORMAL";
+}
+if ($fichaMedica['sistema_nervoso_classificacao'] == 2) {
+    $SistemaNervoso = "ALTERADO";
+}
+if ($fichaMedica['sistema_psiquico_classificacao'] == 1) {
+    $sistemaPsico = "NORMAL";
+}
+if ($fichaMedica['sistema_psiquico_classificacao'] == 2) {
+    $sistemaPsico = "ALTERADO";
+}
+if ($fichaMedica['aparelho_respiratorio_classificacao'] == 1) {
+    $apRespiratorio = "MURMURIO VISICULAR PRESENTE (MVP) SEM RA";
+}
+if ($fichaMedica['aparelho_respiratorio_classificacao'] == 2) {
+    $apRespiratorio = "ALTERADO";
+}
+if ($fichaMedica['tabagista_classificacao'] == 1) {
+    $tabagismo = "NÃO FUMA";
+}
+if ($fichaMedica['tabagista_classificacao'] == 2) {
+    $tabagismo = "EX FUMANTE";
+}
+if ($fichaMedica['tabagista_classificacao'] == 3) {
+    $tabagismo = "FUMANTE (1 A 10 CIGARROS POR DIA)";
+}
+if ($fichaMedica['tabagista_classificacao'] == 4) {
+    $tabagismo = "FUMANTE (11 A 20 CIGARROS POR DIA)";
+}
+if ($fichaMedica['tabagista_classificacao'] == 5) {
+    $tabagismo = "FUMANTE (MAIS DE 20 CIGARROS POR DIA)";
+}
+?>
+<style>
+    table{border-collapse: collapse; font: normal 11px Arial;width: 100%;}
+    table#tabela tr td { font: normal 11px Arial; border: 1px solid #ddd; }
+    table#tabela tr td.etiqueta { font-weight: bold; padding: 4px; }
+    table#tabela tr td.titulo { text-align: center; font-weight: bold; background: #ccc; }
+    table#tabela tr td.separador { padding: 10px; border: none; }
+    table#tabela tr td.centro { text-align: center; }
+</style>
+
+<!--  INFORMAÇÕES DO FUNCIONÁRIO-->
+<table id="tabela" style="border-collapse: collapse; width: 100%;">
+    <tr>
+        <td colspan="7" class="etiqueta" style="border: none;"><?php echo $funcionario['pessoa_nome']; ?></td>
+    </tr>
+    <tr>
+        <td class="etiqueta" style="border-right: none; text-align: right; border-bottom: none;">CPF: </td>
+        <td colspan="1" style="border-left: none; border-right: none; border-bottom: none;">&nbsp;<?php echo Util::cpf($funcionario['pessoa_cpf']); ?></td>
+        <td colspan="3" class="etiqueta" style="border-right: none;text-align: right; border-left: none; border-bottom: none; text-align: right;">MATRÍCULA:</td>
+        <td colspan="3" style="border-left: none; border-bottom: none;"><?php echo $funcionario['funcionario_matricula'] ?></td>
+    </tr>
+    <tr>
+        <td class="etiqueta" style="border-top: none; border-bottom: none; border-right: none; text-align: right;">IDENTIDADE: </td>
+        <td colspan="1" style="border-top: none; border-left: none; border-right: none; border-bottom: none;">&nbsp;<?php echo $funcionario['pessoa_identidade']; ?></td>
+        <td colspan="3" class="etiqueta" style="border-top: none; border-right: none;text-align: right; border-left: none; border-bottom: none;">NASCIMENTO:</td>
+        <td colspan="3" style="border-top: none; border-left: none; border-bottom: none;"><?php echo $funcionario['pessoa_data_nascimento']; ?></td>
+    </tr>
+    <tr>
+        <td class="etiqueta" style="border-top: none; border-right: none; text-align: right;">FUNÇÃO: </td>
+        <td colspan="1" style=" width:250px; border-top: none; border-left: none; border-right: none; border-bottom: none;">&nbsp;<?php echo $funcionario['funcao_nome']; ?></td>
+        <td colspan="3" class="etiqueta" style="border-top: none; border-right: none;text-align: right; border-left: none; border-bottom: none;">SEXO: </td>
+        <td colspan="3" style="border-top: none; border-left: none; border-bottom: none;"><?php echo $funcionario['pessoa_sexo']; ?></td>
+    </tr>
+    <tr>
+        <td class="etiqueta" style="border-bottom: none; border-right: none; text-align: right;">EMPRESA: </td>
+        <td colspan="7" style="border-left: none; border-bottom: none;">&nbsp;<?php echo $empresa['empresa_razao'] ?></td>
+    </tr>
+    <tr>
+        <td class="etiqueta" style="border-top: none; border-right: none; text-align: right;">CNPJ: </td>
+        <td colspan="7" style="border-left: none; border-top: none;">&nbsp;<?php echo Util::cnpj($empresa['empresa_cnpj']) ?></td>
+    </tr>  
+    <tr>
+        <td colspan="7" class="separador"></td>
+    </tr>
+</table>
+<!--  FIM DE INFORMAÇÕES DO FUNCIONÁRIO-->
+
+<!--  INFORMAÇÕES DO HISTÓRICO MÉDICO-->
+<table style="border-collapse: collapse; font: normal 11px Arial; font-weight: bold; width: 100%;" >
+    <tr>
+        <td colspan="7" class="etiqueta" style="border: none;">HISTÓRICO MÉDICO E OCUPACIONAL DECLARADO</td>
+    </tr>
+    <tr>
+        <td colspan="10" class="etiqueta" style="border: 1px solid #ddd; border-bottom: none; border-left: none; border-right: none;">&nbsp;</td>
+    </tr>
+    <tr>
+        <td colspan="6" class="etiqueta" style="border: none; text-align: right;">TRABALHOU COM?</td>
+    </tr>  
+    <tr>
+        <td class="etiqueta" style="border-right: none; text-align: left; border-bottom: none; font-weight: none;">AFASTADO PELO INSS? </td>
+        <td style="border-left: none; border-right: none; border-bottom: none; font-weight: none;"><?php echo gerarIconeItemMarcado($fichaMedica['hist_med_ocup_dec_afastado_inss']), '&nbsp; SIM &nbsp;&nbsp;', gerarIconeItemMarcado($fichaMedica['hist_med_ocup_dec_afastado_inss'], 0), '&nbsp; NÃO' ?></td>
+        <td style="border-left: none; border-bottom: none; font-weight: none;"><?php echo '&nbsp;', gerarIconeItemMarcado($fichaMedica['trab_com_prod_quimico']), '&nbsp;' ?></td>
+        <td class="etiqueta" style="border-right: none; text-align: right; border-left: none; border-bottom: none; text-align: left; font-weight: none;">PRODUTOS QUÍMICOS&nbsp;</td> 
+        <td style="border-left: none; border-bottom: none; font-weight: none;"><?php echo '&nbsp;', gerarIconeItemMarcado($fichaMedica['trab_com_ruidos']), '&nbsp;' ?></td>
+        <td class="etiqueta" style="border-right: none;text-align: right; border-left: none; border-bottom: none; text-align: right; font-weight: none;">RUÍDOS&nbsp;</td>    
+        <td style="border-left: none; border-bottom: none; font-weight: none;"><?php echo '&nbsp;', gerarIconeItemMarcado($fichaMedica['trab_com_baixa_ou_alta_pressao']), '&nbsp;' ?></td>
+        <td class="etiqueta" style="border-right: none;text-align: right; border-left: none; border-bottom: none; text-align: left; font-weight: none;">BAIXA / ALTA PRESSÃO</td>    
+    </tr>
+    <tr>
+        <td class="etiqueta" style="border-right: none; text-align: left; border-bottom: none; font-weight: none;">ACIDENTE DO TRABALHO? </td>
+        <td style="border-left: none; border-right: none; border-bottom: none; font-weight: none;"><?php echo gerarIconeItemMarcado($fichaMedica['hist_med_ocup_dec_acidente_trabalho']), '&nbsp; SIM &nbsp;&nbsp;', gerarIconeItemMarcado($fichaMedica['hist_med_ocup_dec_acidente_trabalho'], 0), '&nbsp; NÃO' ?></td>
+        <td style="border-left: none; border-bottom: none; font-weight: none;"><?php echo '&nbsp;', gerarIconeItemMarcado($fichaMedica['trab_com_gases_toxico']), '&nbsp;' ?></td>
+        <td class="etiqueta" style="border-right: none; text-align: right; border-left: none; border-bottom: none; text-align: left; font-weight: none;">GASES TÓXICOS</td> 
+        <td style="border-left: none; border-bottom: none; font-weight: none;"><?php echo '&nbsp;', gerarIconeItemMarcado($fichaMedica['trab_com_poeira']), '&nbsp;' ?></td>
+        <td class="etiqueta" style="border-right: none;text-align: right; border-left: none; border-bottom: none; text-align: left; font-weight: none;">POEIRA&nbsp;</td>    
+        <td style="border-left: none; border-bottom: none; font-weight: none;"><?php echo '&nbsp;', gerarIconeItemMarcado($fichaMedica['trab_com_material_radioativo']), '&nbsp;' ?></td>
+        <td class="etiqueta" style="border-right: none;text-align: right; border-left: none; border-bottom: none; text-align: left; font-weight: none;">MATERIAL RADIOATIVO</td>  
+    </tr>
+    <tr>
+        <td class="etiqueta" style="border-right: none; text-align: left; border-bottom: none; font-weight: none;">EXPOSTO A RISCO, USOU EPI'S? </td>
+        <td style="border-left: none; border-right: none; border-bottom: none; font-weight: none;"><?php echo gerarIconeItemMarcado($fichaMedica['hist_med_ocup_dec_expo_risco_usou_epi']), '&nbsp; SIM &nbsp;&nbsp;', gerarIconeItemMarcado($fichaMedica['hist_med_ocup_dec_acidente_trabalho'], 0), '&nbsp; NÃO' ?></td>
+        <td style="border-left: none; border-bottom: none; font-weight: none;"><?php echo '&nbsp;', gerarIconeItemMarcado($fichaMedica['trab_com_ferramenta_pneumaticas']), '&nbsp;' ?></td>
+        <td class="etiqueta" style="border-right: none; text-align: right; border-left: none; border-bottom: none; text-align: left; font-weight: none;">FERRAM. PNEUMÁTICAS</td> 
+        <td style="border-left: none; border-bottom: none; font-weight: none;"><?php echo '&nbsp;', gerarIconeItemMarcado($fichaMedica['trab_com_calor']), '&nbsp;' ?></td>
+        <td class="etiqueta" style="border-right: none;text-align: right; border-left: none; border-bottom: none; text-align: left; font-weight: none;">CALOR&nbsp;</td>
+    </tr>
+    <tr>
+        <td colspan="7" class="separador"></td>
+    </tr><br>
+</table>
+<!-- FIM DE INFORMAÇÕES DO HISTÓRICO MÉDICO-->
+
+<!--  INFORMAÇÕES DA ANAMNESE-->
+<table style="border-collapse: collapse; font: normal 11px Arial; font-weight: bold; width: 100%;">
+    <tr>
+        <td colspan="7" class="etiqueta" style="border: none;">ANAMNESE</td>
+    </tr>
+    <tr>
+        <td colspan="7" class="etiqueta" style="border: 1px solid #ddd; border-bottom: none; border-left: none; border-right: none;">&nbsp;</td>
+    </tr>
+    <tr>
+        <td class="etiqueta" style="width:230px;  border-right: none; text-align: right; border-bottom: none; font-weight: none;">DOENÇAS INFECCIOSAS PARASITÁRIAS?&nbsp;<?php echo gerarIconeItemMarcado($fichaMedica['anamnese_doencas_infecciosas_parasitarias']) ?>&nbsp;</td>
+        <td style="border-left: none; border-right: none; border-bottom: none; font-weight: none;">SIM </td>
+        <td class="etiqueta" style="border-right: none; text-align: right; border-left: none; border-bottom: none; text-align: left; font-weight: none;">&nbsp;EM CASO DE SIM, QUAIS?&nbsp;</td> 
+    </tr>
+    <tr>
+        <td class="etiqueta" style="border-right: none; text-align: right; border-bottom: none; font-weight: none;">&nbsp;<?php echo gerarIconeItemMarcado($fichaMedica['anamnese_doencas_infecciosas_parasitarias'], 0) ?>&nbsp;  </td>
+        <td style="border-left: none; border-right: none; border-bottom: none; font-weight: none;">NÃO </td>
+        <td><input type="text" style="width: 60%;" value="<?php echo ($fichaMedica['anamnese_quais_doencas_infecciosas_parasitarias']) ?>" /></td>
+        <!--<td class="etiqueta" style="border-right: none; text-align: right; border-left: none; border-bottom: none; text-align: left; font-weight: none;">&nbsp;<?php echo ($fichaMedica['anamnese_quais_doencas_infecciosas_parasitarias']) ?>&nbsp;</td>-->
+    </tr>
+    <tr>
+        <td colspan="7" class="separador"></td>
+    </tr>
+</table>
+<!--  FIM DE INFORMAÇÕES DA ANAMNESE-->
+
+<!--  INFORMAÇÕES DE MEDICAMENTOS-->
+<table style="border-collapse: collapse; font: normal 11px Arial; font-weight: bold; width: 100%;">
+    <tr>
+        <td colspan="7" class="etiqueta" style="border: none;">MEDICAMENTOS</td>
+    </tr>
+    <tr>
+        <td colspan="7" class="etiqueta" style="border: 1px solid #ddd; border-bottom: none; border-left: none; border-right: none;">&nbsp;</td>
+    </tr>   
+    <tr>
+        <td class="etiqueta" style="width:230px;  border-right: none; text-align: right; border-bottom: none; font-weight: none;">USA MEDICAMENTOS?&nbsp;<?php echo gerarIconeItemMarcado($fichaMedica['medicamento_usa_medicamentos']) ?>&nbsp;  </td>
+        <td style="border-left: none; border-right: none; border-bottom: none; font-weight: none;">SIM </td>
+        <td class="etiqueta" style="border-right: none; text-align: right; border-left: none; border-bottom: none; text-align: left; font-weight: none;">&nbsp;EM CASO DE SIM, QUAIS?&nbsp;</td> 
+    </tr>
+    <tr>
+        <td class="etiqueta" style="border-right: none; text-align: right; border-bottom: none; font-weight: none;">&nbsp;<?php echo gerarIconeItemMarcado($fichaMedica['medicamento_usa_medicamentos'], 0) ?>&nbsp; </td>
+        <td style="border-left: none; border-right: none; border-bottom: none; font-weight: none;">NÃO </td>
+        <td><input type="text" style="width: 60%;" value="<?php echo ($fichaMedica['medicamento_quais_medicamentos']) ?>" /></td>
+        <!--<td class="etiqueta" style="border-right: none; text-align: right; border-left: none; border-bottom: none; text-align: left; font-weight: none;">&nbsp;<?php echo ($fichaMedica['medicamento_quais_medicamentos']) ?>&nbsp;</td> -->
+    </tr>
+    <tr>
+        <td colspan="7" class="separador"></td>
+    </tr>
+</table>
+<!--  FIM DE INFORMAÇÕES DE MEDICAMENTOS-->
+
+<!--  INFORMAÇÕES DE CIRURGIA-->
+<table style="border-collapse: collapse; font: normal 11px Arial; font-weight: bold; width: 100%;">
+    <tr>
+        <td colspan="7" class="etiqueta" style="border: none;">CIRURGIA</td>
+    </tr>
+    <tr>
+        <td colspan="7" class="etiqueta" style="border: 1px solid #ddd; border-bottom: none; border-left: none; border-right: none;">&nbsp;</td>
+    </tr>   
+    <tr>
+        <td class="etiqueta" style="width:230px;  border-right: none; text-align: right; border-bottom: none; font-weight: none;">JÁ FEZ CIRURGIA?&nbsp;<?php echo gerarIconeItemMarcado($fichaMedica['cirurgia_fez_cirurgias']) ?>&nbsp;  </td>
+        <td style="border-left: none; border-right: none; border-bottom: none; font-weight: none;">SIM </td>
+        <td class="etiqueta" style="border-right: none; text-align: right; border-left: none; border-bottom: none; text-align: left; font-weight: none;">&nbsp;EM CASO DE SIM, QUAIS?&nbsp;</td> 
+    </tr>
+    <tr>
+        <td class="etiqueta" style="border-right: none; text-align: right; border-bottom: none; font-weight: none;">&nbsp;<?php echo gerarIconeItemMarcado($fichaMedica['cirurgia_fez_cirurgias'], 0) ?>&nbsp; </td>
+        <td style="border-left: none; border-right: none; border-bottom: none; font-weight: none;">NÃO </td>
+        <td><input type="text" style="width: 60%;" value="<?php echo ($fichaMedica['cirurgia_quais_cirurgias']) ?>" /></td>
+        <!--<td class="etiqueta" style="border-right: none; text-align: right; border-left: none; border-bottom: none; text-align: left; font-weight: none;">&nbsp;<?php echo ($fichaMedica['cirurgia_quais_cirurgias']) ?>&nbsp;</td> -->
+    </tr>
+    <tr>
+        <td colspan="7" class="separador"></td>
+    </tr>
+</table>
+<!--  FIM DE INFORMAÇÕES DE MEDICAMENTOS-->
+
+<table style="border-collapse: collapse; font: normal 11px Arial;width: 100%;" border="0">
+    <tbody>
+        <tr>
+            <td colspan="4" style="border: 1px solid #ddd; border-bottom: none; border-left: none; border-right: none;"></td>
+        </tr>
+        <tr>
+            <td colspan="1" rowspan="2" style="white-space: nowrap; text-align: right; vertical-align: middle;width: 29%">JÁ FICOU INTERNADO?&nbsp;</td>
+            <td align="left" nowrap="nowrap" valign="top"><?php echo gerarIconeItemMarcado($fichaMedica['internacao_ficou_internado']) ?>&nbsp;SIM</td>
+            <td colspan="1" rowspan="2" style="white-space: nowrap; text-align: right; vertical-align: middle;width: 29%">QUEIXAS CARDIOLÓGICAS?&nbsp;</td>
+            <td align="left" nowrap="nowrap" valign="top"><?php echo gerarIconeItemMarcado($fichaMedica['queixa_cardiologia_possui']) ?>&nbsp;SIM</td>
+        </tr>
+        <tr>
+            <td align="left" nowrap="nowrap" valign="top"><?php echo gerarIconeItemMarcado($fichaMedica['internacao_ficou_internado'], 0) ?>&nbsp;NÃO</td>
+            <td align="left" nowrap="nowrap" valign="top"><?php echo gerarIconeItemMarcado($fichaMedica['queixa_cardiologia_possui'], 0) ?>&nbsp;NÃO</td>
+        </tr>
+        <tr>
+            <td colspan="4"></td>
+        </tr>
+    </tbody>
+</table>
+
+
+
+<!-- Tabela de riscos -->
+
+<table style="text-align: left;text-transform: uppercase" border="0" cellpadding="0" cellspacing="0">
+    <tbody>
+        <tr>
+            <td colspan="2" style="text-transform: uppercase;border:none;font-weight: bold;padding-bottom: 4px;" class="etiqueta">RISCOS</td>
+        </tr>
+        <tr>
+            <td></td>
+        </tr>
+        <?php foreach ($this->atributos['riscos'] as $classe) : ?>
+            <tr>
+                <td style="text-transform: uppercase;border: 1px solid #ddd;padding: 2px;width: 25%" align="left" nowrap="nowrap" valign="middle"><?php echo $classe['classerisco_nome'] ?></td>
+                <td style="text-transform: uppercase;border: 1px solid #ddd;padding: 2px;width: 75%" align="left" nowrap="nowrap" valign="middle"><?php echo $classe['ficha_medica_risco_nome'] ?></td>
+            </tr>
+        <?php endforeach ?> 
+    </tbody>
+</table>
+
+<!-- Bloco OBSERVAÇÕES DIAGNÓSTICAS -->
+<table style="margin-top: 10px;" border="0" cellpadding="2" cellspacing="2">
+    <tbody>
+        <tr>
+            <td style="border:none;font-weight: bold;padding-bottom: 4px;border-bottom: 1px solid #ddd;" class="etiqueta">OBSERVAÇÕES DIAGNÓSTICAS</td>
+        </tr>
+        <tr>
+            <td style="padding: 3PX;vertical-align: middle;border:1px solid #ddd;" align="left"  valign="middle"><?php echo $fichaMedica['fichamedica_observacoes_diagnosticas'] ?></td>
+        </tr>
+    </tbody>
+</table>
+
+<!-- Bloco Histórico familiar -->
+<table style="margin-top: 10px;" border="0" cellpadding="2" cellspacing="2">
+    <tbody>
+
+        <tr>
+            <td colspan="4" style="border:none;font-weight: bold;padding-bottom: 4px;border-bottom: 1px solid #ddd;" class="etiqueta">HISTÓRICO FAMILIAR</td>
+        </tr>
+        <tr>
+            <td></td>
+        </tr>
+        <tr>
+            <td style="width:25%;vertical-align: middle;" align="left" nowrap="nowrap" valign="middle"><?php echo gerarIconeItemMarcado($fichaMedica['hist_familiar_nega']) ?>&nbsp;NEGA</td>
+            <td style="width:25%;vertical-align: middle;" align="left" nowrap="nowrap" valign="middle"><?php echo gerarIconeItemMarcado($fichaMedica['hist_familiar_psiquiatria_familiar']) ?>&nbsp;PSIQUIATRIA FAMILIAR</td>
+            <td style="width:25%;vertical-align: middle;" align="left" nowrap="nowrap" valign="middle"><?php echo gerarIconeItemMarcado($fichaMedica['hist_familiar_neoplastia']) ?>&nbsp;NEOPLASIA</td>
+            <td style="width:25%;vertical-align: middle;" align="left" nowrap="nowrap" valign="middle"></td>
+        </tr>
+        <tr>
+            <td style="width:25%;vertical-align: middle;" align="left" nowrap="nowrap" valign="middle"><?php echo gerarIconeItemMarcado($fichaMedica['hist_familiar_hipertensao']) ?>&nbsp;HIPERTENSÃO</td>
+            <td style="width:25%;vertical-align: middle;" align="left" nowrap="nowrap" valign="middle"><?php echo gerarIconeItemMarcado($fichaMedica['hist_familiar_etilismo']) ?>&nbsp;ETILISMO</td>
+            <td style="width:25%;vertical-align: middle;" align="left" nowrap="nowrap" valign="middle"><?php echo gerarIconeItemMarcado($fichaMedica['hist_familiar_outros']) ?>&nbsp;OUTROS</td>
+            <td style="width:25%;vertical-align: middle;" align="left" nowrap="nowrap" valign="middle"></td>
+        </tr>
+        <tr>
+            <td style="width:25%;vertical-align: middle;" align="left" nowrap="nowrap" valign="middle"><?php echo gerarIconeItemMarcado($fichaMedica['hist_familiar_cardiopatia']) ?>&nbsp;CARDIOPATIA</td>
+            <td style="width:25%;vertical-align: middle;" align="left" nowrap="nowrap" valign="middle"><?php echo gerarIconeItemMarcado($fichaMedica['hist_familiar_diabetes']) ?>&nbsp;DIABETES</td>
+            <td style="width:25%;vertical-align: middle;" align="left" nowrap="nowrap" valign="middle">&nbsp;</td>
+            <td style="width:25%;vertical-align: middle;" align="left" nowrap="nowrap" valign="middle">&nbsp;</td>
+        </tr>
+
+    </tbody>
+</table>
+
+<!-- Bloco vacinas -->
+<table style="margin-top: 10px;" border="0" cellpadding="2" cellspacing="2">
+    <tbody>
+        <tr>
+            <td colspan="4" style="border:none;font-weight: bold;padding-bottom: 4px;border-bottom: 1px solid #ddd;" class="etiqueta">VACINAS</td>
+        </tr>
+        <tr>
+            <td></td>
+        </tr>
+        <tr>
+            <td style="width:25%;vertical-align: middle;" align="left" nowrap="nowrap" valign="middle"><?php echo gerarIconeItemMarcado($fichaMedica['vacina_nega']) ?>&nbsp;NEGA</td>
+            <td style="width:25%;vertical-align: middle;" align="left" nowrap="nowrap" valign="middle"><?php echo gerarIconeItemMarcado($fichaMedica['vacina_anti_tetano']) ?>&nbsp;ANTI TÉTANO</td>
+            <td style="width:25%;vertical-align: middle;" align="left" nowrap="nowrap" valign="middle"><?php echo gerarIconeItemMarcado($fichaMedica['vacina_gripe']) ?>&nbsp;GRIPE</td>
+            <td style="width:25%;vertical-align: middle;" align="left" nowrap="nowrap" valign="middle"><?php echo gerarIconeItemMarcado($fichaMedica['vacina_triplice_viral']) ?>&nbsp;TRÍPLICE VIRAL</td>
+        </tr>
+        <tr>
+            <td style="width:25%;vertical-align: middle;" align="left" nowrap="nowrap" valign="middle"><?php echo gerarIconeItemMarcado($fichaMedica['vacina_hepatite_b']) ?>&nbsp;HEPATITE</td>
+            <td style="width:25%;vertical-align: middle;" align="left" nowrap="nowrap" valign="middle"><?php echo gerarIconeItemMarcado($fichaMedica['vacina_febre_amarela']) ?>&nbsp;FEBRE AMARELA</td>
+            <td style="width:25%;vertical-align: middle;" align="left" nowrap="nowrap" valign="middle"><?php echo gerarIconeItemMarcado($fichaMedica['vacina_dupla_adulto_dt']) ?>&nbsp;DUPLA ADULTO DT</td>
+            <td style="width:25%;vertical-align: middle;" align="left" nowrap="nowrap" valign="middle"><?php echo gerarIconeItemMarcado($fichaMedica['vacina_outras']) ?>&nbsp;OUTROS</td>
+        </tr>
+    </tbody>
+</table>
+
+<!-- Bloco atividades -->
+<!-- Bloco BIOMETRIA -->
+<table style="margin-top: 10px;" border="0" cellpadding="2" cellspacing="2">
+    <tbody>
+        <tr>
+            <td colspan="4" style="border:none;font-weight: bold;padding-bottom: 4px;border-bottom: 1px solid #ddd;" class="etiqueta"></td>
+        </tr>
+        <tr>
+            <td></td>
+        </tr>
+        <tr>
+            <td style="width: 25%;vertical-align: middle;text-align: right" align="right"  valign="middle">FAZ ATIVIDADE FÍSICA?</td>
+            <td style="width: 25%;vertical-align: middle;" align="left"  valign="middle"><?php echo $atividadeFisica ?></td>
+            <td style="width: 25%;vertical-align: middle;text-align: right" align="right"  valign="middle">TABAGISMO?:</td>
+            <td style="width: 25%;vertical-align: middle;" align="left"  valign="middle"><?php echo $tabagismo ?></td>
+        </tr>
+        <tr>
+            <td style="width: 25%;vertical-align: middle;text-align: right" align="right"  valign="middle">ETILISMO:</td>
+            <td style="width: 25%;vertical-align: middle;" align="left"  valign="middle"><?php echo $etilismo ?></td>
+            <td style="width: 25%;vertical-align: middle;text-align: right" align="right"  valign="middle">SISTEMA PSIQUICO:</td>
+            <td style="width: 25%;vertical-align: middle;" align="left"  valign="middle"><?php echo $sistemaPsico; ?></td>
+        </tr>
+        <tr>
+            <td style="width: 25%;vertical-align: middle;text-align: right" align="right"  valign="middle">SISTEMA NERVOSO:</td>
+            <td style="width: 25%;vertical-align: middle;" align="left"  valign="middle"><?php echo $SistemaNervoso ?></td>
+            <td style="width: 25%;vertical-align: middle;text-align: right" align="right"  valign="middle">APARELHO RESPIRATORIO:</td>
+            <td style="width: 25%;vertical-align: middle;" align="left"  valign="middle"><?php echo $apRespiratorio ?></td>
+        </tr>
+        <tr>
+            <td colspan="4" style="border:none;font-weight: bold;padding-bottom: 4px;border-bottom: 1px solid #ddd;" class="etiqueta"></td>
+        </tr>
+    </tbody>
+</table>
+<table>
+    <tr>
+        <td>
+            &nbsp;
+        </td>
+    </tr>
+    <tr>
+        <td>
+            &nbsp;
+        </td>
+    </tr>
+</table>
+
+<!-- Bloco Queixas Ocupacionais -->
+<table style="margin-top: 10px; page-break-before: always;" border="0" cellpadding="2" cellspacing="2">
+    <tbody>
+        <tr>
+            <td colspan="4" style="border:none;font-weight: bold;padding-bottom: 4px;border-bottom: 1px solid #ddd;" class="etiqueta">QUEIXAS OCUPACIONAIS</td>
+        </tr>
+        <tr>
+            <td></td>
+        </tr>
+        <tr>
+            <td style="width:25%;vertical-align: middle;" align="left" nowrap="nowrap" valign="middle"><?php echo gerarIconeItemMarcado($fichaMedica['queixa_ocupcionais_nega']) ?>&nbsp;NEGA</td>
+            <td style="width:25%;vertical-align: middle;" align="left" nowrap="nowrap" valign="middle"><?php echo gerarIconeItemMarcado($fichaMedica['queixa_ocupcionais_alergia']) ?>&nbsp;ALERGIA</td>
+            <td style="width:25%;vertical-align: middle;" align="left" nowrap="nowrap" valign="middle"><?php echo gerarIconeItemMarcado($fichaMedica['queixa_ocupcionais_alergia']) ?>&nbsp;CERVICALGIA</td>
+            <td style="width:25%;vertical-align: middle;" align="left" nowrap="nowrap" valign="middle"><?php echo gerarIconeItemMarcado($fichaMedica['queixa_ocupcionais_dim_acid_visual']) ?>&nbsp;DIM.ACID.VISUAL</td>
+        </tr>
+        <tr>
+            <td style="width:25%;vertical-align: middle;" align="left" nowrap="nowrap" valign="middle"><?php echo gerarIconeItemMarcado($fichaMedica['queixa_ocupcionais_cardiologica']) ?>&nbsp;CARDIOLÓGICA</td>
+            <td style="width:25%;vertical-align: middle;" align="left" nowrap="nowrap" valign="middle"><?php echo gerarIconeItemMarcado($fichaMedica['queixa_ocupcionais_stress']) ?>&nbsp;STRESS</td>
+            <td style="width:25%;vertical-align: middle;" align="left" nowrap="nowrap" valign="middle"><?php echo gerarIconeItemMarcado($fichaMedica['queixa_ocupcionais_cefaleia']) ?>&nbsp;CEFALÉIA</td>
+            <td style="width:25%;vertical-align: middle;" align="left" nowrap="nowrap" valign="middle"><?php echo gerarIconeItemMarcado($fichaMedica['queixa_ocupcionais_outras']) ?>&nbsp;OUTROS</td>
+        </tr>
+        <tr>
+            <td style="width:25%;vertical-align: middle;" align="left" nowrap="nowrap" valign="middle"><?php echo gerarIconeItemMarcado($fichaMedica['queixa_ocupcionais_cansaco']) ?>&nbsp;CANSAÇO</td>
+            <td style="width:25%;vertical-align: middle;" align="left" nowrap="nowrap" valign="middle"><?php echo gerarIconeItemMarcado($fichaMedica['queixa_ocupcionais_hipoacusia']) ?>&nbsp;HIPOACUSIA</td>
+            <td style="width:25%;vertical-align: middle;" align="left" nowrap="nowrap" valign="middle"><?php echo gerarIconeItemMarcado($fichaMedica['queixa_ocupcionais_dor_articular']) ?>&nbsp;DOR ARTICULAR</td>
+            <td style="width:25%;vertical-align: middle;" align="left" nowrap="nowrap" valign="middle">&nbsp;</td>
+        </tr>
+    </tbody>
+</table>
+
+<!-- Bloco EXAME FÍSICO -->
+<table style="margin-top: 10px;" border="0" cellpadding="2" cellspacing="2">
+    <tbody>
+        <tr>
+            <td colspan="4" style="border:none;font-weight: bold;padding-bottom: 4px;border-bottom: 1px solid #ddd;" class="etiqueta">EXAME FÍSICO</td>
+        </tr>
+        <tr>
+            <td></td>
+        </tr>
+        <tr>
+            <td style="width:25%;vertical-align: middle;" align="left" nowrap="nowrap" valign="middle"><?php echo gerarIconeItemMarcado($fichaMedica['exame_fisico_corado']) ?>&nbsp;CORADO</td>
+            <td style="width:25%;vertical-align: middle;" align="left" nowrap="nowrap" valign="middle"><?php echo gerarIconeItemMarcado($fichaMedica['exame_fisico_hidratado']) ?>&nbsp;HIDRATADO</td>
+            <td style="width:25%;vertical-align: middle;" align="left" nowrap="nowrap" valign="middle"><?php echo gerarIconeItemMarcado($fichaMedica['exame_fisico_anormal']) ?>&nbsp;ANORMAL</td>
+            <td style="width:25%;vertical-align: middle;" align="left" nowrap="nowrap" valign="middle"><?php echo gerarIconeItemMarcado($fichaMedica['exame_fisico_acianotico_bom_estado_geral']) ?>&nbsp;ACIANÓTICO BOM ESTADO GERAL</td>
+        </tr>
+        <tr>
+            <td style="width:25%;vertical-align: middle;" align="left" nowrap="nowrap" valign="middle"><?php echo gerarIconeItemMarcado($fichaMedica['exame_fisico_anicterico']) ?>&nbsp;ANICTÉRICO</td>
+            <td style="width:25%;vertical-align: middle;" align="left" nowrap="nowrap" valign="middle"><?php echo gerarIconeItemMarcado($fichaMedica['exame_fisico_afebril']) ?>&nbsp;AFEBRIL</td>
+            <td style="width:25%;vertical-align: middle;" align="left" nowrap="nowrap" valign="middle"><?php echo gerarIconeItemMarcado($fichaMedica['queixa_ocupcionais_cefaleia']) ?>&nbsp;CEFALÉIA</td>
+            <td style="width:25%;vertical-align: middle;" align="left" nowrap="nowrap" valign="middle"><?php echo gerarIconeItemMarcado($fichaMedica['exame_fisico_eupneico']) ?>&nbsp;EPNÊICO</td>
+        </tr>
+    </tbody>
+</table>
+
+<!-- Bloco APARELHO CARDIVASCULAR -->
+<table style="margin-top: 10px;" border="0" cellpadding="2" cellspacing="2">
+    <tbody>
+        <tr>
+            <td colspan="2" style="border:none;font-weight: bold;padding-bottom: 4px;border-bottom: 1px solid #ddd;" class="etiqueta">APARELHO CARDIVASCULAR</td>
+        </tr>
+        <tr>
+            <td></td>
+        </tr>
+        <tr>
+            <td style="width:49%;vertical-align: middle;" align="left" nowrap="nowrap" valign="middle"><?php echo gerarIconeItemMarcado($fichaMedica['aparelho_cardiovascular_ritmo_card_reg_2_tempos']) ?>&nbsp;RÍTIMO CARDÍACO REGULAR EM 2 TEMPOS</td>
+            <td style="width:50%;vertical-align: middle;" align="left" nowrap="nowrap" valign="middle"><?php echo gerarIconeItemMarcado($fichaMedica['aparelho_cardiovascular_sem_sopro']) ?>&nbsp;SEM SOPRO</td>
+        </tr>
+        <tr>
+            <td style="width:49%;vertical-align: middle;" align="left" nowrap="nowrap" valign="middle"><?php echo gerarIconeItemMarcado($fichaMedica['aparelho_cardiovascular_bnf_bulhas_normofoneticas']) ?>&nbsp;BNF - BULHAS NORMOFONÉTICAS</td>
+            <td style="width:50%;vertical-align: middle;" align="left" nowrap="nowrap" valign="middle"><?php echo gerarIconeItemMarcado($fichaMedica['aparelho_cardiovascular_cardivascular_anormal']) ?>&nbsp;CARDIOVASCULAR ANORMAL</td>
+        </tr>
+    </tbody>
+</table>
+
+
+<!-- Bloco APARELHO DIGESTIVO -->
+<table style="margin-top: 10px;" border="0" cellpadding="2" cellspacing="2">
+    <tbody>
+        <tr>
+            <td colspan="4" style="border:none;font-weight: bold;padding-bottom: 4px;border-bottom: 1px solid #ddd;" class="etiqueta">APARELHO DIGESTIVO</td>
+        </tr>
+        <tr>
+            <td></td>
+        </tr>
+        <tr>
+            <td style="width:25%;vertical-align: middle;" align="left" nowrap="nowrap" valign="middle"><?php echo gerarIconeItemMarcado($fichaMedica['aparelho_digestivo_flacido']) ?>&nbsp;FLÁCIDO</td>
+            <td style="width:25%;vertical-align: middle;" align="left" nowrap="nowrap" valign="middle"><?php echo gerarIconeItemMarcado($fichaMedica['aparelho_digestivo_peristalse_presente']) ?>&nbsp;PERSISTALSE PRESENTE</td>
+            <td style="width:25%;vertical-align: middle;" align="left" nowrap="nowrap" valign="middle"><?php echo gerarIconeItemMarcado($fichaMedica['aparelho_digestivo_sem_dor']) ?>&nbsp;SEM DOR</td>
+            <td style="width:25%;vertical-align: middle;" align="left" nowrap="nowrap" valign="middle"><?php echo gerarIconeItemMarcado($fichaMedica['aparelho_digestivo_anormal']) ?>&nbsp;ANORMAL</td>
+        </tr>
+    </tbody>
+</table>
+
+<!-- Bloco APARELHO LOCOMOTOR -->
+<table style="margin-top: 10px;" border="0" cellpadding="2" cellspacing="2">
+    <tbody>
+        <tr>
+            <td colspan="4" style="border:none;font-weight: bold;padding-bottom: 4px;border-bottom: 1px solid #ddd;" class="etiqueta">APARELHO LOCOMOTOR</td>
+        </tr>
+        <tr>
+            <td></td>
+        </tr>
+        <tr>
+            <td style="width:25%;vertical-align: middle;" align="left" nowrap="nowrap" valign="middle"><?php echo gerarIconeItemMarcado($fichaMedica['aparelho_locomotor_deamb_sem_alteracao']) ?>&nbsp;DEAMBULÇÃO SEM ALTERAÇÃO</td>
+            <td style="width:25%;vertical-align: middle;" align="left" nowrap="nowrap" valign="middle"><?php echo gerarIconeItemMarcado($fichaMedica['aparelho_locomotor_sem_edemas_mmi']) ?>&nbsp;SEM EDEMAS MMI</td>
+            <td style="width:25%;vertical-align: middle;" align="left" nowrap="nowrap" valign="middle"><?php echo gerarIconeItemMarcado($fichaMedica['aparelho_locomotor_anormal']) ?>&nbsp;ANORMAL</td>
+            <td style="width:25%;vertical-align: middle;" align="left" nowrap="nowrap" valign="middle">&nbsp;</td>
+        </tr>
+    </tbody>
+</table>
+
+<!-- Bloco EXAMES ALTERADOS -->
+<table style="margin-top: 10px;" border="0" cellpadding="2" cellspacing="2">
+    <tbody>
+        <tr>
+            <td colspan="2" style="border:none;font-weight: bold;padding-bottom: 4px;border-bottom: 1px solid #ddd;" class="etiqueta">EXAMES ALTERADOS</td>
+        </tr>
+        <tr>
+            <td></td>
+        </tr>
+        <?php foreach ($examesAlterados as $item): ?>
+            <tr>
+                <td style="width:35%;vertical-align: middle;border-bottom: 1px solid #ddd;border-right:1px solid #ddd;" align="left"  valign="middle"><?php echo $item['produto_nome'] ?></td>
+                <td style="width:65%;vertical-align: middle;border-bottom: 1px solid #ddd" align="left"  valign="middle"><?php echo $item['produto_alterado_fichamedica_descricao_alteracao'] ?></td>
+            </tr>
+        <?php endforeach ?>
+    </tbody>
+</table>
+
+
+<!-- Bloco Informações sobre menstruação -->
+<table style="margin-top: 10px;" border="0" cellpadding="2" cellspacing="2">
+    <tbody>
+        <tr>
+            <td style="border:none;font-weight: bold;padding-bottom: 4px;border-bottom: 1px solid #ddd;text-transform: uppercase" class="etiqueta">Informações de Datas e Controle</td>
+        </tr>
+        <tr>
+            <td style="padding: 3PX;vertical-align: middle;border:1px solid #ddd;" align="left"  valign="middle"><?php echo 'MENSTRUAÇÃO: ', Util::dataBR($fichaMedica['fichamedica_data_ultima_menstruacao']) ?></td>
+        </tr>
+    </tbody>
+</table>
+
+<!-- Bloco Informações sobre menstruação -->
+<table style="margin-top: 10px;" border="0" cellpadding="2" cellspacing="2">
+    <tbody>
+        <tr>
+            <td style="border:none;font-weight: bold;padding-bottom: 4px;border-bottom: 1px solid #ddd;text-transform: uppercase" class="etiqueta">Informações de Pendências no Atendimento</td>
+        </tr>
+        <tr>
+            <td style="padding: 3PX;vertical-align: middle;border:1px solid #ddd;" align="left"  valign="middle"><?php echo 'PENDÊNCIA: ', $fichaMedica['fichamedica_detalhe_pedencia'] ?></td>
+        </tr>
+    </tbody>
+</table>
+
+<!-- Bloco BIOMETRIA -->
+<table style="margin-top: 10px;" border="0" cellpadding="2" cellspacing="2">
+    <?php $resultado = (float) number_format((float) $fichaMedica['biometria_peso'] / ((float) $fichaMedica['biometria_altura'] * (float) $fichaMedica['biometria_altura']), 2) ?>
+    <tbody>
+        <tr>
+            <td colspan="4" style="border:none;font-weight: bold;padding-bottom: 4px;border-bottom: 1px solid #ddd;" class="etiqueta">BIOMETRIA</td>
+        </tr>
+        <tr>
+            <td></td>
+        </tr>
+        <tr>
+            <td style="width: 25%;vertical-align: middle;text-align: right" align="right"  valign="middle">PRESSÃO ARTERIAL:</td>
+            <td style="width: 25%;vertical-align: middle;" align="left"  valign="middle"><?php echo $fichaMedica['biometria_pressao_maxima'], 'X', $fichaMedica['biometria_pressao_minima']; ?></td>
+            <td style="width: 25%;vertical-align: middle;text-align: right" align="right"  valign="middle">PESO:</td>
+            <td style="width: 25%;vertical-align: middle;" align="left"  valign="middle"><?php echo (float) $fichaMedica['biometria_peso'], 'KG' ?></td>
+        </tr>
+        <tr>
+            <td style="width: 25%;vertical-align: middle;text-align: right" align="right"  valign="middle">FREQUENCIA CARDÍACA:</td>
+            <td style="width: 25%;vertical-align: middle;" align="left"  valign="middle"><?php echo $fichaMedica['biometria_frequencia_cardiaca'] ?></td>
+            <td style="width: 25%;vertical-align: middle;text-align: right" align="right"  valign="middle">ALTURA:</td>
+            <td style="width: 25%;vertical-align: middle;" align="left"  valign="middle"><?php echo (float) $fichaMedica['biometria_altura'], 'MTS' ?></td>
+        </tr>
+        <tr>
+            <td style="width: 25%;vertical-align: middle;text-align: right" align="right"  valign="middle">TEMPERATURA:</td>
+            <td style="width: 25%;vertical-align: middle;" align="left"  valign="middle"><?php echo $fichaMedica['biometria_temperatura'] ?></td>
+            <td style="width: 25%;vertical-align: middle;text-align: right" align="right"  valign="middle">IMC:</td>
+            <td style="width: 25%;vertical-align: middle;" align="left"  valign="middle"><?php echo $resultado . " - " . Util::obterClassificacaoBiometriaIMC($resultado) ?></td>
+        </tr>
+    </tbody>
+</table>
+
+
+
+<!-- Bloco ASSINATURA -->
+<table style="margin-top: 40px;" border="0" cellpadding="2" cellspacing="2">
+    <tbody>
+
+        <tr>
+            <td style="text-align: center; padding:0px;">________________________________________________________</td>
+            <td  style="text-align: center;padding:0px;">________________________________________________________</td>
+        </tr>
+        <tr>
+            <td style="text-align: center; padding:0px;">FUNCIONÁRIO</td>
+            <td  style="text-align: center;padding:0px;">MÉDICO EXAMINADOR</td>
+        </tr>
+
+        <tr>
+            <td style="text-align: center; padding:0px;text-transform: uppercase;"><?php echo $funcionario['pessoa_nome'] ?></td>
+            <td  style="text-align: center;padding:0px;text-transform: uppercase;"><?php echo strtoupper($medico['pessoa_nome']) ?></td>
+        </tr>
+
+        <tr>
+            <td style="text-align: center; padding:0px;">&nbsp;</td>
+            <td  style="text-align: center;padding:0px;text-transform: uppercase;"><?php echo $medico['especialidade_nome'], ' - ', $medico['especialidade_sigla_conselho'], ': ', $medico['pessoa_especialidade_registro'] ?></td>
+        </tr>
+
+
+    </tbody>
+</table>
+
+<?php
+$htmlCorpo = ob_get_clean();
+$htmlCorpo . '</body></html>';
+$p->WriteHTML($htmlCorpo);
+$p->Output();

@@ -1,0 +1,1135 @@
+<?php #util::dump($this->atributos["empresa_id"]); ?>
+
+<div class="panel panel-primary">
+
+    <div class="panel-heading"><i class="fa fa-user"></i>Cadastro de Comunicação de Acidente de Trabalho - CAT</div>
+
+    <div class="panel-body">
+
+        <input type="hidden" name="envio" id="envio" value="<?php echo @$this->atributos["dados_cat"]["envio"]; ?>"/>
+
+        <form id="formulario" action="/esocial/salvar" method="post" target="iframe-receptor" onsubmit="Util.requisicao();">
+
+            <input type="hidden" name="esocial_cat_id" id="esocial_cat_id" value="<?php echo @$this->atributos["dados_cat"]["esocial_cat_id"]; ?>"/>
+            <input type="hidden" name="fk_contrato_id" id="fk_contrato_id" value="<?php echo @$this->atributos["dados_cat"]["fk_contrato_id"]; ?>"/>
+            <input type="hidden" name="fk_empresa_id" id="fk_empresa_id" value="<?php echo @$this->atributos["empresa_id"]; ?>"/>
+            <input type="hidden" name="cnpj" id="cnpj" value="<?php echo @$this->atributos["empresa"]; ?>"/>
+            <?php if (@$this->atributos["dados_cat"]['fk_alocacao_id'] > 0) : ?>
+                <input type="hidden" name="fk_alocacao_id" id="fk_alocacao_id" value="<?php echo @$this->atributos["dados_cat"]["fk_alocacao_id"]; ?>"/>
+            <?php endif ?>
+
+            <div class="panel panel-info">
+
+                <div class="panel-heading">Dados do Funcionário</div>
+
+                <div class="panel-body">
+
+                    <div class="row">
+
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>Nome</label>
+                                <select class="form-control input-sm pesquisa" name="fk_alocacao_id" id="fk_alocacao_id" <?php echo (@$this->atributos["dados_cat"]['fk_alocacao_id']) ? 'disabled' : ""; ?> required>
+                                    <option value="">---</option>
+                                    <?php foreach ($this->atributos['alocacao'] as $cargo): ?>
+                                    <option <?php echo ($cargo["alocacao_id"] == @$this->atributos["dados_cat"]['fk_alocacao_id']) ? 'selected="selected"' : ""; ?> value="<?php echo $cargo["alocacao_id"]; ?>"><?php echo $cargo["pessoa_nome"]; ?></option>
+                                    <?php endforeach;?>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label>CPF</label>
+                                <input readonly class="form-control input-sm mask-cpf" type="text" name="pessoa_cpf" id="pessoa_cpf" value="<?php echo @$this->atributos['dados_cat']['pessoa_cpf']; ?>" />
+                            </div>
+                        </div>
+
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label>Matrícula eSocial</label>
+                                <input readonly class="form-control input-sm" type="text" name="matricula" id="matricula" value="<?php echo @$this->atributos['dados_cat']['funcionario_matricula']; ?>"/>
+                            </div>
+                        </div>
+
+                    </div>
+                          
+                </div>                
+
+            </div>
+
+            <div class="panel panel-info">
+
+                <div class="panel-heading">Comunicação de Acidente de Trabalho - CAT</div>
+
+                <div class="panel-body">
+
+                    <div class="row">
+
+                        <div class="col-md-2">
+                            <div class="form-group">
+                                <label><a rel="tooltip" title="Data do acidente">Data Acidente</a></label>  <a style="font-size: 10px" rel="tooltip" title="Campo de preenchimento obrigatório"><i style="color: red;" class="fa fa-asterisk"></i></a>
+                                <input class="form-control mask-data ignora-ucase" type="text" name="esocial_cat_dtAcid" id="esocial_cat_dtAcid" value="<?php echo @$this->atributos['dados_cat']['esocial_cat_dtAcid']; ?>" required="required"/>
+                            </div>
+                        </div>
+
+                        <div class="col-md-2">
+                            <div class="form-group">
+                                <label><a rel="tooltip" title="Tipo de acidente">Tipo Acidente</a></label>  <a style="font-size: 10px" rel="tooltip" title="Campo de preenchimento obrigatório"><i style="color: red;" class="fa fa-asterisk"></i></a>
+                                <select class="form-control input-sm" name="esocial_cat_tpAcid" id="esocial_cat_tpAcid" required="required">
+                                    <?php if (@$this->atributos['dados_cat'] > 0) : ?>
+                                        <?php foreach ($this->atributos["tipo_acidente"] as $k => $item) : ?>
+                                            <option <?php echo $k == @$this->atributos['dados_cat']['esocial_cat_tpAcid'] ? 'selected="selected"' : ''; ?> value="<?php echo $k; ?>"><?php echo $item; ?></option>
+                                        <?php endforeach ?>  
+                                    <?php else : ?>
+                                        <option value="">---</option>
+                                        <?php foreach ($this->atributos["tipo_acidente"] as $k => $item) : ?>
+                                            <option value="<?php echo $k; ?>"><?php echo $item; ?></option>
+                                        <?php endforeach ?>
+                                    <?php endif; ?>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="col-md-2">
+                            <div class="form-group">
+                                <label><a rel="tooltip" title="Hora do acidente">Hora Acidente</a></label>  <a style="font-size: 10px" rel="tooltip" title="Campo de preenchimento obrigatório"><i style="color: red;" class="fa fa-asterisk"></i></a>
+                                <input class="form-control" type="time" min="00:00" max="23:59" name="esocial_cat_hrAcid" id="esocial_cat_hrAcid" <?php echo (@$this->atributos["dados_cat"]['esocial_cat_hrAcid']) ? '' : "disabled"; ?> value="<?php echo @$this->atributos["dados_cat"]['esocial_cat_hrAcid']; ?>" required="required"/>
+                            </div>
+                        </div>
+
+                        <div class="col-md-2">
+                            <div class="form-group">
+                                <label><a rel="tooltip" title="Horas trabalhadas antes da ocorrência">Horas Trabalhadas</a></label>  <a style="font-size: 10px" rel="tooltip" title="Campo de preenchimento obrigatório"><i style="color: red;" class="fa fa-asterisk"></i></a>
+                                <input class="form-control" type="time" min="00:00" max="99:59" name="esocial_cat_hrsTrabAntesAcid" id="esocial_cat_hrsTrabAntesAcid" <?php echo (@$this->atributos["dados_cat"]['esocial_cat_hrsTrabAntesAcid']) ? '' : "disabled"; ?> value="<?php echo @$this->atributos["dados_cat"]['esocial_cat_hrsTrabAntesAcid']; ?>" required="required"/>
+                            </div>
+                        </div>
+
+                        <div class="col-md-2">
+                            <div class="form-group">
+                                <label><a rel="tooltip" title="Tipo de CAT">Tipo CAT</a></label>  <a style="font-size: 10px" rel="tooltip" title="Campo de preenchimento obrigatório"><i style="color: red;" class="fa fa-asterisk"></i></a>
+                                <select class="form-control input-sm" name="esocial_cat_tpCat" id="esocial_cat_tpCat" required="required">
+                                    <?php if (@$this->atributos['dados_cat'] > 0) : ?>
+                                        <?php foreach ($this->atributos["tipo_cat"] as $k => $item) : ?>
+                                            <option <?php echo $k == @$this->atributos['dados_cat']['esocial_cat_tpCat'] ? 'selected="selected"' : ''; ?> value="<?php echo $k; ?>"><?php echo $item; ?></option>
+                                        <?php endforeach ?>  
+                                    <?php else : ?>
+                                        <option value="">---</option>
+                                        <?php foreach ($this->atributos["tipo_cat"] as $k => $item) : ?>
+                                            <option value="<?php echo $k; ?>"><?php echo $item; ?></option>
+                                        <?php endforeach ?>
+                                    <?php endif; ?>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="col-md-2">
+                            <div class="form-group">
+                                <label><a rel="tooltip" title="Último dia trabalhado">Último dia trabalhado</a></label>  <a style="font-size: 10px" rel="tooltip" title="Campo de preenchimento obrigatório"><i style="color: red;" class="fa fa-asterisk"></i></a>
+                                <input class="form-control mask-data ignora-ucase" type="text" name="esocial_cat_ultDiaTrab" id="esocial_cat_ultDiaTrab" value="<?php echo @$this->atributos['dados_cat']['esocial_cat_ultDiaTrab']; ?>" required="required"/>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <div class="row">
+
+                        <div class="col-md-2">
+                            <div class="form-group">
+                                <label><a rel="tooltip" title="Houve óbito?">Houve Óbito?</a></label>
+                                <select class="form-control input-sm" name="esocial_cat_indCatObito" id="esocial_cat_indCatObito">
+                                    <?php if (@$this->atributos['dados_cat'] > 0) : ?>
+                                        <?php foreach ($this->atributos["houve_obito"] as $k => $item) : ?>
+                                            <option <?php echo $k == @$this->atributos['dados_cat']['esocial_cat_indCatObito'] ? 'selected="selected"' : ''; ?> value="<?php echo $k; ?>"><?php echo $item; ?></option>
+                                        <?php endforeach ?>  
+                                    <?php else : ?>
+                                        <option value="">---</option>
+                                        <?php foreach ($this->atributos["houve_obito"] as $k => $item) : ?>
+                                            <option value="<?php echo $k; ?>"><?php echo $item; ?></option>
+                                        <?php endforeach ?>
+                                    <?php endif; ?>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="col-md-2">
+                            <div class="form-group">
+                                <label><a rel="tooltip" title="Data do acidente">Data Óbito</a></label>
+                                <input class="form-control mask-data ignora-ucase" type="text" name="esocial_cat_dtObito" id="esocial_cat_dtObito" value="<?php echo (@$this->atributos["dados_cat"]['esocial_cat_dtObito'] != '00/00/0000') ? @$this->atributos['dados_cat']['esocial_cat_dtObito'] : ""; ?>" />
+                            </div>
+                        </div>
+
+                        <div class="col-md-2">
+                            <div class="form-group">
+                                <label><a rel="tooltip" title="Houve comunicação à autoridade policial?">Polícia Acionada?</a></label>  <a style="font-size: 10px" rel="tooltip" title="Campo de preenchimento obrigatório"><i style="color: red;" class="fa fa-asterisk"></i></a>
+                                <select class="form-control input-sm" name="esocial_cat_indComunPolicia" id="esocial_cat_indComunPolicia" required="required">
+                                    <?php if (@$this->atributos['dados_cat'] > 0) : ?>
+                                        <?php foreach ($this->atributos["comun_policia"] as $k => $item) : ?>
+                                            <option <?php echo $k == @$this->atributos['dados_cat']['esocial_cat_indComunPolicia'] ? 'selected="selected"' : ''; ?> value="<?php echo $k; ?>"><?php echo $item; ?></option>
+                                        <?php endforeach ?>  
+                                    <?php else : ?>
+                                        <option value="">---</option>
+                                        <?php foreach ($this->atributos["comun_policia"] as $k => $item) : ?>
+                                            <option value="<?php echo $k; ?>"><?php echo $item; ?></option>
+                                        <?php endforeach ?>
+                                    <?php endif; ?>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="col-md-2">
+                            <div class="form-group">
+                                <label><a rel="tooltip" title="Preencher com o código da situação geradora do acidente ou da doença profissional">Cód. Situação Geradora</a></label>  <a style="font-size: 10px" rel="tooltip" title="Campo de preenchimento obrigatório"><i style="color: red;" class="fa fa-asterisk"></i></a> <a style="font-size: 15px" rel="tooltip" title="Código referente a Tabela 15 do eSocial" href="https://www.gov.br/esocial/pt-br/documentacao-tecnica/manuais/leiautes-esocial-nt-05-2022-html/tabelas.html#15" target="_blank"><i style="color: blue;" class="fa fa-file-text-o"></i></a>
+                                <input class="form-control" type="text" maxlength="9" pattern="([0-9]{9})" onkeypress="return restricLetras(event)" name="esocial_cat_codSitGeradora" id="esocial_cat_codSitGeradora" value="<?php echo @$this->atributos['dados_cat']['esocial_cat_codSitGeradora']; ?>" required="required"/>
+                            </div>
+                        </div>
+
+                        <div class="col-md-2">
+                            <div class="form-group">
+                                <label><a rel="tooltip" title="Iniciativa da CAT">Iniciativa da CAT</a></label>  <a style="font-size: 10px" rel="tooltip" title="Campo de preenchimento obrigatório"><i style="color: red;" class="fa fa-asterisk"></i></a>
+                                <select disabled class="form-control input-sm" name="esocial_cat_iniciatCAT" id="esocial_cat_iniciatCAT" required="required">
+                                    <?php if (@$this->atributos['dados_cat'] > 0) : ?>
+                                        <?php foreach ($this->atributos["iniciat_cat"] as $k => $item) : ?>
+                                            <option <?php echo $k == @$this->atributos['dados_cat']['esocial_cat_iniciatCAT'] ? 'selected="selected"' : ''; ?> value="<?php echo $k; ?>"><?php echo $item; ?></option>
+                                        <?php endforeach ?>  
+                                    <?php else : ?>
+                                        <?php foreach ($this->atributos["iniciat_cat"] as $k => $item) : ?>
+                                            <option value="<?php echo $k; ?>"><?php echo $item; ?></option>
+                                        <?php endforeach ?>
+                                    <?php endif; ?>
+                                </select>
+                            </div>
+                        </div>
+                        <input type="hidden" name="esocial_cat_iniciatCAT" id="esocial_cat_iniciatCAT" value="1"/>
+
+                        <div class="col-md-2">
+                            <div class="form-group">
+                                <label><a rel="tooltip" title="Houve afastamento?">Houve afastamento?</a></label>  <a style="font-size: 10px" rel="tooltip" title="Campo de preenchimento obrigatório"><i style="color: red;" class="fa fa-asterisk"></i></a>
+                                <select class="form-control input-sm" name="esocial_cat_houveAfast" id="esocial_cat_houveAfast" required="required">
+                                    <?php if (@$this->atributos['dados_cat'] > 0) : ?>
+                                        <?php foreach ($this->atributos["houve_afast"] as $k => $item) : ?>
+                                            <option <?php echo $k == @$this->atributos['dados_cat']['esocial_cat_houveAfast'] ? 'selected="selected"' : ''; ?> value="<?php echo $k; ?>"><?php echo $item; ?></option>
+                                        <?php endforeach ?>  
+                                    <?php else : ?>
+                                        <option value="">---</option>
+                                        <?php foreach ($this->atributos["houve_afast"] as $k => $item) : ?>
+                                            <option value="<?php echo $k; ?>"><?php echo $item; ?></option>
+                                        <?php endforeach ?>
+                                    <?php endif; ?>
+                                </select>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <div class="row">
+
+                        <div class="col-md-12">
+                            <div class="form-group">
+                                <label><a rel="tooltip" title="Observação da CAT">Observação</a></label>
+                                <textarea style="resize: none" class="form-control input-sm" maxlength="999" name="esocial_cat_obsCAT" id="esocial_cat_obsCAT" cols="" rows="3"><?php echo (isset($this->atributos["dados_cat"]['esocial_cat_obsCAT'])) ? $this->atributos["dados_cat"]['esocial_cat_obsCAT'] : "" ?></textarea>
+                            </div>
+                        </div>
+
+                    </div>
+                          
+                </div>
+
+            </div>
+
+            <div class="panel panel-info">
+
+                <div class="panel-heading">Local do Acidente</div>
+
+                <div class="panel-body">
+
+                    <div class="row">
+
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label><a rel="tooltip" title="Tipo de local do acidente">Tipo Local</a></label>  <a style="font-size: 10px" rel="tooltip" title="Campo de preenchimento obrigatório"><i style="color: red;" class="fa fa-asterisk"></i></a>
+                                <select class="form-control input-sm" name="esocial_cat_tpLocal" id="esocial_cat_tpLocal" required="required">
+                                    <?php if (@$this->atributos['dados_cat'] > 0) : ?>
+                                        <?php foreach ($this->atributos["tipo_local"] as $k => $item) : ?>
+                                            <option <?php echo $k == @$this->atributos['dados_cat']['esocial_cat_tpLocal'] ? 'selected="selected"' : ''; ?> value="<?php echo $k; ?>"><?php echo $item; ?></option>
+                                        <?php endforeach ?>  
+                                    <?php else : ?>
+                                        <option value="">---</option>
+                                        <?php foreach ($this->atributos["tipo_local"] as $k => $item) : ?>
+                                            <option value="<?php echo $k; ?>"><?php echo $item; ?></option>
+                                        <?php endforeach ?>
+                                    <?php endif; ?>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="col-md-2">
+                            <div class="form-group">
+                                <label><a rel="tooltip" title="Preencher com tipo de logradouro">Tipo de Logradouro</a></label>  <a style="font-size: 15px" rel="tooltip" title="Código referente a Tabela 20 do eSocial" href="https://www.gov.br/esocial/pt-br/documentacao-tecnica/manuais/leiautes-esocial-nt-05-2022-html/tabelas.html#20" target="_blank"><i style="color: blue;" class="fa fa-file-text-o"></i></a>
+                                <input class="form-control" style="text-transform: uppercase" type="text" maxlength="4" name="esocial_cat_tpLograd" id="esocial_cat_tpLograd" value="<?php echo @$this->atributos['dados_cat']['esocial_cat_tpLograd']; ?>"/>
+                            </div>
+                        </div>
+
+                        <div class="col-md-2">
+                            <div class="form-group">
+                                <label><a rel="tooltip" title="Número do logradouro">Nº Logradouro</a></label>  <a style="font-size: 10px" rel="tooltip" title="Campo de preenchimento obrigatório"><i style="color: red;" class="fa fa-asterisk"></i></a>
+                                <a rel="tooltip" title="Se não houver número a ser informado, preencher com 'S/N'"><input class="form-control" type="text" maxlength="10" name="esocial_cat_nrLograd" id="esocial_cat_nrLograd" value="<?php echo @$this->atributos['dados_cat']['esocial_cat_nrLograd']; ?>" required="required"/></a>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <div class="row">
+
+                        <div class="col-md-12">
+                            <div class="form-group">
+                                <label><a rel="tooltip" title="Especificação do local do acidente (pátio, rampa de acesso, posto de trabalho, etc.)">Especificação do Local</a></label>
+                                <textarea style="resize: none" class="form-control input-sm" maxlength="255" name="esocial_cat_dscLocal" id="esocial_cat_dscLocal" cols="" rows="3"><?php echo (isset($this->atributos["dados_cat"]['esocial_cat_dscLocal'])) ? $this->atributos["dados_cat"]['esocial_cat_dscLocal'] : "" ?></textarea>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <div class="row">
+
+                        <div class="col-md-1">
+                            <div class="form-group">
+                                <label><a rel="tooltip" title="CEP do logradouro">CEP</a></label> <a style="font-size: 10px" rel="tooltip" title="Campo de preenchimento obrigatório"><i style="color: red;" class="fa fa-asterisk"></i></a> <a style="font-size: 15px" rel="tooltip" title="Preenchimento automático de campos ao inserir CEP válido"><i style="color: blue;" class="fa fa-info"></i></a>
+                                <input class="form-control" type="text" maxlength="8" name="esocial_cat_cep" id="esocial_cat_cep" value="<?php echo @$this->atributos['dados_cat']['esocial_cat_cep']; ?>" required="required"/>
+                            </div>
+                        </div>                    
+
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label><a rel="tooltip" title="Bairro do logradouro">Bairro</a></label>
+                                <input class="form-control" type="text" maxlength="90" name="esocial_cat_bairro" id="esocial_cat_bairro" value="<?php echo @$this->atributos['dados_cat']['esocial_cat_bairro']; ?>"/>
+                            </div>
+                        </div>
+
+                        <div class="col-md-2">
+                            <div class="form-group">
+                                <label><a rel="tooltip" title="Complemento do logradouro">Complemento</a></label>
+                                <input class="form-control" type="text" maxlength="30" name="esocial_cat_complemento" id="esocial_cat_complemento" value="<?php echo @$this->atributos['dados_cat']['esocial_cat_complemento']; ?>"/>
+                            </div>
+                        </div>
+
+                        <div class="col-md-2">
+                            <div class="form-group">
+                                <label><a rel="tooltip" title="Preencher com o código do município, conforme tabela do IBGE">Cód. Muni.</a> <a style="font-size: 10px" rel="tooltip" title="Campo de preenchimento obrigatório"><i style="color: red;" class="fa fa-asterisk"></i></a> <a style="font-size: 15px" rel="tooltip" title="Código 7 digitos da tabela do IBGE" href="https://ibge.gov.br/explica/codigos-dos-municipios.php" target="_blank"><i style="color: blue;" class="fa fa-file-text-o"></i></a></label>
+                                <input class="form-control" type="text" maxlength="7" onkeypress="return restricLetras(event)" name="esocial_cat_codMunic" id="esocial_cat_codMunic" value="<?php echo @$this->atributos['dados_cat']['esocial_cat_codMunic']; ?>"/>
+                            </div>
+                        </div>
+
+                        <div class="col-md-1">
+                            <div class="form-group">
+                                <label><a rel="tooltip" title="Preencher com a sigla da Unidade Federativa - UF">UF</a> <a style="font-size: 10px" rel="tooltip" title="Campo de preenchimento obrigatório"><i style="color: red;" class="fa fa-asterisk"></i></a></label>
+                                <select class="form-control input-sm" name="esocial_cat_uf" id="esocial_cat_uf">
+                                    <option value="">---</option>
+                                    <?php foreach ($this->atributos['uf'] as $uf): ?>
+                                        <option <?php echo ($uf["unidade_federativa_id"] == @$this->atributos['dados_cat']['esocial_cat_uf']) ? 'selected="selected"' : ""; ?> value="<?php echo $uf["unidade_federativa_id"]; ?>"><?php echo $uf["unidade_federativa_sigla"]; ?></option>
+                                    <?php endforeach;?> 
+                                </select>  
+                            </div>
+                        </div>
+
+                        <div class="col-md-1">
+                            <div class="form-group">
+                                <label><a rel="tooltip" title="Preencher com o código do país">País</a></label>  <a style="font-size: 15px" rel="tooltip" title="Código referente a Tabela 06 do eSocial" href="https://www.gov.br/esocial/pt-br/documentacao-tecnica/manuais/leiautes-esocial-nt-05-2022-html/tabelas.html#06" target="_blank"><i style="color: blue;" class="fa fa-file-text-o"></i></a>
+                                <input class="form-control" type="text" maxlength="3" name="esocial_cat_pais" id="esocial_cat_pais" <?php echo (@$this->atributos["dados_cat"]['esocial_cat_pais']) ? '' : "disabled"; ?> value="<?php echo @$this->atributos['dados_cat']['esocial_cat_pais']; ?>"/>
+                            </div>
+                        </div>
+
+                        <div class="col-md-1">
+                            <div class="form-group">
+                                <label><a rel="tooltip" title="Código de Endereçamento Postal">Cód. Postal</a></label>
+                                <input class="form-control" type="text" min="4" maxlength="12" name="esocial_cat_codPostal" id="esocial_cat_codPostal" <?php echo (@$this->atributos["dados_cat"]['esocial_cat_codPostal']) ? '' : "disabled"; ?> value="<?php echo @$this->atributos['dados_cat']['esocial_cat_codPostal']; ?>"/>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <div class="row">
+
+                        <div class="col-md-12">
+                            <div class="form-group">
+                                <label><a rel="tooltip" title="Descrição do logradouro">Descrição Logradouro</a></label>  <a style="font-size: 10px" rel="tooltip" title="Campo de preenchimento obrigatório"><i style="color: red;" class="fa fa-asterisk"></i></a>
+                                <textarea style="resize: none" class="form-control input-sm" maxlength="100" name="esocial_cat_dscLograd" id="esocial_cat_dscLograd" cols="" rows="2" required="required"><?php echo (isset($this->atributos["dados_cat"]['esocial_cat_dscLograd'])) ? $this->atributos["dados_cat"]['esocial_cat_dscLograd'] : "" ?></textarea>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <div class="row">
+
+                        <div class="col-md-2">
+                            <div class="form-group">
+                                <label><a rel="tooltip" title="Preencher com o código correspondente ao tipo de inscrição do local onde ocorreu o acidente ou a doença ocupacional">Tipo de Inscrição</a></label>  <a style="font-size: 10px" rel="tooltip" title="Campo de preenchimento obrigatório"><i style="color: red;" class="fa fa-asterisk"></i></a>
+                                <select class="form-control input-sm" name="esocial_cat_tpInsc" id="esocial_cat_tpInsc" required="required">
+                                    <?php if (@$this->atributos['dados_cat'] > 0) : ?>
+                                        <?php foreach ($this->atributos["tipo_inscricao"] as $k => $item) : ?>
+                                            <option <?php echo $k == @$this->atributos['dados_cat']['esocial_cat_tpInsc'] ? 'selected="selected"' : ''; ?> value="<?php echo $k; ?>"><?php echo $item; ?></option>
+                                        <?php endforeach ?>  
+                                    <?php else : ?>
+                                        <option value="">---</option>
+                                        <?php foreach ($this->atributos["tipo_inscricao"] as $k => $item) : ?>
+                                            <option value="<?php echo $k; ?>"><?php echo $item; ?></option>
+                                        <?php endforeach ?>
+                                    <?php endif; ?>
+                                </select>
+                            </div>
+                        </div>                        
+
+                        <div class="col-md-2">
+                            <div class="form-group">
+                                <label><a rel="tooltip" title="Informar o número de inscrição do estabelecimento, de acordo com o tipo de inscrição. Se o acidente ou a doença ocupacional ocorreu em local onde o trabalhador presta serviços, deve ser um número de inscrição pertencente à contratante dos serviços.">Nº Inscrição</a></label>  <a style="font-size: 10px" rel="tooltip" title="Campo de preenchimento obrigatório"><i style="color: red;" class="fa fa-asterisk"></i></a>  
+                                <input class="form-control" type="text" maxlength="14" onkeypress="return restricLetras(event)" name="esocial_cat_nrInsc" id="esocial_cat_nrInsc" value="<?php echo @$this->atributos['dados_cat']['esocial_cat_nrInsc']; ?>" required="required"/>
+                            </div>
+                        </div>
+
+                        <div class="col-md-2">
+                            <div class="form-group">
+                                <label><a rel="tooltip" title="Preencher com o código correspondente à parte atingida.">Cód. Parte Atingida</a></label>  <a style="font-size: 10px" rel="tooltip" title="Campo de preenchimento obrigatório"><i style="color: red;" class="fa fa-asterisk"></i></a>  <a style="font-size: 15px" rel="tooltip" title="Código referente a Tabela 13 do eSocial" href="https://www.gov.br/esocial/pt-br/documentacao-tecnica/manuais/leiautes-esocial-nt-05-2022-html/tabelas.html#13" target="_blank"><i style="color: blue;" class="fa fa-file-text-o"></i></a>
+                                <input class="form-control" type="text" maxlength="9" onkeypress="return restricLetras(event)" name="esocial_cat_codParteAting" id="esocial_cat_codParteAting" value="<?php echo @$this->atributos['dados_cat']['esocial_cat_codParteAting']; ?>" required="required"/>
+                            </div>
+                        </div>
+
+                        <div class="col-md-2">
+                            <div class="form-group">
+                                <label><a rel="tooltip" title="Lateralidade da(s) parte(s) atingida(s).">Lateralidade parte(s)</a></label>  <a style="font-size: 10px" rel="tooltip" title="Campo de preenchimento obrigatório"><i style="color: red;" class="fa fa-asterisk"></i></a>
+                                <select class="form-control input-sm" name="esocial_cat_lateralidade" id="esocial_cat_lateralidade" required="required">
+                                    <?php if (@$this->atributos['dados_cat'] > 0) : ?>
+                                        <?php foreach ($this->atributos["lateralidade"] as $k => $item) : ?>
+                                            <option <?php echo $k == @$this->atributos['dados_cat']['esocial_cat_lateralidade'] ? 'selected="selected"' : ''; ?> value="<?php echo $k; ?>"><?php echo $item; ?></option>
+                                        <?php endforeach ?>  
+                                    <?php else : ?>
+                                        <option value="">---</option>
+                                        <?php foreach ($this->atributos["lateralidade"] as $k => $item) : ?>
+                                            <option value="<?php echo $k; ?>"><?php echo $item; ?></option>
+                                        <?php endforeach ?>
+                                    <?php endif; ?>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="col-md-2">
+                            <div class="form-group">
+                                <label><a rel="tooltip" title="Preencher com o código correspondente ao agente causador do acidente. Deve ser um código válido e existente na Tabela 14 ou na Tabela 15.">Cód. Agente Causador</a></label>  <a style="font-size: 10px" rel="tooltip" title="Campo de preenchimento obrigatório"><i style="color: red;" class="fa fa-asterisk"></i></a>  <a style="font-size: 15px" rel="tooltip" title="Código referente a Tabela 14 do eSocial" href="https://www.gov.br/esocial/pt-br/documentacao-tecnica/manuais/leiautes-esocial-nt-05-2022-html/tabelas.html#14" target="_blank"><i style="color: blue;" class="fa fa-file-text-o"></i></a>  <a style="font-size: 15px" rel="tooltip" title="Código referente a Tabela 15 do eSocial" href="https://www.gov.br/esocial/pt-br/documentacao-tecnica/manuais/leiautes-esocial-nt-05-2022-html/tabelas.html#15" target="_blank"><i style="color: blue;" class="fa fa-file-text-o"></i></a>
+                                <input class="form-control" type="text" maxlength="9" pattern="([0-9]{9})" onkeypress="return restricLetras(event)" name="esocial_cat_codAgntCausador" id="esocial_cat_codAgntCausador" value="<?php echo @$this->atributos['dados_cat']['esocial_cat_codAgntCausador']; ?>" required="required"/>
+                            </div>
+                        </div>
+
+                    </div>
+                          
+                </div>
+
+            </div>
+
+            <div class="panel panel-info">
+
+                <div class="panel-heading">Atestado Médico</div>
+
+                <div class="panel-body">
+
+                    <div class="row">
+
+                        <div class="col-md-2">
+                            <div class="form-group">
+                                <label><a rel="tooltip" title="Data do atendimento">Data Atendimento</a></label>  <a style="font-size: 10px" rel="tooltip" title="Campo de preenchimento obrigatório"><i style="color: red;" class="fa fa-asterisk"></i></a>
+                                <input class="form-control mask-data ignora-ucase" type="text" name="esocial_cat_dtAtendimento" id="esocial_cat_dtAtendimento" value="<?php echo @$this->atributos['dados_cat']['esocial_cat_dtAtendimento']; ?>" required="required"/>
+                            </div>
+                        </div>
+
+                        <div class="col-md-2">
+                            <div class="form-group">
+                                <label><a rel="tooltip" title="Hora do atendimento">Hora Atendimento</a></label>  <a style="font-size: 10px" rel="tooltip" title="Campo de preenchimento obrigatório"><i style="color: red;" class="fa fa-asterisk"></i></a>
+                                <input class="form-control" type="time" min="00:00" max="23:59" name="esocial_cat_hrAtendimento" id="esocial_cat_hrAtendimento" value="<?php echo @$this->atributos['dados_cat']['esocial_cat_hrAtendimento']; ?>" required="required"/>
+                            </div>
+                        </div>
+
+                        <div class="col-md-2">
+                            <div class="form-group">
+                                <label><a rel="tooltip" title="Indicativo de internação">Internação?</a></label>  <a style="font-size: 10px" rel="tooltip" title="Campo de preenchimento obrigatório"><i style="color: red;" class="fa fa-asterisk"></i></a>
+                                <select class="form-control input-sm" name="esocial_cat_indInternacao" id="esocial_cat_indInternacao" required="required">
+                                    <?php if (@$this->atributos['dados_cat'] > 0) : ?>
+                                        <?php foreach ($this->atributos["internacao"] as $k => $item) : ?>
+                                            <option <?php echo $k == @$this->atributos['dados_cat']['esocial_cat_indInternacao'] ? 'selected="selected"' : ''; ?> value="<?php echo $k; ?>"><?php echo $item; ?></option>
+                                        <?php endforeach ?>  
+                                    <?php else : ?>
+                                        <option value="">---</option>
+                                        <?php foreach ($this->atributos["internacao"] as $k => $item) : ?>
+                                            <option value="<?php echo $k; ?>"><?php echo $item; ?></option>
+                                        <?php endforeach ?>
+                                    <?php endif; ?>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="col-md-2">
+                            <div class="form-group">
+                                <label><a rel="tooltip" title="Duração estimada do tratamento, em dias">Dias de tratamento</a></label>  <a style="font-size: 10px" rel="tooltip" title="Campo de preenchimento obrigatório"><i style="color: red;" class="fa fa-asterisk"></i></a>
+                                <input class="form-control" type="text" maxlength="4" onkeypress="return restricLetras(event)" name="esocial_cat_durTrat" id="esocial_cat_durTrat" value="<?php echo @$this->atributos['dados_cat']['esocial_cat_durTrat']; ?>" required="required"/>
+                            </div>
+                        </div>
+
+                        <div class="col-md-2">
+                            <div class="form-group">
+                                <label><a rel="tooltip" title="Indicativo de afastamento do trabalho durante o tratamento">Afastamento de Trabalho</a></label>  <a style="font-size: 10px" rel="tooltip" title="Campo de preenchimento obrigatório"><i style="color: red;" class="fa fa-asterisk"></i></a>
+                                <select class="form-control input-sm" name="esocial_cat_indAfast" id="esocial_cat_indAfast" required="required">
+                                    <?php if (@$this->atributos['dados_cat'] > 0) : ?>
+                                        <?php foreach ($this->atributos["afastamento_trab"] as $k => $item) : ?>
+                                            <option <?php echo $k == @$this->atributos['dados_cat']['esocial_cat_indAfast'] ? 'selected="selected"' : ''; ?> value="<?php echo $k; ?>"><?php echo $item; ?></option>
+                                        <?php endforeach ?>  
+                                    <?php else : ?>
+                                        <option value="">---</option>
+                                        <?php foreach ($this->atributos["afastamento_trab"] as $k => $item) : ?>
+                                            <option value="<?php echo $k; ?>"><?php echo $item; ?></option>
+                                        <?php endforeach ?>
+                                    <?php endif; ?>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="col-md-2">
+                            <div class="form-group">
+                                <label><a rel="tooltip" title="Preencher com a descrição da natureza da lesão.">Cód. Natureza da Lesão</a></label>  <a style="font-size: 10px" rel="tooltip" title="Campo de preenchimento obrigatório"><i style="color: red;" class="fa fa-asterisk"></i></a>  <a style="font-size: 15px" rel="tooltip" title="Código referente a Tabela 17 do eSocial" href="https://www.gov.br/esocial/pt-br/documentacao-tecnica/manuais/leiautes-esocial-nt-05-2022-html/tabelas.html#17" target="_blank"><i style="color: blue;" class="fa fa-file-text-o"></i></a>
+                                <input class="form-control" type="text" maxlength="9" onkeypress="return restricLetras(event)" name="esocial_cat_dscLesao" id="esocial_cat_dscLesao" value="<?php echo @$this->atributos['dados_cat']['esocial_cat_dscLesao']; ?>" required="required"/>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <div class="row">
+
+                        <div class="col-md-12">
+                            <div class="form-group">
+                                <label><a rel="tooltip" title="Descrição complementar da lesão.">Descrição Complementar da Lesão</a></label>  
+                                <textarea style="resize: none" class="form-control input-sm" maxlength="200" name="esocial_cat_dscCompLesao" id="esocial_cat_dscCompLesao" cols="" rows="2"><?php echo (isset($this->atributos["dados_cat"]['esocial_cat_dscCompLesao'])) ? $this->atributos["dados_cat"]['esocial_cat_dscCompLesao'] : "" ?></textarea>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <div class="row">
+
+                        <div class="col-md-12">
+                            <div class="form-group">
+                                <label><a rel="tooltip" title="Diagnóstico provável">Diagnóstico Provável</a></label>  
+                                <textarea style="resize: none" class="form-control input-sm" maxlength="100" name="esocial_cat_diagProvavel" id="esocial_cat_diagProvavel" cols="" rows="2"><?php echo (isset($this->atributos["dados_cat"]['esocial_cat_diagProvavel'])) ? $this->atributos["dados_cat"]['esocial_cat_diagProvavel'] : "" ?></textarea>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <div class="row">
+                        
+                        <div class="col-md-2">
+                            <div class="form-group">
+                                <label><a rel="tooltip" title="Informar o código da tabela de Classificação Internacional de Doenças - CID.">Cód. da Tabela CID</a></label>  <a style="font-size: 10px" rel="tooltip" title="Campo de preenchimento obrigatório"><i style="color: red;" class="fa fa-asterisk"></i></a>  <a style="font-size: 15px" rel="tooltip" title="Deve ser preenchido com caracteres alfanuméricos, conforme opções constantes na tabela CID"><i style="color: blue;" class="fa fa-file-text-o"></i></a>
+                                <input class="form-control" type="text" maxlength="4" name="esocial_cat_codCID" id="esocial_cat_codCID" value="<?php echo @$this->atributos['dados_cat']['esocial_cat_codCID']; ?>" />
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <div class="row">
+
+                        <div class="col-md-12">
+                            <div class="form-group">
+                                <label><a rel="tooltip" title="Observação.">Observações</a></label>  
+                                <textarea style="resize: none" class="form-control input-sm" maxlength="255" name="esocial_cat_observacao" id="esocial_cat_observacao" cols="" rows="2"><?php echo (isset($this->atributos["dados_cat"]['esocial_cat_observacao'])) ? $this->atributos["dados_cat"]['esocial_cat_observacao'] : "" ?></textarea>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <div class="row">
+                        
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label><a rel="tooltip" title="Nome do médico/dentista que emitiu o atestado.">Nome Médico/Dentista</a></label>  <a style="font-size: 10px" rel="tooltip" title="Campo de preenchimento obrigatório"><i style="color: red;" class="fa fa-asterisk"></i></a>  
+                                <input class="form-control" type="text" maxlength="70" name="esocial_cat_nmEmit" id="esocial_cat_nmEmit" value="<?php echo @$this->atributos['dados_cat']['esocial_cat_nmEmit']; ?>" required="required"/>
+                            </div>
+                        </div>
+
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label><a rel="tooltip" title="Orgão de classe.">Orgão</a></label>  <a style="font-size: 10px" rel="tooltip" title="Campo de preenchimento obrigatório"><i style="color: red;" class="fa fa-asterisk"></i></a>
+                                <select class="form-control input-sm" name="esocial_cat_ideOC" id="esocial_cat_ideOC" required="required">
+                                    <?php if (@$this->atributos['dados_cat'] > 0) : ?>
+                                        <?php foreach ($this->atributos["orgao_classe"] as $k => $item) : ?>
+                                            <option <?php echo $k == @$this->atributos['dados_cat']['esocial_cat_ideOC'] ? 'selected="selected"' : ''; ?> value="<?php echo $k; ?>"><?php echo $item; ?></option>
+                                        <?php endforeach ?>  
+                                    <?php else : ?>
+                                        <option value="">---</option>
+                                        <?php foreach ($this->atributos["orgao_classe"] as $k => $item) : ?>
+                                            <option value="<?php echo $k; ?>"><?php echo $item; ?></option>
+                                        <?php endforeach ?>
+                                    <?php endif; ?>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="col-md-2">
+                            <div class="form-group">
+                                <label><a rel="tooltip" title="Número de inscrição no órgão de classe ou Registro do Ministério da Saúde (RMS).">Nº Inscrição do Órgão</a></label>  <a style="font-size: 10px" rel="tooltip" title="Campo de preenchimento obrigatório"><i style="color: red;" class="fa fa-asterisk"></i></a>  
+                                <input class="form-control" type="text" maxlength="14" name="esocial_cat_nrOC" id="esocial_cat_nrOC" value="<?php echo @$this->atributos['dados_cat']['esocial_cat_nrOC']; ?>" required="required"/>
+                            </div>
+                        </div>
+
+                        <div class="col-md-2">
+                            <div class="form-group">
+                                <label><a rel="tooltip" title="Sigla da UF do órgão de classe.">UF</a></label>  <a style="font-size: 10px" rel="tooltip" title="Campo de preenchimento obrigatório"><i style="color: red;" class="fa fa-asterisk"></i></a>  
+                                <select class="form-control input-sm" name="esocial_cat_ufOC" id="esocial_cat_ufOC" <?php echo (@$this->atributos["dados_cat"]['esocial_cat_ufOC']) ? '' : "disabled"; ?>>
+                                    <option value="">---</option>
+                                    <?php foreach ($this->atributos['uf'] as $uf): ?>
+                                        <option <?php echo ($uf["unidade_federativa_id"] == @$this->atributos['dados_cat']['esocial_cat_ufOC']) ? 'selected="selected"' : ""; ?> value="<?php echo $uf["unidade_federativa_id"]; ?>"><?php echo $uf["unidade_federativa_sigla"]; ?></option>
+                                    <?php endforeach;?> 
+                                </select>                            
+                            </div>
+                        </div>
+
+                        <div class="col-md-2">
+                            <div class="form-group">
+                                <label><a rel="tooltip" title="nformar o número do recibo da última CAT referente ao mesmo acidente/doença relacionada ao trabalho, nos casos: a) de CAT de reabertura; b) de óbito, quando houver CAT anterior.">Nº Recibo da última CAT</a></label>   
+                                <input class="form-control" type="text" maxlength="23" name="esocial_cat_nrRecCatOrig" id="esocial_cat_nrRecCatOrig" value="<?php echo @$this->atributos['dados_cat']['esocial_cat_nrRecCatOrig']; ?>"/>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    
+                          
+                </div>
+
+            </div>
+
+            <div class="panel panel-info">
+
+                <div class="panel-heading">Responsável pela CAT (Para controle SISS)</div>
+
+                <div class="panel-body">
+
+                    <div class="row">
+
+                        <div class="col-md-2">
+                            <div class="form-group">
+                                <label><a rel="tooltip" title="Informar o número de CPF do responsável pelo preenchimento da CAT">CPF</a></label>  <a style="font-size: 10px" rel="tooltip" title="Campo de preenchimento obrigatório"><i style="color: red;" class="fa fa-asterisk"></i></a>  
+                                <input class="form-control mask-cpf" type="text" maxlength="14" name="esocial_cat_cpf" id="esocial_cat_cpf" value="<?php echo @$this->atributos['dados_cat']['esocial_cat_cpf']; ?>" required="required"/>
+                            </div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label><a rel="tooltip" title="Informe o nome do responsável pelo preenchimento da CAT.">Nome</a></label>  <a style="font-size: 10px" rel="tooltip" title="Campo de preenchimento obrigatório"><i style="color: red;" class="fa fa-asterisk"></i></a>  
+                                <input class="form-control" type="text" maxlength="70" name="esocial_cat_nome" id="esocial_cat_nome" value="<?php echo @$this->atributos['dados_cat']['esocial_cat_nome']; ?>" required="required"/>
+                            </div>
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div class="panel panel-primary">
+
+                <div class="panel-heading">Ações</div>
+
+                <div class="panel-body">
+
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="form-group">
+                                <?php if (empty($this->atributos["dados_cat"]['envio'])) : ?>
+                                <button class="btn btn-success" type="submit">Registrar</button>
+                                <?php endif; ?>
+                                <a class="btn btn-primary" href="/index/" onclick="window.history.go(-1);"><i class="fa fa-arrow-left"></i>Voltar</a>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+<script type="text/javascript">
+
+    $(document).ready(function(){
+        $("#esocial_cat_cep").mask("99.999-999");
+
+        if ($("#envio").val() > 0) {
+            const inputs = document.getElementsByTagName("input");
+            for (const input of inputs) {
+              input.disabled = true;
+            }
+
+            const selects = document.getElementsByTagName("select");
+            for (const select of selects) {
+              select.disabled = true;
+            }
+
+            const textareas = document.getElementsByTagName("textarea");
+            for (const textarea of textareas) {
+              textarea.disabled = true;
+            }
+        }        
+
+    });
+
+    $('#fk_alocacao_id').change(function() {
+ 
+        var alocacao_id = $("#fk_alocacao_id").val();
+
+        $("#pessoa_cpf",
+          "#matricula",
+          "#fk_contrato_id",
+          "#fk_empresa_id"
+        ).val("");
+
+        var url = "/ajax/json/servico/obter-alocacao-pelo-id/";
+        retorno = function(dados) {
+          if (dados.alocacao) {
+            
+            var alocacao = dados.alocacao;
+
+            $("#pessoa_cpf").val(util.cpf(alocacao.pessoa_cpf));
+            $("#matricula").val(alocacao.funcionario_matricula);
+            $("#fk_contrato_id").val(alocacao.fk_contrato_id);
+            $("#fk_empresa_id").val(alocacao.fk_empresa_id);
+            
+          }
+        }; // fecha "retorno"
+        $.post(
+          url,
+          {
+            alocacao_id: alocacao_id
+          },
+          retorno,
+          "json"
+        );  
+
+    });
+
+    $('#esocial_cat_tpAcid').change(function() {
+
+        var tpAcid = $("#esocial_cat_tpAcid").val();
+
+        switch(tpAcid) {
+          case '1':
+            // Típico
+            $('#esocial_cat_hrAcid').attr('disabled', false);
+            $('#esocial_cat_hrsTrabAntesAcid').attr('disabled', false);            
+            break;
+          case '2':
+            // Doença
+            $('#esocial_cat_hrAcid').attr('disabled', true);
+            $('#esocial_cat_hrsTrabAntesAcid').attr('disabled', true);
+            break;
+          case '3':
+            // Trajeto
+            $('#esocial_cat_hrAcid').attr('disabled', false);
+            $('#esocial_cat_hrsTrabAntesAcid').attr('disabled', false);
+            break;
+          default:
+            // Padrão
+            $('#esocial_cat_hrAcid').attr('disabled', true);
+            $('#esocial_cat_hrsTrabAntesAcid').attr('disabled', true);
+        }
+  
+    });
+
+    $('#esocial_cat_tpCat').change(function() {
+
+        var tpCat = $("#esocial_cat_tpCat").val();
+
+        switch(tpCat) {
+          case '1':
+            // Inicial/
+            $('#esocial_cat_indCatObito').attr('disabled', false);
+            document.getElementById("esocial_cat_indCatObito").selectedIndex = "0";       
+            break;
+          case '2':
+            // Reabertura/
+            $('#esocial_cat_indCatObito').attr('disabled', true);
+            document.getElementById("esocial_cat_indCatObito").selectedIndex = "2";
+            break;
+          case '3':
+            // Comunicação de Óbito
+            $('#esocial_cat_indCatObito').attr('disabled', true);
+            document.getElementById("esocial_cat_indCatObito").selectedIndex = "1";
+            break;
+          default:
+            // Padrão
+            $('#esocial_cat_indCatObito').attr('disabled', false);
+            document.getElementById("esocial_cat_indCatObito").selectedIndex = "0";
+        }
+  
+    });
+
+    $('#esocial_cat_indCatObito').change(function() {
+
+        var indCatObito = $("#esocial_cat_indCatObito").val();
+
+        switch(indCatObito) {
+          case 'S':
+            // Sim/
+            $('#esocial_cat_indAfast').attr('disabled', true);
+            $('#esocial_cat_dtObito').attr('disabled', false);
+            document.getElementById("esocial_cat_indAfast").selectedIndex = "2";       
+            break;
+          case 'N':
+            // Não/
+            //$('#esocial_cat_indAfast').attr('disabled', true);
+            //document.getElementById("esocial_cat_indAfast").selectedIndex = "2";
+            $('#esocial_cat_dtObito').attr('disabled', true);
+            break;
+          default:
+            // Padrão
+            $('#esocial_cat_indAfast').attr('disabled', false);
+            document.getElementById("esocial_cat_indAfast").selectedIndex = "0";
+        }
+  
+    });
+
+    $('#esocial_cat_tpLocal').change(function() {
+
+        var tpLocal = $("#esocial_cat_tpLocal").val();
+
+        switch(tpLocal) {
+          case '1':
+            // Brasil
+            $('#esocial_cat_cep').attr('disabled', false);
+            $('#esocial_cat_codMunic').attr('disabled', false);
+            $('#esocial_cat_uf').attr('disabled', false);  
+            $('#esocial_cat_pais').attr('disabled', true);
+            $('#esocial_cat_codPostal').attr('disabled', true);
+            break;
+          case '2':
+            // Exterior
+            $('#esocial_cat_cep').attr('disabled', true);
+            $('#esocial_cat_codMunic').attr('disabled', true);
+            $('#esocial_cat_uf').attr('disabled', true);
+            document.getElementById("esocial_cat_uf").selectedIndex = "0";
+            $('#esocial_cat_pais').attr('disabled', false);
+            $('#esocial_cat_codPostal').attr('disabled', false);
+            break;
+          case '3':
+            // Terceiros
+            $('#esocial_cat_cep').attr('disabled', false);
+            $('#esocial_cat_codMunic').attr('disabled', false);
+            $('#esocial_cat_uf').attr('disabled', false);
+            $('#esocial_cat_pais').attr('disabled', true);
+            $('#esocial_cat_codPostal').attr('disabled', true);
+            break;
+          case '4':
+            // Via pública
+            $('#esocial_cat_cep').attr('disabled', true);
+            $('#esocial_cat_codMunic').attr('disabled', false);
+            $('#esocial_cat_uf').attr('disabled', false);
+            $('#esocial_cat_pais').attr('disabled', true);
+            $('#esocial_cat_codPostal').attr('disabled', true);
+            break;
+          case '5':
+            // Área rural
+            $('#esocial_cat_cep').attr('disabled', false);
+            $('#esocial_cat_codMunic').attr('disabled', false);
+            $('#esocial_cat_uf').attr('disabled', false);
+            $('#esocial_cat_pais').attr('disabled', true);
+            $('#esocial_cat_codPostal').attr('disabled', true);
+            break;
+          case '6':
+            // Embarcação
+            $('#esocial_cat_cep').attr('disabled', true);
+            $('#esocial_cat_codMunic').attr('disabled', true);
+            $('#esocial_cat_uf').attr('disabled', true);
+            document.getElementById("esocial_cat_uf").selectedIndex = "0";
+            $('#esocial_cat_pais').attr('disabled', true);
+            $('#esocial_cat_codPostal').attr('disabled', true);
+            break;
+          default:
+            // Outros
+            $('#esocial_cat_cep').attr('disabled', true);
+            $('#esocial_cat_codMunic').attr('disabled', true);
+            $('#esocial_cat_uf').attr('disabled', true);
+            document.getElementById("esocial_cat_uf").selectedIndex = "0";
+            $('#esocial_cat_pais').attr('disabled', true);
+            $('#esocial_cat_codPostal').attr('disabled', true);
+        }
+  
+    });
+
+    $('#esocial_cat_nrInsc').change(function() {
+
+        var tpLocal = $("#esocial_cat_tpLocal").val();
+        var tpInsc = $("#esocial_cat_tpInsc").val();
+        var nrInsc = $("#esocial_cat_nrInsc").val();
+        var cnpj = $("#cnpj").val();
+
+        nrInsc = nrInsc.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g,"");
+  
+        if (nrInsc != '' && count(nrInsc) == 12 || count(nrInsc) == 14) {            
+            
+            if (tpLocal == 3 && tpInsc == 1 && nrInsc == cnpj) {
+                swal({
+                  html: true,
+                  title: "Atenção",
+                  type: 'info',              
+                  text: `CNPJ não pode ser igual ao do empregador!`,                  
+                  confirmButtonText: "OK",
+                  cancelButtonText: "Cancelar",
+                  showCancelButton: false,
+                  closeOnConfirm: true,
+                  showLoaderOnConfirm: false
+                  },
+                  function(){
+                    $("#esocial_cat_nrInsc").val('');
+                });
+                
+            }
+        }        
+          
+    });  
+
+    $('#esocial_cat_cep').change(function() {
+
+        var cep = $("#esocial_cat_cep").val();
+
+        $("#esocial_cat_dscLograd",
+          "#esocial_cat_complemento",
+          "#esocial_cat_bairro",
+          "#esocial_cat_codMunic",
+          "#esocial_cat_uf",
+        ).val("");
+
+        var url = "/ajax/json/servico/obtercep-api/";
+        retorno = function(item) {
+          console.log(item.dados);
+          if (item.dados) {
+            
+            var aux = item.dados;
+
+            $("#esocial_cat_dscLograd").val(aux.logradouro);
+            if (Object.keys(aux.complemento).length > 0) {
+                $("#esocial_cat_complemento").val(aux.complemento);
+            }            
+            $("#esocial_cat_bairro").val(aux.bairro);
+            $("#esocial_cat_codMunic").val(aux.ibge);
+            $("#esocial_cat_uf").val(aux.uf);
+            
+          }      
+         
+        }; // fecha "retorno"
+        $.post(
+          url,
+          {
+            cep: cep
+          },
+          retorno,
+          "json"
+        );
+
+    }); 
+
+    $('#esocial_cat_ideOC').change(function() {
+
+        var ideOC = $("#esocial_cat_ideOC").val();
+
+        switch(ideOC) {
+          case '1':
+            // CRM
+            $('#esocial_cat_ufOC').attr('disabled', false);
+            break;
+          case '2':
+            // CRO
+            $('#esocial_cat_ufOC').attr('disabled', false);
+            break;
+          case '3':
+            // RMS
+            $('#esocial_cat_ufOC').attr('disabled', true);
+            document.getElementById("esocial_cat_ufOC").selectedIndex = "0";
+          default:
+            // Padrão
+            $('#esocial_cat_ufOC').attr('disabled', true);
+        }
+
+    });
+
+    $('#esocial_cat_cpf').change(function() {
+
+        var strCPF = $("#esocial_cat_cpf").val();
+
+        if (validaCpfCnpj(strCPF) == false){
+            swal({
+              html: true,
+              title: "Atenção",
+              type: 'warning',              
+              text: `Favor informar um CPF válido.`,                   
+              confirmButtonText: "OK", 
+              closeOnConfirm: true,
+              showLoaderOnConfirm: false
+              },
+              function(){
+                
+            });
+        }
+
+    });
+
+    $('#esocial_cat_ultDiaTrab').change(function() {
+
+        var strUltDiaTrab = $("#esocial_cat_ultDiaTrab").val();
+        var strDtAcid = $("#esocial_cat_dtAcid").val();
+
+        console.log(strUltDiaTrab);
+        
+        if (empty(strUltDiaTrab) && strDtAcid > '16/01/2023'){
+            swal({
+              html: true,
+              title: "Atenção",
+              type: 'warning',              
+              text: `Favor informar o último dia trabalhado do funcionário!`,                   
+              confirmButtonText: "OK", 
+              closeOnConfirm: true,
+              showLoaderOnConfirm: false
+              },
+              function(){
+                
+            });
+        }
+
+    });
+
+    function validaCpfCnpj(val) {
+        if (val.length == 14) {
+            var cpf = val.trim();
+         
+            cpf = cpf.replace(/\./g, '');
+            cpf = cpf.replace('-', '');
+            cpf = cpf.split('');
+            
+            var v1 = 0;
+            var v2 = 0;
+            var aux = false;
+            
+            for (var i = 1; cpf.length > i; i++) {
+                if (cpf[i - 1] != cpf[i]) {
+                    aux = true;   
+                }
+            } 
+            
+            if (aux == false) {
+                return false; 
+            } 
+            
+            for (var i = 0, p = 10; (cpf.length - 2) > i; i++, p--) {
+                v1 += cpf[i] * p; 
+            } 
+            
+            v1 = ((v1 * 10) % 11);
+            
+            if (v1 == 10) {
+                v1 = 0; 
+            }
+            
+            if (v1 != cpf[9]) {
+                return false; 
+            } 
+            
+            for (var i = 0, p = 11; (cpf.length - 1) > i; i++, p--) {
+                v2 += cpf[i] * p; 
+            } 
+            
+            v2 = ((v2 * 10) % 11);
+            
+            if (v2 == 10) {
+                v2 = 0; 
+            }
+            
+            if (v2 != cpf[10]) {
+                return false; 
+            } else {   
+                return true; 
+            }
+        } else if (val.length == 18) {
+            var cnpj = val.trim();
+            
+            cnpj = cnpj.replace(/\./g, '');
+            cnpj = cnpj.replace('-', '');
+            cnpj = cnpj.replace('/', ''); 
+            cnpj = cnpj.split(''); 
+            
+            var v1 = 0;
+            var v2 = 0;
+            var aux = false;
+            
+            for (var i = 1; cnpj.length > i; i++) { 
+                if (cnpj[i - 1] != cnpj[i]) {  
+                    aux = true;   
+                } 
+            } 
+            
+            if (aux == false) {  
+                return false; 
+            }
+            
+            for (var i = 0, p1 = 5, p2 = 13; (cnpj.length - 2) > i; i++, p1--, p2--) {
+                if (p1 >= 2) {  
+                    v1 += cnpj[i] * p1;  
+                } else {  
+                    v1 += cnpj[i] * p2;  
+                } 
+            } 
+            
+            v1 = (v1 % 11);
+            
+            if (v1 < 2) { 
+                v1 = 0; 
+            } else { 
+                v1 = (11 - v1); 
+            } 
+            
+            if (v1 != cnpj[12]) {  
+                return false; 
+            } 
+            
+            for (var i = 0, p1 = 6, p2 = 14; (cnpj.length - 1) > i; i++, p1--, p2--) { 
+                if (p1 >= 2) {  
+                    v2 += cnpj[i] * p1;  
+                } else {   
+                    v2 += cnpj[i] * p2; 
+                } 
+            }
+            
+            v2 = (v2 % 11); 
+            
+            if (v2 < 2) {  
+                v2 = 0;
+            } else { 
+                v2 = (11 - v2); 
+            } 
+            
+            if (v2 != cnpj[13]) {   
+                return false; 
+            } else {  
+                return true; 
+            }
+    } else {
+        return false;
+    }
+ }
+
+    function restricLetras(e) {
+        var x = e.which || e.keycode;
+        if ((x >= 48 && x <= 57)) 
+            return true;
+        else
+            return false;
+    }
+
+</script>

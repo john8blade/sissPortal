@@ -1,0 +1,21 @@
+<?php if ($this->mensagem != ""): ?>
+    <tr>
+        <td colspan="6" class="alert-danger">
+            <?php echo $this->mensagem ?>
+        </td>
+    </tr>
+<?php endif; ?>
+
+<?php foreach ($this->epis as $item): ?>
+    <tr id="epi_<?php echo $item['epi_id'] ?>">
+        <td class="fit">
+            <a rel="tooltip" data-toggle="tooltip" title="Alterar" class="btn btn-xs btn-default" href="javascript:;" onclick="alterarEPI(<?php echo $item['funcionario_epi_id'] ?>)"><i class="fa fa-edit no-margin"></i></a>
+            <a rel="tooltip" data-toggle="tooltip" title="Excluir" class="btn btn-xs btn-danger" href="javascript:;" onclick="Util.confirma('Confirma excluir EPI?', '/funcionario-epi/excluir/id/<?php echo $item['funcionario_epi_id'] ?>', this)"><i class="fa fa-trash no-margin"></i></a>
+        </td>
+        <td><?php echo $item['funcionario_epi_nome'] ?></td>
+        <td><?php echo $item['funcionario_epi_ca'] ?></td>
+        <td><?php echo $item['funcionario_epi_data_entrega'] ?></td>
+        <td><?php echo $item['funcionario_epi_data_vencimento'] ?></td>
+        <td><?php echo $item['funcionario_epi_data_devolucao'] ?></td>
+    </tr>
+<?php endforeach; ?>

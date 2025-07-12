@@ -1,0 +1,63 @@
+<?php
+require_once 'MPDF/mpdf.php';
+$localScripts = '../application/views/scripts/documento-operacional/';
+require_once "{$localScripts}include/funcoes.php";
+
+$htmlRodape = obterHtmlDoRodapeEmPdf();
+$htmlCabecalho = file_get_contents($localScripts . 'laudo/' . 'cabecalho.html');
+$tipoExame = $this->atributos['tipoexame']['tipoexame_nome'];
+$htmlCabecalho = str_replace('<[atributoTipoExame]/>', $tipoExame, $htmlCabecalho);
+
+$p = new mPDF('utf-8', 'A4', 0, '', 10, 10, 35, 30, 8, 8);
+$p->SetHTMLHeader($htmlCabecalho);
+$p->SetHTMLFooter($htmlRodape);
+$p->setAutoTopMargin = false;
+$p->setAutoBottomMargin = false;
+ob_start();
+$ultimaPagina = count($this->atributos['encaminhamento']) - 1;
+?>
+
+<style>
+    table{border-collapse: collapse; font: normal 11px Arial;width: 100%;}
+    table#tabela tr td { font: normal 11px Arial; border: 1px solid #ddd; }
+    table#tabela tr td.etiqueta { font-weight: bold; padding: 4px; }
+    table#tabela tr td.titulo { text-align: center; font-weight: bold; background: #ccc; }
+    table#tabela tr td.separador { padding: 10px; border: none; }
+    table#tabela tr td.centro { text-align: center;}
+</style>
+
+<?php foreach ($this->atributos['encaminhamento'] as $indice => $item): ?>
+    <div style="page-break-after:<?php echo ($indice == $ultimaPagina) ? 'auto' : 'always' ?>">  
+        <p style="text-align: justify;">
+            Ao <b><?php echo $item['especialidade_nome'] ?>,</b><br><br>
+            Solicito que nos seja enviado laudos médicos das condições de saúde do(a) Sr.(a)
+            <?php echo "<b>", trim($this->atributos["agenda"][0]['pessoa_nome']), '</b>' ?>, funcionário da empresa <?php echo "<b>", trim($this->atributos["agenda"][0]['empresa_razao']), '</b>' ?>, informando tratamento ao qual o mesmo está sendo
+            submetido e se está ou não compensado clinicamente, assim como se apresenta alguma
+            restrição. Este laudo nos subsidiará no acompanhamento médico do empregado pelo
+            serviço de saúde ocupacional de nossa empresa.       
+        </p>
+
+        <p style="text-align: center;"><br><br>
+            <b>Atenciosamente,</b>
+        </p>
+
+        <p style="text-align: center;"><br>
+            _____________________________________
+        </p>
+
+        <p style="text-align: center;">
+            Carimbo e Assinatura
+        </p>
+
+        <p style="text-align: center;">
+            <b> Data:</b> <?php echo date('d/m/Y'); ?>
+        </p>
+
+    </div>
+<?php endforeach ?>
+
+<?php
+$htmlCorpo = ob_get_clean();
+$htmlCorpo . '</body></html>';
+$p->WriteHTML($htmlCorpo);
+$p->Output();

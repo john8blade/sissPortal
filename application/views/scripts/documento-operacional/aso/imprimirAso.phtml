@@ -1,0 +1,246 @@
+<?php
+//Util::dump($this->atributos);
+
+require_once 'MPDF/mpdf.php';
+$localScripts = '../application/views/scripts/documento-operacional/';
+require_once "{$localScripts}include/funcoes.php";
+$htmlRodape = obterHtmlDoRodapeEmPdf();
+ob_start();
+include($localScripts . 'aso/' . 'cabecalho.phtml');
+$htmlCabecalho = ob_get_clean();
+$htmlCabecalho = str_replace('<[ParamCidade]>', $this->atributos['fichamedica_cidade_emissao'], $htmlCabecalho);
+
+ob_start();
+?>
+<p style="font-weight: bold;">EXAME EXECUTADO SOB SUPERVISÃO DO(A) MÉDICO(A) COORDENADOR(A)</p>
+
+<table style="width: 100%;border-collapse: collapse">
+    <tbody>
+        <tr>
+            <td class="label">DR.:</td>
+            <td class="valor"><?php echo $this->atributos['medico']['coordenacao_medico'] ?></td>
+        </tr>
+        <tr>
+            <td class="label">CRM:</td>
+            <td class="valor"><?php echo $this->atributos['medico']['coordenacao_crm'] ?></td>
+        </tr>
+        <tr>
+            <td class="label">ENDEREÇO:</td>
+            <td class="valor"><?php echo $this->atributos['medico']['coordenacao_endereco'] ?></td>
+        </tr>
+        <tr>
+            <td class="label">TELEFONE:</td>
+            <td class="valor"><?php echo Util::telefone($this->atributos['medico']['coordenacao_telefone']) ?></td>
+        </tr>
+    </tbody>
+</table>
+
+<?php
+$rodape = ob_get_clean();
+
+$p = new mPDF('utf-8', 'A4', 0, '', 10, 10, 38, 55, 8, 8);
+$p->SetHTMLHeader($htmlCabecalho);
+$p->SetHTMLFooter($rodape . $htmlRodape);
+$p->setAutoTopMargin = false;
+$p->setAutoBottomMargin = false;
+ob_start();
+
+//echo $rodape . $htmlRodape; exit(0);
+?>
+
+<style>
+    body, table { font: 10px Arial; width: 100%; border-collapse: collapse; }
+    table tr td { padding: 2px 2px 2px 8px; border: 1px solid lightgray; vertical-align: top; }
+    p { margin: 20px 0; }
+    h2 { margin: 10px 0; }
+    table.sem-bordas tr td { border: none; }
+    .sem-bordas { border: none; }
+    .margem {  }
+    .cabecalho { font-family: Arial; font-size: 22px; }
+    .label { text-align: right; font-weight: bold; width: 1%; white-space: nowrap; }
+    .valor {  }
+    .justo { width: 1px; white-space: nowrap; }
+    .normal { font-weight: normal; }
+    .observacoes { height: 50px; }
+    .separador { height: 20px; }
+</style>
+
+<table border="0" style="border: none;">
+    <tbody>
+        <tr>
+            <td style="width: 89%;border: none"><h2><?php echo $this->atributos['pessoa_nome'] ?></h2></td>
+            <td style="width: 10%;border: none;text-align: right"><h2><?php echo $this->atributos['funcionario_grupo_sanguineo'] ?></h2></td>
+        </tr>
+    </tbody>
+</table>
+
+
+<table>
+    <tbody>
+
+        <tr>
+            <td class="label">CPF:</td>
+            <td class="valor"><?php echo Util::cpf($this->atributos['pessoa_cpf']) ?></td>
+            <td class="label">IDENTIDADE:</td>
+            <td class="valor"><?php echo $this->atributos['pessoa_identidade'] ?></td>
+            <td class="label">NASCIMENTO:</td>
+            <td class="valor"><?php echo Util::dataBR($this->atributos['pessoa_data_nascimento']) ?></td>
+
+        </tr>
+
+        <tr>
+            <td class="label">MATRÍCULA:</td>
+            <td class="valor"><?php echo $this->atributos['funcionario_matricula'] ?></td>
+
+            <td class="label">SETOR:</td>
+            <td class="valor" colspan="3"><?php echo $this->atributos['setor_nome'] ?></td>
+        </tr>
+
+        <tr>
+            <td class="label">FUNÇÃO:</td>
+            <td class="valor" colspan="5"><?php echo $this->atributos['funcao_nome'] ?></td>
+        </tr>
+
+        <tr>
+            <td class="label">RAZÃO SOCIAL:</td>
+            <td class="valor" colspan="3"><?php echo $this->atributos['empresa_razao'] ?></td>
+            <td class="label">CNPJ:</td>
+            <td class="valor"><?php echo Util::cnpj($this->atributos['empresa_cnpj']) ?></td>
+        </tr>
+
+        <tr>
+            <td class="label">NOME FANTASIA:</td>
+            <td class="valor" colspan="5"><?php echo $this->atributos['empresa_fantasia'] ?></td>
+        </tr>
+
+    </tbody>
+</table>
+
+<h2>EXAMES REALIZADOS</h2>
+
+<table class="sem-bordas">
+    <tbody>
+        <?php for ($i = 0; $i < count($this->atributos['exames']); $i += 2): ?>
+            <?php $exame = $this->atributos['exames'][$i]; ?>
+            <tr>
+                <td class="label normal"><?php echo util::dataBR($exame['produto_agenda_data_programada']) ?></td>
+                <td class="valor"><?php echo $exame['produto_nome'] ?></td>
+                <?php if (isset($this->atributos['exames'][$i + 1])): ?>
+                    <?php $exame = $this->atributos['exames'][$i + 1]; ?>
+                    <td class="label normal margem"><?php echo util::dataBR($exame['produto_agenda_data_programada']) ?></td>
+                    <td class="valor"><?php echo $exame['produto_nome'] ?></td>
+                <?php else: ?>
+                    <td>&nbsp;</td>
+                    <td>&nbsp;</td>
+                <?php endif ?>
+            </tr>
+        <?php endfor ?>
+    </tbody>
+</table>
+
+<!--<h2>OUTROS EXAMES</h2>-->
+
+<table class="sem-bordas">
+    <tbody>
+
+        <tr>
+            <td class="label"><?php echo Util::dataBR($this->atributos['agenda_complementar_data_1']) ?>&nbsp;</td>
+            <td class="valor"><?php echo $this->atributos['agenda_complementar_texto_1'] ?></td>
+        </tr>
+
+        <tr>
+            <td class="label"><?php echo Util::dataBR($this->atributos['agenda_complementar_data_2']) ?>&nbsp;</td>
+            <td class="valor"><?php echo $this->atributos['agenda_complementar_texto_2'] ?></td>
+        </tr>
+
+        <tr>
+            <td class="label"><?php echo Util::dataBR($this->atributos['agenda_complementar_data_3']) ?>&nbsp;</td>
+            <td class="valor"><?php echo $this->atributos['agenda_complementar_texto_3'] ?></td>
+        </tr>
+
+    </tbody>
+</table>
+
+<h2>RISCOS DE EXPOSIÇÃO</h2>
+
+<table>
+    <tbody>
+        <?php foreach ($this->atributos['riscos'] as $itmRst): ?>
+            <tr>
+                <td class="label"><?php echo $itmRst['classerisco_nome'] ?>:</td>
+                <td class="valor"><?php echo $itmRst['ficha_medica_risco_nome'] ?></td>
+            </tr>
+        <?php endforeach ?>
+    </tbody>
+</table>
+
+<h2>OBSERVAÇÕES DO MÉDICO EXAMINADOR</h2>
+
+<table>
+    <tbody>
+        <tr>
+            <td class="observacoes"><?php echo $this->atributos['fichamedica_observacoes_aso'] ?></td>
+        </tr>
+    </tbody>
+</table>
+
+
+<table>
+    <tbody>
+        <tr>
+
+            <td class="label">EM:</td>
+            <td class="valor justo">____/____/________</td>
+
+            <td class="label margem">RESULTADO:</td>
+            <td class="valor justo"><?php echo ($this->atributos['fichamedica_resultado_aptidao'] == '1' ? '&#9635;' : '&#9634;') . ' APTO ' . ($this->atributos['fichamedica_resultado_aptidao'] == '0' ? '&#9635;' : '&#9634;') . ' INAPTO ' ?></td>
+
+            <td class="valor" style="text-align: right">                
+                TRABALHO EM ALTURA:<br/>
+                ESPAÇO CONFINADO:
+                <?php #echo $this->atributos['fichamedica_liberado_trabalho_altura'] == '1' ? 'LIBERADO PARA TRABALHO EM ALTURA' : '' ?>
+            </td>
+            <td class="valor">                
+                &#9634; APTO &nbsp; &#9634; INAPTO &#9634; N/A<br/>
+                &#9634; APTO &nbsp; &#9634; INAPTO &#9634; N/A
+                <?php #echo $this->atributos['fichamedica_liberado_trabalho_altura'] == '1' ? '&#9635;' : '&#9634;', ' APTO', ' ', $this->atributos['fichamedica_liberado_trabalho_altura'] == '0' ? '&#9635;' : '&#9634;', ' INAPTO' ?><br/>
+               <?php #echo $this->atributos['fichamedica_liberado_espaco_confinado'] == '1' ? '&#9635;' : '&#9634;', ' APTO', ' ', $this->atributos['fichamedica_liberado_espaco_confinado'] == '0' ? '&#9635;' : '&#9634;', ' INAPTO' ?>
+            </td>
+            <?php if (strcmp(strtolower(trim($this->atributos['tipoexame_nome'])), 'demissional') != 0): ?>
+                <td class="label">Próx. Exame:</td>
+                <td class="valor justo"><?php echo Util::dataBR($this->atributos['fichamedica_data_proximo_exame']) ?></td>
+            <?php endif ?>
+        </tr>
+    </tbody>
+</table>
+
+<p>RECEBI SEGUNDA VIA ____/____/________.</p>
+
+<table class="sem-bordas">
+    <tbody>
+        <tr><td colspan="2">&nbsp;</td></tr>
+        <tr><td colspan="2">&nbsp;</td></tr>
+        <tr><td colspan="2">&nbsp;</td></tr>
+        <tr><td colspan="2">&nbsp;</td></tr>
+        <tr><td colspan="2">&nbsp;</td></tr>
+        <tr>
+            <td align="center"></td>
+            <td align="center"><?php echo Application_Model_AssinaturaDigital::obterTagImg(100) ?></td>
+        </tr>
+        <tr>
+            <td align="center">_____________________________________________________</td>
+            <td align="center">_____________________________________________________</td>
+        </tr>
+
+        <tr>
+            <td align="center">ASSINATURA</td>
+            <td align="center">MÉDICO EXAMINADOR</td>
+        </tr>
+    </tbody>
+</table>
+
+<?php
+$htmlCorpo = ob_get_clean();
+$htmlCorpo .= '</body></html>';
+$p->WriteHTML($htmlCorpo);
+$p->Output();

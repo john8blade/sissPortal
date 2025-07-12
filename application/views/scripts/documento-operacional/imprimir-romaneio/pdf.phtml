@@ -1,0 +1,302 @@
+<?php
+$fatura = $this->atributos['fatura'];
+$cliente = $this->atributos['cliente'];
+$contrato = $this->atributos['contrato'];
+$lista = $this->atributos['lista'];
+$porfuncionario = $this->atributos['porfuncionario'];
+$impostos = $this->atributos['impostos'];
+$total = 0;
+ob_start();
+?>
+
+<!-- CSS -->
+
+<style>
+    * { margin: 0; padding: 0; }
+    body, table tr td, table tr th { font-family: Arial; font-size: 10px; }
+    table { border-collapse: collapse; }
+    table td, table th { padding: 0 6px; }
+    .destaque { font-weight: bold; }
+    .titulo { font-size: 21px; text-align: center; font-weight: bold; border-bottom: 1px solid black; border-top: 1px solid black; }
+    .cemporcento { width: 100%; }
+    .direita { text-align: right; }
+    .centro { text-align: center; }
+    .espaco { clear: both; height: 20px; }
+    .afastado { padding-left: 10px; }
+    .bordado tr th { border: 1px solid black; }
+    .borda-clara-bottom td { border-bottom: 1px solid lightgray; }
+</style>
+
+<!-- DETALHES -->
+
+<table class="cemporcento">
+    <tr>
+        <td class="titulo" colspan="5">ROMANEIO</td>
+    </tr>
+    <tr>
+        <td colspan="5">&nbsp;</td>
+    </tr>
+    <tr>
+        <td class="destaque direita">Cliente:</td>
+        <td class="afastado"><?php echo $cliente['empresa_razao'] ?></td>
+        <td>&nbsp;</td>
+        <td class="destaque direita">Endereço:</td>
+        <td class="afastado"><?php echo $cliente['endereco_logradouro'] . ', ' . $cliente['empresa_numero'] ?></td>
+    </tr>
+    <tr>
+        <td class="destaque direita">Contrato:</td>
+        <td class="afastado"><?php echo $contrato['contrato_numero'] ?></td>
+        <td>&nbsp;</td>
+        <td class="destaque direita">Telefone:</td>
+        <td class="afastado"><?php echo Util::tel($contrato['contrato_responsavel_telefone']) ?></td>
+    </tr>
+    <tr>
+        <td class="destaque direita">Responsável:</td>
+        <td class="afastado"><?php echo $contrato['contrato_responsavel_nome'] ?></td>
+        <td>&nbsp;</td>
+        <td class="destaque direita">E-mail:</td>
+        <td class="afastado"><?php echo $contrato['contrato_responsavel_email'] ?></td>
+    </tr>
+</table>
+
+<div class="espaco"></div>
+
+<table class="cemporcento">
+    <tr>
+        <td class="titulo">ITENS</td>
+    </tr>
+    <tr>
+        <td>&nbsp;</td>
+    </tr>
+</table>
+
+<!-- ITENS -->
+
+<table class="cemporcento" border="0" style="width: 100%">
+    <thead>
+        <tr>
+            <th>CÓDIGO</th>
+            <th>PRODUTO</th>
+            <th>QUANTIDADE</th>
+            <th colspan="2" style="text-align: right">VALOR UNITÁRIO</th>
+            <th colspan="2" style="text-align: right">VALOR TOTAL</th>
+        </tr>
+    </thead>
+    <tbody>
+        <?php $possibiliades = array('COORDENACAO', 'COORDENAÇÃO', 'COORDENAÇÃO DE PCMSO', 'COORDENACAO DE PCMSO') ?>
+        <?php foreach ($lista as $item) : ?>
+            <?php
+            foreach ($possibiliades as $item2) {
+                $x = stristr($item['categoria_nome'], $item2);
+                if (is_string($x)) {
+                    $item['parcela'] = null;
+                    $item['parcelas'] = null;
+                }
+            }
+
+            $list = explode(',', $item['valores']);
+            $sm = 0;
+            $vu = 0;
+
+            if (isset($list) && is_array($list) && count($list) > 0 && strtoupper(str_ireplace(array('Ã', 'Ç'), array('A', 'C'), $item['categoria_nome'])) == 'COORDENACAO') {
+                foreach ($list as $dado) {
+                    list($id, $valor) = explode(':', $dado);
+                    $sm += (float) $valor * (float) $item['quantidade'];
+                    $vu += $valor;
+                }
+                $valorCobrado = $sm;
+                $item['valor'] = $vu;
+                $item['total'] = (float) $vu * (float) $item['quantidade'];
+                if((float) $item['produto_contratado_faturamento_minimo'] > $item['total']) {
+                    $item['total'] = $item['produto_contratado_faturamento_minimo'];
+                }
+            }
+            ?>
+
+            <tr>
+                <td class="centro"><?php echo Util::preencherComZero($item['codigo'], 4) ?></td>
+                <td><?php echo (is_null($item['categoria_nome']) ? $item['produto'] : $item['categoria_nome']) . (!is_null($item['parcelas']) ? (' (' . $item['parcela'] . '/' . $item['parcelas'] . ') ') : '') ?></td>                
+                <td class="centro"><?php echo $item['quantidade'] ?></td>
+                <td>R$</td>
+                <td class="direita"><?php echo Util::moeda($item['valor']) ?></td>
+                <td>R$</td>
+                <td class="direita"><?php echo Util::moeda($item['total']) ?></td>
+            </tr>
+            <?php if (!is_null($item['valores'])) : ?>
+                <?php $_qwe = explode(',', $item['valores']) ?>
+                <?php foreach ($_qwe as $_q): ?>
+                    <?php list($_a, $_b) = explode(':', $_q) ?>
+                    <?php $_p = Application_Model_Produto::obterPeloCodigo($_a) ?>
+                    <tr>
+                        <td class="etiqueta"  style="border-right: none; text-align: center; border-bottom: none;"><?php echo Util::preencherComZero($item['codigo'], 4) ?></td>
+                        <td style="border-right: none; text-align: left ;border-bottom: none;">&#8627; <?php echo $_p['produto_nome'] ?></td>
+                        <td></td>
+                        <td></td>
+                        <td>R$</td>
+                        <td class="direita" style="border-right: none; text-align: right; border-bottom: none;"><?php echo Util::moeda($_b) ?></td>
+                        <td></td>
+                    </tr>
+                <?php endforeach; ?>
+            <?php endif; ?>
+            <?php $total = $total + $item['total']; ?>
+        <?php endforeach ?>
+    </tbody>
+    <tfoot>
+        <tr>
+            <td colspan="7">&nbsp;</td>
+        </tr>
+        <tr>
+            <td class="direita destaque" colspan="5">TOTAL A PAGAR:</td>
+            <td>R$</td>
+            <td class="direita"><?php echo Util::moeda($total) ?></td>
+        </tr>
+    </tfoot>
+</table>
+
+<div class="espaco"></div>
+
+<!-- DETALHAMENTO -->
+
+<table class="cemporcento" style="width: 100%; border-collapse: collapse">
+    <tr>
+        <td class="titulo">DETALHAMENTO</td>
+    </tr>
+    <tr>
+        <td>&nbsp;</td>
+    </tr>
+</table>
+
+<table border="0" class="cemporcento" style="width: 100%; border-collapse: collapse">
+    <thead>
+        <tr>
+            <th>CÓDIGO</th>
+            <th>PRODUTO</th>
+            <th>QUANTIDADE</th>
+            <th colspan="2" style="text-align: right">VALOR UNITÁRIO</th>
+            <th colspan="2" style="text-align: right">VALOR TOTAL</th>
+        </tr>
+    </thead>
+    <tbody>
+        <?php $funcionarioatual = '' ?>
+        <?php foreach ($porfuncionario as $item) : ?>
+            <?php if ($item['pessoa'] != $funcionarioatual) : ?>
+                <tr>
+                    <td colspan="5">&nbsp;</td>
+                </tr>
+                <?php if ($funcionarioatual != ''): ?>
+                    <tr>
+                        <td class="direita" colspan="5"><strong>TOTAL A PAGAR:</strong></td>
+                        <td>R$</td>
+                        <td class="direita"><?php echo Util::moeda($total) ?></td>
+                    </tr>
+                    <tr>
+                        <td colspan="5">&nbsp;</td>
+                    </tr>
+                <?php endif; ?>
+                <tr>
+                    <td class="funcionario" colspan="8"><strong>Funcionário:</strong>&nbsp;<?php echo $item['pessoa'] ?></td>
+                </tr>
+                <tr>
+                    <td colspan="8">&nbsp;</td>
+                </tr>
+                <?php $funcionarioatual = $item['pessoa'] ?>
+                <?php $total = 0 ?>
+            <?php endif; ?>
+            <tr class="borda-clara-bottom">
+                <td class="centro"><?php echo Util::preencherComZero($item['codigo'], 4) ?></td>
+                <td><?php echo $item['produto'] ?></td>
+                <!--<td class="centro"><?php echo $item['validade'] ?></td>-->
+                <td class="centro"><?php echo $item['quantidade'] ?></td>
+                <td>R$</td>
+                <td class="direita"><?php echo Util::moeda($item['valor']) ?></td>
+                <td>R$</td>
+                <td class="direita"><?php echo Util::moeda($item['total']) ?></td>
+            </tr>
+            <?php $total = $total + $item['total']; ?>
+        <?php endforeach ?>
+    </tbody>
+    <tfoot>
+        <tr>
+            <td colspan="5">&nbsp;</td>
+        </tr>
+        <tr>
+            <td class="direita destaque" colspan="5">TOTAL A PAGAR:</td>
+            <td>R$</td>
+            <td class="direita"><?php echo Util::moeda($total) ?></td>
+        </tr>
+    </tfoot>
+</table>
+
+<?php
+$html = ob_get_clean();
+$cabecalho = file_get_contents('../application/views/scripts/documento-operacional/imprimir-romaneio/cabecalho.html');
+$endereco = '';
+$cnpj = '';
+if (!is_null($this->unidade)):
+    $endereco = <<<EOF
+<table border="0">
+    <tr><td style="padding-left: 1px;">{$this->unidade['unidade_sigla']}</td></tr>
+    <tr><td style="padding-left: 1px;">{$this->unidade['endereco_logradouro']}</td></tr>
+    <tr><td style="padding-left: 1px;">{$this->unidade['endereco_bairro']} - {$this->unidade['endereco_cidade']} / {$this->unidade['endereco_uf']}</td></tr>
+</table>
+EOF;
+    $tel = Util::tel($contrato['contrato_responsavel_telefone']);
+    $_cnpj = Util::cnpj($cliente['empresa_cnpj']);
+    $cnpj = <<<EOF
+<table border="0">
+    <tr>
+        <td class="destaque direita">CNPJ:</td>
+        <td class="afastado">{$_cnpj}</td>
+    </tr>
+    <tr>
+        <td class="destaque direita">Cliente:</td>
+        <td class="afastado">{$cliente['empresa_razao']}</td>
+    </tr>
+    <tr>
+        <td class="destaque direita">Endereço:</td>
+        <td class="afastado">{$cliente['endereco_logradouro']}, {$cliente['empresa_numero']}</td>
+    </tr>
+    <tr>
+        <td class="destaque direita">Contrato:</td>
+        <td class="afastado">{$contrato['contrato_numero']}</td>
+    </tr>
+    <tr>
+        <td class="destaque direita">Telefone:</td>
+        <td class="afastado">{$tel}</td>
+    </tr>
+    <tr>
+        <td class="destaque direita">Responsável:</td>
+        <td class="afastado">{$contrato['contrato_responsavel_nome']}</td>
+    </tr>
+    <tr>
+        <td class="destaque direita">E-mail:</td>
+        <td class="afastado">{$contrato['contrato_responsavel_email']}</td>
+    </tr>
+</table>
+EOF;
+endif;
+
+$cabecalho = str_replace('<[atributoBlocoEndereco]/>', $endereco, $cabecalho);
+$cabecalho = str_replace('<[atributoBlocoCnpj]/>', $cnpj, $cabecalho);
+$rodape = '';
+//die($html);
+//Util::dump($this->unidade);
+
+require_once 'MPDF/mpdf.php';
+$mpdf = new mPDF('utf-8', 'A4', 0, '', 10, 10, 35, 30, 8, 8);
+$mpdf->SetHTMLHeader($cabecalho);
+$mpdf->SetHTMLFooter($rodape);
+$mpdf->setAutoTopMargin = false;
+$mpdf->setAutoBottomMargin = false;
+$mpdf->WriteHTML($html);
+$mpdf->Output();
+//echo $html;
+//header ("Expires: Mon, 26 Jul 1997 05:00:00 GMT");
+//header ("Last-Modified: " . gmdate("D,d M YH:i:s") . " GMT");
+//header ("Cache-Control: no-cache, must-revalidate");
+//header ("Pragma: no-cache");
+//header ("Content-type: application/x-msexcel");
+//header ("Content-Disposition: attachment; filename=\"romaneio-rhmed.xls\"" );
+//header ("Content-Description: PHP Generated Data" );
+////
+//echo utf8_decode($html);

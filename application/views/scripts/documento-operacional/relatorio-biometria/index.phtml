@@ -1,0 +1,62 @@
+<?php echo isset($this->erros) && !empty($this->erros) ? ('<div class="alert alert-danger">' . implode('<br/>', $this->erros) . '</div>') : '' ?>
+
+<?php echo $this->erro2 ? ('<div class="alert alert-danger">' . $this->erro2 . '</div>') : ''; ?>
+
+<div class="panel panel-primary">
+
+    <div class="panel-heading"><i class="fa fa-check"></i>RELATÓRIO DE BIOMETRIA</div>
+
+    <div class="panel-body">
+
+        <form action="" method="post" target="_blank">
+
+            <div class="row">
+
+                <div class="col-md-2">
+                    <div class="form-group">
+                        <label>Data Início *</label>
+                        <input class="form-control mask-data" type="text" name="data1" value="01/<?php echo date('m/Y') ?>" />
+                    </div>
+                </div>
+
+                <div class="col-md-2">
+                    <div class="form-group">
+                        <label>Data Fim *</label>
+                        <input class="form-control mask-data" type="text" name="data2" value="31/<?php echo date('m/Y') ?>" />
+                    </div>
+                </div>
+                
+                <div class="col-md-3">
+                    <div class="form-group">
+                        <label>Empresa</label>
+                        <select class="form-control" id="empresa" name="empresa">
+                            <?php foreach ($this->empresa as $empresa) : ?>
+                                <option value="<?php echo $empresa['empresa_id'] ?>"><?php echo $empresa['empresa_fantasia'] ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="col-md-3">
+                    <div class="form-group">
+                        <label>Modo</label>
+                        <select class="form-control" id="modo" name="modo">
+                            <option value="0">VISUALIZAR</option> 
+                        </select>
+                    </div>
+                </div>
+
+                <div class="col-md-2">
+                    <div class="form-group">
+                        <label>&nbsp;</label>
+                        <button class="form-control btn btn-success" type="submit"><i class="icon-print"></i>&nbsp;Imprimir</button>
+                    </div>
+                </div>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>

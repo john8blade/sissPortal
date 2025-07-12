@@ -1,0 +1,192 @@
+<?php
+
+//var_dump("<pre>", $this->atributos['locaisEntrega'][0]['produtos'], "</pre>");die;
+
+$template = Zend_Pdf::load('template/modelo2.pdf');
+
+$pages = $template->pages;
+unset($template->pages[5]);
+
+
+
+// ESCREVENDO NO PDF
+
+if ($_SESSION['usuario']['unidadeativa']['unidade_id'] == 4) {
+    $unidadeAtivaContrato = "Vitória";
+} else {
+    $unidadeAtivaContrato = "Belo Horizonte";
+}
+
+foreach ($pages as $i => $page) {
+    $dataexplode = explode("/", Util::dataBR($this->atributos['empResponsabilidade']['contrato_data_criacao']));
+    $data1 = $dataexplode[0];
+    $data2 = $dataexplode[1];
+    $data3 = $dataexplode[2];
+
+    $font = Zend_Pdf_Font::fontWithName(Zend_Pdf_Font::FONT_HELVETICA);
+    $width = $page->getWidth();
+    $height = $page->getHeight();
+    if ($i == 0) {
+        $font = Zend_Pdf_Font::fontWithName(Zend_Pdf_Font::FONT_HELVETICA_BOLD);
+        $page->setFont($font, 16);
+//        $empresa = strlen($this->atributos['empResponsabilidade']['empresa_fantasia']);
+//        if ($empresa < 35) {
+//            $tamanho = ($empresa - 40) / 2;
+//            $empresaNome = 297 - ((($tamanho / 100) + $empresa) * 6);
+//        } else {
+//            $empresaNome = 297 - $empresa * 6;
+//        }
+        $page->drawText((isset($this->atributos['empResponsabilidade']['empresa_fantasia'])) ? $this->atributos['empResponsabilidade']['empresa_fantasia'] : $this->atributos['empResponsabilidade']['empresa_razao'], 70, 243, 'UTF-8');
+        $font = Zend_Pdf_Font::fontWithName(Zend_Pdf_Font::FONT_HELVETICA);
+        $page->setFont($font, 10);
+        $page->drawText(Util::formatarNumeroContrato($this->atributos['os']['os_id']), 148, 164, 'UTF-8');
+        $page->drawText($this->atributos['empResponsabilidade']['contrato_responsavel_nome'], 98, 148, 'UTF-8');
+        $page->drawText($unidadeAtivaContrato . ' - ' . $data1 . " de " . Util::nomeDoMes($data2) . " de " . $data3, 130, 134, 'UTF-8');
+    } else if ($i < 6) {
+        $font = Zend_Pdf_Font::fontWithName(Zend_Pdf_Font::FONT_HELVETICA);
+        $page->setFont($font, 10);
+        $page->drawText(Util::formatarNumeroContrato($this->atributos['os']['os_id']), 434, 730, 'UTF-8');
+        $page->drawText((isset($this->atributos['empResponsabilidade']['empresa_fantasia'])) ? $this->atributos['empResponsabilidade']['empresa_fantasia'] : $this->atributos['empResponsabilidade']['empresa_razao'], 30, 729, 'UTF-8');
+        $page->drawText($this->atributos['empResponsabilidade']['contrato_responsavel_nome'], 30, 699, 'UTF-8');
+        $page->drawText($this->atributos['empResponsabilidade']['contrato_responsavel_telefone'], 433, 700, 'UTF-8');
+        $font = Zend_Pdf_Font::fontWithName(Zend_Pdf_Font::FONT_HELVETICA);
+        $page->setFont($font, 7);
+        $page->drawText($this->atributos['empResponsabilidade']['contrato_responsavel_email'], 250, 701, 'UTF-8');
+        $font = Zend_Pdf_Font::fontWithName(Zend_Pdf_Font::FONT_HELVETICA);
+        $page->setFont($font, 9);
+        $page->drawText($unidadeAtivaContrato . ' - ' . $data1 . " de " . Util::nomeDoMes($data2) . " de " . $data3, 30, 673, 'UTF-8');
+        if ($i == 5) {
+            $page->drawText($this->atributos['usuario']['pessoa_nome'], 70, 205, 'UTF-8');
+            $page->drawText($this->atributos['usuario']['usuario_setor'], 70, 196, 'UTF-8');
+            $page->drawText((isset($this->atributos['empResponsabilidade']['empresa_fantasia'])) ? $this->atributos['empResponsabilidade']['empresa_fantasia'] : $this->atributos['empResponsabilidade']['empresa_razao'], 319, 205, 'UTF-8');
+        }
+    }
+    if ($i == 6) {
+        $font = Zend_Pdf_Font::fontWithName(Zend_Pdf_Font::FONT_HELVETICA);
+        $page->setFont($font, 9);
+        //Bloco de informações da proposta
+        $page->drawText(Util::formatarNumeroContrato($this->atributos['os']['os_id']), 434, 730, 'UTF-8');
+        $page->drawText((isset($this->atributos['empResponsabilidade']['empresa_fantasia'])) ? $this->atributos['empResponsabilidade']['empresa_fantasia'] : $this->atributos['empResponsabilidade']['empresa_razao'], 30, 729, 'UTF-8');
+        $page->drawText($this->atributos['empResponsabilidade']['contrato_responsavel_nome'], 30, 699, 'UTF-8');
+        $page->drawText($this->atributos['empResponsabilidade']['contrato_responsavel_telefone'], 433, 700, 'UTF-8');
+        $font = Zend_Pdf_Font::fontWithName(Zend_Pdf_Font::FONT_HELVETICA);
+        $page->setFont($font, 7);
+        $page->drawText($this->atributos['empResponsabilidade']['contrato_responsavel_email'], 250, 701, 'UTF-8');
+        $font = Zend_Pdf_Font::fontWithName(Zend_Pdf_Font::FONT_HELVETICA);
+        $page->setFont($font, 9);
+        $page->drawText($unidadeAtivaContrato . ' - ' . $data1 . " de " . Util::nomeDoMes($data2) . " de " . $data3, 30, 673, 'UTF-8');
+        $page->drawText($this->atributos['empResponsabilidade']['empresa_fantasia'], 305, 95, 'UTF-8');
+        //Bloco de informações do vendedor
+        $font = Zend_Pdf_Font::fontWithName(Zend_Pdf_Font::FONT_HELVETICA_BOLD);
+        $page->setFont($font, 7);
+        $page->drawText($this->atributos['usuario']['pessoa_nome'], 47, 130, 'UTF-8');
+        $font = Zend_Pdf_Font::fontWithName(Zend_Pdf_Font::FONT_HELVETICA);
+        $page->setFont($font, 7);
+        $page->drawText($this->atributos['usuario']['usuario_setor'], 47, 120, 'UTF-8');
+        $page->drawText("Tel: (" . $this->atributos['usuario']['telefone_ddd'] . ")" . $this->atributos['usuario']['telefone_numero'] . " - Ramal " . $this->atributos['usuario']['telefone_ramal'], 47, 110, 'UTF-8');
+        $page->drawText($this->atributos['usuario']['usuario_email'], 47, 100, 'UTF-8');
+        $page->drawText("Autorizo a execução dos serviços acima listados, conforme condições comerciais informada.", 30, 170, 'UTF-8');
+        //unidades a serem listadas
+        if ($_SESSION['usuario']['unidadeativa']['unidade_id'] == 4) {
+            $font = Zend_Pdf_Font::fontWithName(Zend_Pdf_Font::FONT_HELVETICA);
+            $page->setFont($font, 10);
+            $page->drawText("Vitória,", 420, 135, 'UTF-8'); 
+        } else {
+            $font = Zend_Pdf_Font::fontWithName(Zend_Pdf_Font::FONT_HELVETICA);
+            $page->setFont($font, 10);
+            $page->drawText("Belo Horizonte,", 380, 135, 'UTF-8');
+        }
+        $i = 0;
+        $cont = 0;
+        $height = 596;
+        $produtoListar = FALSE;
+        //Produtos a serem exibidos
+        foreach ($this->atributos['locaisEntrega'] as $key => $value) {
+            foreach ($value['produtos'] as $keys => $values) {
+                if ($values['categoriadoproduto_id'] == 2) {
+                    $produtoListar = TRUE;
+                    if ($i == 0) {
+                        $font = Zend_Pdf_Font::fontWithName(Zend_Pdf_Font::FONT_HELVETICA);
+                        $page->setFont($font, 6);
+                        $page->drawText("EXAMES", 25, $height, 'UTF-8');
+                        $page->drawText(" -- ", 212, $height, 'UTF-8');
+                        $page->drawText(" -- ", 240, $height, 'UTF-8');
+                        $page->drawText(" --  ", 300, $height, 'UTF-8');
+                        $page->drawText(" -- ", 350, $height, 'UTF-8');
+                        $page->drawText(" CONFORME DEMANDA ", 377, $height, 'UTF-8');
+                        $page->drawText(" --  ", 470, $height, 'UTF-8');
+                        $page->drawText(" --  ", 530, $height, 'UTF-8');
+                        $i++;
+                    }
+                    if ($cont < 5 || $cont > 9) {
+                        $height = $height - 14;
+                    } else {
+                        $height = $height - 15;
+                    }
+                    break;
+                } else {
+                    if ($value['formapagamento']['cobrancaos_quantidade_parcela'] == 0) {
+                        $value['formapagamento']['cobrancaos_quantidade_parcela'] = 1;
+                    }
+                    $font = Zend_Pdf_Font::fontWithName(Zend_Pdf_Font::FONT_HELVETICA);
+                    $page->setFont($font, 6);
+                    $page->drawText(substr($values['produto_nome'], 0, 46), 25, $height, 'UTF-8');
+                    $page->drawText($values['produto_contratado_quantidade'], 212, $height, 'UTF-8');
+                    $page->drawText("R$ " . Util::moeda(($values['produto_contratado_valor_venda'] * $values['produto_contratado_quantidade'])), 230, $height, 'UTF-8');
+                    $page->drawText($value['formapagamento']['cobrancaos_quantidade_parcela'] . " Parcela(s)", 280, $height, 'UTF-8');
+                    $page->drawText("R$ " . Util::moeda(($values['produto_contratado_valor_venda'] * $values['produto_contratado_quantidade']) / $value['formapagamento']['cobrancaos_quantidade_parcela']), 330, $height, 'UTF-8');
+                    $page->drawText($value['formapagamento']['formapagamento_nome'], 390, $height, 'UTF-8');
+                    $page->drawText($values['produto_contratado_observacao_entrega'], 455, $height, 'UTF-8');
+                    $page->drawText($values['produto_contratado_observacao_vencimento'], 498, $height, 'UTF-8');
+                }
+                if ($cont < 5 || $cont > 9) {
+                    $height = $height - 14;
+                } else {
+                    $height = $height - 15;
+                }
+                $cont++;
+            }
+        }
+    }
+    $cont = 0;
+    $height = 580;
+    if ($i == 7) {
+
+        $font = Zend_Pdf_Font::fontWithName(Zend_Pdf_Font::FONT_HELVETICA);
+        $page->setFont($font, 10);
+        $page->drawText(Util::formatarNumeroContrato($this->atributos['os']['os_id']), 434, 730, 'UTF-8');
+        $page->drawText((isset($this->atributos['empResponsabilidade']['empresa_fantasia'])) ? $this->atributos['empResponsabilidade']['empresa_fantasia'] : $this->atributos['empResponsabilidade']['empresa_razao'], 30, 729, 'UTF-8');
+        $page->drawText($this->atributos['empResponsabilidade']['contrato_responsavel_nome'], 30, 699, 'UTF-8');
+        $page->drawText($this->atributos['empResponsabilidade']['contrato_responsavel_telefone'], 433, 700, 'UTF-8');
+        $font = Zend_Pdf_Font::fontWithName(Zend_Pdf_Font::FONT_HELVETICA);
+        $page->setFont($font, 7);
+        $page->drawText($this->atributos['empResponsabilidade']['contrato_responsavel_email'], 250, 701, 'UTF-8');
+        $font = Zend_Pdf_Font::fontWithName(Zend_Pdf_Font::FONT_HELVETICA);
+        $page->setFont($font, 9);
+        $page->drawText($unidadeAtivaContrato . ' - ' . $data1 . " de " . Util::nomeDoMes($data2) . " de " . $data3, 30, 673, 'UTF-8');
+        if ($produtoListar) {
+            foreach ($this->produtosExames as $key => $value) {
+                $font = Zend_Pdf_Font::fontWithName(Zend_Pdf_Font::FONT_HELVETICA);
+                $page->setFont($font, 7);
+                $page->drawText($value['produto_nome'], 95, $height, 'UTF-8');
+                $page->drawText("R$ " . Util::moeda($value['produto_valor']), 300, $height, 'UTF-8');
+
+                if ($cont < 15) {
+                    $height = $height - 14;
+                } else {
+                    $height = $height - 15;
+                }
+                $cont++;
+            }
+        } else {
+            unset($template->pages[7]);
+        }
+    }
+}
+// RENDERIZANDO O PDF
+
+header('Content-type: application/pdf');
+header('Content-Disposition: inline; filename="modelo.pdf"');
+echo $template->render();
+
+

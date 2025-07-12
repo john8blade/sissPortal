@@ -1,0 +1,88 @@
+<?php
+if ($this->modo == 1):
+    header("Expires: Mon, 26 Jul 1997 05:00:00 GMT");
+    header("Last-Modified: " . gmdate("D,d M YH:i:s") . " GMT");
+    header("Cache-Control: no-cache, must-revalidate");
+    header("Pragma: no-cache");
+    header("Content-type: application/x-msexcel");
+    header("Content-Disposition: attachment; filename=\"siss" . str_replace("/", "-", $this->url()) . "-" . date("YmdHis") . ".xls\"");
+    header("Content-Description: PHP Generated Data");
+    ob_start();
+endif;
+$dados = $this->resultado['dados'];
+$lista = $this->resultado['lista'];
+
+$colspan = 8;
+?>
+<style>
+<?php include 'css/documento.css' ?>
+</style>
+
+<?php if ($this->modo == 0): ?>
+    <a href="javascript:window.history.go(-1);void(0);" class="btn btn-success">Voltar</a><hr/>
+<?php endif; ?>
+
+<table border="1" class="largo sem-margem">
+    <tbody>
+
+        <tr>
+            <td class="logo"><img src="http://developsiss.htmed.com.br/img/logo-relatorio.png"/></td>
+            <td class="titulo" colspan="<?php echo $colspan - 1 ?>"><h1>RELATÓRIO DE CONTRATO</h1></td>
+        </tr>
+
+        <tr><td colspan="<?php echo $colspan ?>">&nbsp;</td></tr>
+
+        <tr>
+            <th colspan="<?php echo $colspan ?>">DADOS</th>
+        </tr>
+
+        <?php foreach ($dados as $label => $valor): ?>
+            <tr>
+                <td class="etiqueta"><?php echo strtoupper($label) ?>:</td>
+                <td class="conteudo" colspan="<?php echo $colspan - 1 ?>"><?php echo $valor ?></td>
+            </tr>
+        <?php endforeach; ?>
+
+        <tr>
+            <th colspan="<?php echo $colspan ?>">FILTROS</th>
+        </tr>
+
+        <?php foreach ($this->filtro as $label => $valor): ?>
+            <tr>
+                <td class="etiqueta"><?php echo strtoupper($label) ?>:</td>
+                <td class="conteudo" colspan="<?php echo $colspan - 1 ?>"><?php echo $valor ?></td>
+            </tr>
+        <?php endforeach; ?>
+
+        <tr><td colspan="<?php echo $colspan ?>">&nbsp;</td></tr>
+
+        <tr>
+            <th colspan="1">NÚMERO</th>
+            <th colspan="1">DATA DA CRIAÇÃO</th>
+            <th colspan="1">RESPONSÁVEL</th>
+            <th colspan="1">EMAIL</th>
+            <th colspan="1">TELEFONE</th>
+            <th colspan="1">EMPRESA PRINCIPAL</th>
+            <th colspan="1">CNPJ</th>
+            <th colspan="1">REPRESENTANTE COMERCIAL</th>
+        </tr>
+
+        <?php foreach ($lista as $item): ?>
+            <tr>
+                <td colspan="1" align="center"><?php echo $item['contrato_numero'] ?></td>
+                <td colspan="1" align="center"><?php echo Util::dataBR($item['contrato_data_criacao']) ?></td>
+                <td colspan="1"><?php echo $item['contrato_responsavel_nome'] ?></td>
+                <td colspan="1"><?php echo $item['contrato_responsavel_email'] ?></td>
+                <td colspan="1" align="center"><?php echo Util::telefone($item['contrato_responsavel_telefone']) ?></td>
+                <td colspan="1"><?php echo $item['empresa_razao'] ?></td>
+                <td colspan="1"><?php echo Util::cnpj($item['empresa_cnpj']) ?></td>
+                <td colspan="1"><?php echo $item['pessoa_nome'] ?></td>
+            </tr>
+        <?php endforeach; ?>
+
+    </tbody>
+</table>
+<?php
+if ($this->modo == 1):
+    echo utf8_decode(ob_get_clean());
+endif;

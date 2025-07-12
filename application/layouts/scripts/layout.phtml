@@ -1,0 +1,153 @@
+<?php $con = $this->mapeamentoAcesso['controlador']; ?>
+<?php $mod = $this->mapeamentoAcesso['modulo']; ?>
+<?php $par = $this->mapeamentoAcesso['params']; ?>
+<?php $act = $this->mapeamentoAcesso['acao']; ?>
+<?php $conUI = str_replace('index', 'home', implode(' ', explode('-', $con))); ?>
+<?php $actUI = str_replace('index', 'home', implode(' ', explode('-', $act))); ?>
+
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Portal do Cliente</title>
+    <!--<meta name="viewport" content="width=device-width, initial-scale=1.0">-->
+    <link rel="shortcut icon" href="/htmed-favico.png" type="image/png" sizes="16x16"/>
+    <link rel="icon" href="/htmed-favico.png" sizes="16x16"/>
+    <script src="/js/jquery-1.10.2.min.js" type="text/javascript"></script>
+    <script src="/js/jquery.maskedinput.js" type="text/javascript"></script>
+    <script src="/js/geral.js" type="text/javascript"></script>
+    <script src="/js/util.js" type="text/javascript"></script>
+    <script src="/plugins/ckeditor/full/ckeditor.js" type="text/javascript"></script>
+    <script src="/plugins/sweetalert/sweetalert.js" type="text/javascript"></script>
+    <link rel="stylesheet" href="/bootstrap-3.3.7/css/bootstrap.min.css" type="text/css" media="all"/>
+    <script src="/bootstrap-3.3.7/js/bootstrap.min.js" type="text/javascript"></script>
+    <link href="/font-awesome-4.6.3/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+    <link href="/css/portal.css" rel="stylesheet" type="text/css">
+    <link rel="stylesheet" href="/plugins/sweetalert/sweetalert.css">
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    <!--
+               Incluindo os arquivos do plug-ins do boostrap
+               Plug-in: bootstrap-datetimepicker
+               Documentação em: http://tarruda.github.io/bootstrap-datetimepicker/
+           -->
+           <link rel="stylesheet" href="/plugins/bootstrap-datetimepicker/css/bootstrap-datetimepicker.min.css" type="text/css" media="screen" charset="utf-8" />
+           <script type="text/javascript" src="/plugins/bootstrap-datetimepicker/js/bootstrap-datetimepicker.min.js"></script>
+           <!-- Fim da inclusão de arquivos do plug-in -->
+    <noscript><meta http-equiv="Refresh" content="0;url=/auth/" /></noscript>
+</head>
+<body>
+
+    <!-- iFRAME / AGUARDE -->
+    <iframe id="iframe-receptor" name="iframe-receptor" class="hide"></iframe>
+
+    <div id="aguarde"></div>
+    <div id="sombra"></div>
+
+    <!-- MODAL -->
+    <div id="modal" class="modal fade" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title" id="modal-title">Modal title...</h4>
+                </div>
+                <div class="modal-body">
+                    <div id="modal-inner">Modal inner...</div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="UI">
+
+        <!-- BARRA DO MENU -->
+        <div id="menu-bar" class="container-fluid">
+            <nav class="navbar navbar-inverse">
+                <div class="navbar-header">
+                    <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+                        <span class="sr-only">Navegar</span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                    </button>
+                    <a class="navbar-brand" href="/">SISS</a>
+                </div>
+                <div id="navbar" class="collapse navbar-collapse">
+                    <ul class="nav navbar-nav">
+                        <?php if (!count(@$_SESSION['inadimplecia']) > 0) : ?>
+                            
+                            <li<?php echo $con == 'index' ? ' class="active"' : '' ?>><a href="/"><i class="fa fa-home"></i>Home</a></li>
+                            <li<?php echo $con == 'contrato' ? ' class="active"' : '' ?>><a href="/contrato"><i class="fa fa-file-text"></i>Contrato</a></li>
+                            <li<?php echo $con == 'agenda' ? ' class="active"' : '' ?>><a href="/agenda"><i class="fa fa-book"></i>Agenda</a></li>
+                            <li<?php echo $con == 'funcionario' ? ' class="active"' : '' ?>><a href="/funcionario"><i class="fa fa-users"></i>Funcionários</a></li>
+                            <li<?php echo $con == 'fatura' ? ' class="active"' : '' ?>><a href="/fatura"><i class="fa fa-barcode"></i>Faturas</a></li>
+                            <li<?php echo $con == 'documento' ? ' class="active"' : '' ?>><a href="/documento"><i class="fa fa-folder"></i>Documentos</a></li>
+                            <li<?php echo $con == 'treinamento' ? ' class="active"' : '' ?>><a href="/treinamento"><i class="fa fa-users"></i>Treinamentos</a></li>
+                            <li<?php echo $con == 'relatorio' ? ' class="active"' : '' ?>><a href="/relatorio"><i class="fa fa-bar-chart"></i>Relatórios</a></li>
+                            <li<?php echo $con == 'esocial' ? ' class="active"' : '' ?>><a href="/esocial"><i class="fa fa-send"></i>eSocial</a></li>
+                            <?php if (@$_SESSION['usuario_portal_esocial_autoriza'] == 1) : ?>
+                                <li<?php echo $con == 'esocial' ? ' class="active"' : '' ?>><a href="/esocial/cat"><i class="fa fa-feed"></i>CAT</a></li>
+                            <?php endif ?>
+                        <?php else : ?>
+                            <li<?php echo $con == 'fatura' ? ' class="active"' : '' ?>><a href="/fatura"><i class="fa fa-barcode"></i>Faturas</a></li>
+                        <?php endif; ?>
+                    </ul>
+                    <ul class="nav navbar-nav navbar-right">
+                        <li><a href="/auth/logout"><i class="fa fa-sign-out"></i>Sair</a></li>
+                    </ul>
+                </div>
+            </nav>
+        </div>
+
+        <div class="container-fluid" id="content">
+
+            <?php echo Util::mensagemInformativaDeAmbiente() ?>
+
+            <!-- BREADCRUMBS -->
+            <ul class="breadcrumb">
+                <li><a href="/"><?php echo ucwords($mod) ?></a></li>
+                <?php if ($con == 'acervo-digital') : ?>
+                    <li><?php echo ucwords($conUI) ?></li>
+                    <li><?php echo ucwords($actUI) ?></li>
+                <?php else : ?>
+                    <?php
+                        $url = "{$con}/{$act}";
+                        foreach ($par as $key => $val) { $url .= "/{$key}/{$val}"; }
+                    ?>
+                    <li><a href="/<?php echo $con ?>"><?php echo ucwords($conUI) ?></a></li>
+                    <li><a href="/<?php echo $url ?>"><?php echo ucwords($actUI) ?></a></li>
+                <?php endif; ?>
+            </ul>
+
+            <!-- ALERTAS -->
+            <div id="alertas">
+            </div>
+
+            <!-- CONTENT -->
+            <?php echo $this->layout()->content ?>
+
+        </div>
+
+        <!-- FOOTER -->
+        <div class="container-fluid">
+            <footer>
+                <span>&copy; <?php echo date('Y') ?> &ndash; <a href="https://httec.com.br/">HT Tecnologia</a> &ndash; Todos os direitos reservados. <span class="pull-right"><strong><i class="fa fa-building"></i><?php echo $_SESSION['empresa']['empresa_fantasia'] . ' - ' . $_SESSION['contrato_numero'] ?></strong><strong style="margin-left: 10px;"><i class="fa fa-user"></i><?php echo $_SESSION['contrato_responsavel_nome'] ?></strong></span></span>
+            </footer>
+        </div>
+
+    </div>
+
+    <!-- TEXTOS EM MAIUSCULO -->
+    <script>
+        ucase();
+        $(document).ready(function () {
+            $('[data-toggle="popover"]').popover({trigger: 'focus'});
+        });
+    </script>
+
+</body>
+</html>

@@ -1,0 +1,49 @@
+<table class="largo" border="1">
+    <tbody id="lista-exames">
+        <?php
+        $x = '';
+        $y = '';
+        $z = '';
+
+        foreach ($this->dados['examesDoPcmso'] as $tipoexame) {
+
+            $cols = count($tipoexame['periodos']);
+
+            $x .= '<th colspan="' . $cols . '">' . $tipoexame['tipoexame_nome'] . '</th>';
+
+            foreach ($tipoexame['periodos'] as $b => $periodo) {
+
+                $exames = explode(',', $periodo['exames_string']);
+                $itemPcmsoId = explode(',', $periodo['itens_pcmso_produto_ids']);
+                $links = array();
+
+                if (count($exames) > 0) {
+                    $p = $periodo['periodo_nome'];
+                    if (strtoupper($p) == 'ANUAL' && strtoupper(trim($tipoexame['tipoexame_sigla'])) != 'PER') {
+                        $p = '---';
+                    }
+                    //$y .= '<th>' . $periodo['periodo_nome'] . '</th>';
+                    $y .= '<th>' . $p . '</th>';
+
+                    foreach ($itemPcmsoId as $idc => $itemId) {
+                        if ($exames[$idc] != '') {
+                            if (stristr($exames[$idc], 'AUDIOMETRIA')) {
+                                $temAudiometria = true;
+                            }
+                            $links[] = $exames[$idc];
+                        }
+                    }
+
+                    $z .= '<td valign="top">' . implode('<hr style="height:1px;background:black;border:none;margin:2px 0;"/>', $links) . '</td>';
+                } else {
+
+                    $y .= '<th></th>';
+                    $z .= '<td valign="top"></td>';
+                }
+            }
+        }
+
+        echo '<tr>' . $x . '</tr>' . '<tr>' . $y . '</tr>' . '<tr>' . $z . '</tr>';
+        ?>
+    </tbody>
+</table>

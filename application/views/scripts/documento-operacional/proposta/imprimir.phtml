@@ -1,0 +1,271 @@
+<?php
+//var_dump("<pre>", $_SESSION['usuario']['unidadeativa']['unidade_id'], "</pre>");
+//die;
+
+$template = Zend_Pdf::load('template/modelo2.pdf');
+
+$pages = $template->pages;
+unset($template->pages[5]);
+
+
+
+// ESCREVENDO NO PDF
+
+if ($_SESSION['usuario']['unidadeativa']['unidade_id'] == 4) {
+    $unidadeAtivaContrato = "Vitória";
+} else {
+    $unidadeAtivaContrato = "Belo Horizonte";
+}
+
+foreach ($pages as $i => $page) {
+    $dataexplode = explode("/", Util::dataBR($this->atributos['empResponsabilidade']['contrato_data_criacao']));
+    $data1 = $dataexplode[0];
+    $data2 = $dataexplode[1];
+    $data3 = $dataexplode[2];
+
+    $font = Zend_Pdf_Font::fontWithName(Zend_Pdf_Font::FONT_HELVETICA);
+    $width = $page->getWidth();
+    $height = $page->getHeight();
+    if ($i == 0) {
+        $font = Zend_Pdf_Font::fontWithName(Zend_Pdf_Font::FONT_HELVETICA);
+        $page->setFont($font, 22);
+//        $empresa = strlen($this->atributos['empResponsabilidade']['empresa_fantasia']);
+//        if ($empresa < 35) {
+//            $tamanho = ($empresa - 40) / 2;
+//            $empresaNome = 297 - ((($tamanho / 100) + $empresa) * 6);
+//        } else {
+//            $empresaNome = 297 - $empresa * 6;
+//        }
+        $page->drawText($this->atributos['empResponsabilidade']['empresa_fantasia'], 70, 243, 'UTF-8');
+        $font = Zend_Pdf_Font::fontWithName(Zend_Pdf_Font::FONT_HELVETICA);
+        $page->setFont($font, 10);
+        $page->drawText(Util::formatarNumeroContrato($this->atributos['os']['os_id']), 148, 164, 'UTF-8');
+        $page->drawText($this->atributos['empResponsabilidade']['contrato_responsavel_nome'], 98, 148, 'UTF-8');
+        $page->drawText($unidadeAtivaContrato . ' - ' . $data1 . " de " . Util::nomeDoMes($data2) . " de " . $data3, 130, 134, 'UTF-8');
+    } else if ($i < 6) {
+        $font = Zend_Pdf_Font::fontWithName(Zend_Pdf_Font::FONT_HELVETICA);
+        $page->setFont($font, 10);
+        $page->drawText(Util::formatarNumeroContrato($this->atributos['os']['os_id']), 434, 730, 'UTF-8');
+        $page->drawText($this->atributos['empResponsabilidade']['empresa_fantasia'], 30, 729, 'UTF-8');
+        $page->drawText($this->atributos['empResponsabilidade']['contrato_responsavel_nome'], 30, 699, 'UTF-8');
+        $page->drawText($this->atributos['empResponsabilidade']['contrato_responsavel_telefone'], 433, 700, 'UTF-8');
+        $font = Zend_Pdf_Font::fontWithName(Zend_Pdf_Font::FONT_HELVETICA);
+        $page->setFont($font, 7);
+        $page->drawText($this->atributos['empResponsabilidade']['contrato_responsavel_email'], 250, 701, 'UTF-8');
+        $font = Zend_Pdf_Font::fontWithName(Zend_Pdf_Font::FONT_HELVETICA);
+        $page->setFont($font, 9);
+        $page->drawText($unidadeAtivaContrato . ' - ' . $data1 . " de " . Util::nomeDoMes($data2) . " de " . $data3, 30, 673, 'UTF-8');
+        if ($i == 5) {
+            $page->drawText($this->atributos['usuario']['pessoa_nome'], 70, 205, 'UTF-8');
+            $page->drawText($this->atributos['usuario']['usuario_setor'], 70, 196, 'UTF-8');
+            $page->drawText($this->atributos['empResponsabilidade']['empresa_fantasia'], 319, 205, 'UTF-8');
+        }
+    }
+    if ($i == 6) {
+        $font = Zend_Pdf_Font::fontWithName(Zend_Pdf_Font::FONT_HELVETICA);
+        $page->setFont($font, 9);
+        //Bloco de informações da proposta
+        $page->drawText(Util::formatarNumeroContrato($this->atributos['os']['os_id']), 434, 730, 'UTF-8');
+        $page->drawText($this->atributos['empResponsabilidade']['empresa_fantasia'], 30, 729, 'UTF-8');
+        $page->drawText($this->atributos['empResponsabilidade']['contrato_responsavel_nome'], 30, 699, 'UTF-8');
+        $page->drawText($this->atributos['empResponsabilidade']['contrato_responsavel_telefone'], 433, 700, 'UTF-8');
+        $font = Zend_Pdf_Font::fontWithName(Zend_Pdf_Font::FONT_HELVETICA);
+        $page->setFont($font, 7);
+        $page->drawText($this->atributos['empResponsabilidade']['contrato_responsavel_email'], 250, 701, 'UTF-8');
+        $font = Zend_Pdf_Font::fontWithName(Zend_Pdf_Font::FONT_HELVETICA);
+        $page->setFont($font, 9);
+        $page->drawText($unidadeAtivaContrato . ' - ' . $data1 . " de " . Util::nomeDoMes($data2) . " de " . $data3, 30, 673, 'UTF-8');
+        $page->drawText($this->atributos['empResponsabilidade']['empresa_fantasia'], 305, 95, 'UTF-8');
+        //Bloco de informações do vendedor
+        $font = Zend_Pdf_Font::fontWithName(Zend_Pdf_Font::FONT_HELVETICA_BOLD);
+        $page->setFont($font, 7);
+        $page->drawText($this->atributos['usuario']['pessoa_nome'], 47, 130, 'UTF-8');
+        $font = Zend_Pdf_Font::fontWithName(Zend_Pdf_Font::FONT_HELVETICA);
+        $page->setFont($font, 7);
+        $page->drawText($this->atributos['usuario']['usuario_setor'], 47, 120, 'UTF-8');
+        $page->drawText("Tel: (" . $this->atributos['usuario']['telefone_ddd'] . ")" . $this->atributos['usuario']['telefone_numero'] . " - Ramal " . $this->atributos['usuario']['telefone_ramal'], 47, 110, 'UTF-8');
+        $page->drawText($this->atributos['usuario']['usuario_email'], 47, 100, 'UTF-8');
+        $page->drawText("Autorizo a execução dos serviços acima listados, conforme condições comerciais informada.", 30, 170, 'UTF-8');
+        //unidades a serem listadas
+        if ($_SESSION['usuario']['unidadeativa']['unidade_id'] == 4) {
+            $font = Zend_Pdf_Font::fontWithName(Zend_Pdf_Font::FONT_HELVETICA);
+            $page->setFont($font, 10);
+            $page->drawText("Vitória,", 430, 135, 'UTF-8');
+        } else {
+            $font = Zend_Pdf_Font::fontWithName(Zend_Pdf_Font::FONT_HELVETICA);
+            $page->setFont($font, 10);
+            $page->drawText("Belo Horizonte,", 397, 135, 'UTF-8');
+        }
+        $i = 0;
+        $cont = 0;
+        $height = 596;
+        //Produtos a serem exibidos
+        foreach ($this->atributos['locaisEntrega'] as $key => $value) {
+            foreach ($value['produtos'] as $keys => $values) {
+                //var_dump($this->media);die;
+                if (isset($values['categoriadoproduto_id'])) {
+                    if ($values['categoriadoproduto_id'] == 2) {
+                        $produtoListar = TRUE;
+                        if ($i == 0) {
+                            $font = Zend_Pdf_Font::fontWithName(Zend_Pdf_Font::FONT_HELVETICA);
+                            $page->setFont($font, 6);
+                            $page->drawText("EXAMES", 25, $height, 'UTF-8');
+                            $page->drawText(" -- ", 210, $height, 'UTF-8');
+                            $page->drawText(" -- ", 260, $height, 'UTF-8');
+                            $page->drawText(" --  ", 300, $height, 'UTF-8');
+                            $page->drawText(" CONFORME DEMANDA ", 350, $height, 'UTF-8');
+                            $page->drawText(" --  ", 450, $height, 'UTF-8');
+                            $page->drawText(" --  ", 500, $height, 'UTF-8');
+                            $i++;
+                        }
+                        if ($cont < 5 || $cont > 9) {
+                            $height = $height - 14;
+                        } else {
+                            $height = $height - 15;
+                        }
+                        break;
+                    } else {
+                        $font = Zend_Pdf_Font::fontWithName(Zend_Pdf_Font::FONT_HELVETICA);
+                        $page->setFont($font, 6);
+                        $page->drawText(substr($values['produto_nome'], 0, 46), 25, $height, 'UTF-8');
+                        $page->drawText("R$ " . Util::moeda($values['produto_contratado_valor_venda']), 210, $height, 'UTF-8');
+                        $page->drawText($value['formapagamento']['cobrancaos_quantidade_parcela'] . " Parcela(s)", 254, $height, 'UTF-8');
+                        //$page->drawText("R$ " . Util::moeda(substr($this->media[$values['categoriadoproduto_id']], 0, 6)), 300, $height, 'UTF-8');
+                        $page->drawText($value['formapagamento']['formapagamento_nome'], 360, $height, 'UTF-8');
+                        $page->drawText($values['produto_contratado_observacao_entrega'], 440, $height, 'UTF-8');
+                        $page->drawText($values['produto_contratado_observacao_vencimento'], 490, $height, 'UTF-8');
+                    }
+                }
+                if ($cont < 5 || $cont > 9) {
+                    $height = $height - 14;
+                } else {
+                    $height = $height - 15;
+                }
+                $cont++;
+            }
+        }
+    }
+    $cont = 0;
+    $height = 580;
+    if ($i == 7) {
+
+        $font = Zend_Pdf_Font::fontWithName(Zend_Pdf_Font::FONT_HELVETICA);
+        $page->setFont($font, 10);
+        $page->drawText(Util::formatarNumeroContrato($this->atributos['os']['os_id']), 434, 730, 'UTF-8');
+        $page->drawText($this->atributos['empResponsabilidade']['empresa_fantasia'], 30, 729, 'UTF-8');
+        $page->drawText($this->atributos['empResponsabilidade']['contrato_responsavel_nome'], 30, 699, 'UTF-8');
+        $page->drawText($this->atributos['empResponsabilidade']['contrato_responsavel_telefone'], 433, 700, 'UTF-8');
+        $font = Zend_Pdf_Font::fontWithName(Zend_Pdf_Font::FONT_HELVETICA);
+        $page->setFont($font, 7);
+        $page->drawText($this->atributos['empResponsabilidade']['contrato_responsavel_email'], 250, 701, 'UTF-8');
+        $font = Zend_Pdf_Font::fontWithName(Zend_Pdf_Font::FONT_HELVETICA);
+        $page->setFont($font, 9);
+        $page->drawText($unidadeAtivaContrato . ' - ' . $data1 . " de " . Util::nomeDoMes($data2) . " de " . $data3, 30, 673, 'UTF-8');
+        if ($produtoListar) {
+            foreach ($this->produtosExames as $key => $value) {
+                $font = Zend_Pdf_Font::fontWithName(Zend_Pdf_Font::FONT_HELVETICA);
+                $page->setFont($font, 7);
+                $page->drawText($value['produto_nome'], 95, $height, 'UTF-8');
+                $page->drawText("R$ " . Util::moeda((int) $value['produto_valor']), 300, $height, 'UTF-8');
+
+                if ($cont < 15) {
+                    $height = $height - 14;
+                } else {
+                    $height = $height - 15;
+                }
+                $cont++;
+            }
+        } else {
+            
+        }
+    }
+}
+//!!!!!!!! MUITO CUIDADO COM ESSA MACUMBA SENÃO VAI PASSAR APERTO PARA CONCERTAR!!!!!!!!!!!!
+// RENDERIZANDO O PDF
+//header("Content-Disposition: attachment; filename=proposta-" . date("Y-m-d-H-i") . ".pdf");
+//header("Cache-Control: no-cache, must-revalidate");
+$arquivo = 'arquivos/proposta-' . date("Y-m-d-H-i-s").'.pdf';
+$template->save($arquivo);
+//header("Content-Type: application/pdf");
+//die(file_get_contents($arquivo));
+ini_set('display_errors', 0);
+
+if ($this->acao == 'imprimir') {
+    
+} else {
+    //Util::dump($_SESSION['usuario']);
+    ob_start();
+    ?>
+
+    <!DOCTYPE html>
+    <html>
+        <head>
+            <meta charset="utf-8"/>
+            <title>PROPOSTA</title>
+            <style type="text/css">
+                body{
+                    font-family: Arial;
+                    font-size: 12px;
+                }
+                #meio-ambiente{
+                    font-style: italic;
+                    color: green;
+                }
+                #politica{
+                    text-align: justify;
+                    font-style: italic;
+                }
+                #politica strong{
+                    color: red;
+                }
+                .telefone{
+                    font-size: 120%;
+                }
+            </style>
+        </head>
+        <body>
+            <div>
+
+                <p>Olá <?php echo $this->proposta['contrato_responsavel_nome'] ?>,</p>
+
+                <p>Segue proposta em anexo no formato de PDF.</p>
+
+                <p>Atenciosamente,</p>
+                <?php echo $_SESSION['usuario']['pessoa_nome'] ?><br/>
+                <?php echo $_SESSION['usuario']['usuario_setor'] ?><br/>
+                Hiest Assessoria Ltda<br/>
+                <?php foreach ($_SESSION['usuario']['telefones'] as $telefone): ?>
+                    <strong class="telefone"><?php echo Util::telefone($telefone['telefone_ddd'] . $telefone['telefone_numero']) ?></strong><br/>
+                <?php endforeach; ?>
+                <p id="meio-ambiente">Antes de imprimir, pense na sua responsabilidade com o Meio Ambiente</p>
+                <img id="assinatura" src="http://desenvsiss.hiestgroup.com.br/img/hiest-assinatura.png" alt="" title=""/>
+                <p id="politica"><strong>POLÍTICA DA QUALIDADE:</strong> "Oferecer soluções que garantam o atendimento de requisitos de prevenção e manutenção da saúde e preservação do meio ambiente onde atuam os trabalhadores. Aprimorar continuamente os processos de qualidade, capacitar e motivar toda a equipe e, com isso, reduzir o tempo de resposta às demandas do cliente e proporcionar a construção de uma gestão favorável ao crescimento sustentável, ocupando permanentemente a posição de fornecedor preferencial de cada cliente".</p>
+
+            </div>
+        </body>
+    </html>
+
+    <?php
+    $texto = ob_get_clean();
+    $email = new Application_Model_Email();
+    $email->anexo($arquivo);
+    $enviado = $email->enviar($this->proposta['contrato_responsavel_email'], $this->proposta['contrato_responsavel_nome'], 'HIEST - PROPOSTA', $texto);
+    #$enviado = $email->enviar('clayton.cardozo@hiest.com.br', $this->proposta['contrato_responsavel_nome'], 'PROPOSTA', $texto);
+    if (strlen($enviado) == 0) {
+        try {
+            $sql = "INSERT INTO registro_email SET registro_email_data_hora = NOW(), fk_usuario_id = ?, fk_empresa_id = ?, fk_os_id = ?";
+            $adapter = Zend_Db_Table::getDefaultAdapter();
+            $prep = $adapter->prepare($sql);
+            $prep->execute(array($_SESSION['usuario']['usuario_id'], $this->proposta['empresa_id'], $this->proposta['os_id']));
+            echo "<script>window.top.Util.alerta('success', 'Proposta enviada e registrada <b>COM SUCESSO!</b>')</script>";
+        } catch (Zend_Exception $e) {
+            echo "<script>window.top.Util.alerta('danger', '<b>Erro</b> ao enviar proposta: {$e->getMessage()}.')</script>";
+        }
+    } else {
+        $enviado = preg_replace('/[^a-zA-Z0-9\: ]/', '', $enviado);
+        echo "<script>window.top.Util.alerta(\"danger\", \"<b>Erro</b> ao enviar proposta: {$enviado}. Tente novamente.\")</script>";
+    }
+}
+
+
+

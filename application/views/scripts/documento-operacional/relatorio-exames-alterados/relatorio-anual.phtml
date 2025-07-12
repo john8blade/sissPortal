@@ -1,0 +1,483 @@
+<?php
+set_time_limit(5);
+
+function ient($n) {
+    for ($i = 0; $i < $n; $i++) :
+        echo utf8_decode('<tr><td>&nbsp;</td></tr>');
+    endfor;
+}
+
+function limitarTextoPorLinha($texto, $qtdCaracteresLinha = 26, $caracterDeterminadorQuebraLinha = '<br/>') {
+    $tamanhoDoTexto = strlen($texto);
+    $resultado = null;
+    if ($tamanhoDoTexto > 0) {
+        $lotes = ceil($tamanhoDoTexto / $qtdCaracteresLinha);
+        $partes = array();
+        $comecar = 0;
+        for ($i = 0; $i < $lotes; $i++) {
+            $partes[] = trim(substr($texto, $comecar, $qtdCaracteresLinha));
+            $comecar += $qtdCaracteresLinha;
+        }
+        $resultado = implode($caracterDeterminadorQuebraLinha, $partes);
+    }
+    return $resultado;
+}
+
+$htmlheader = <<<HTML
+<table>
+    <tbody>
+        <tr><td>&nbsp;</td></tr>
+        <tr><td>&nbsp;</td></tr>
+        <tr><td>&nbsp;</td></tr>
+        <tr><td>&nbsp;</td></tr>
+        <tr><td style="text-align: right;">{PAGENO}/{nbpg}</td></tr>
+        <tr><td>&nbsp;</td></tr>
+        <tr>
+            <td align="center"><h2>RELATÓRIO ANUAL</h2></td>
+        </tr>
+        <tr>
+            <td align="center"><h3>ACOMPANHAMENTO DO PROGRAMA DE CONTROLE MÉDICO DE SAÚDE OCUPACIONAL</h3></td>
+        </tr>
+    </tbody>
+</table>
+HTML;
+
+$htmlfooter = <<<HTML
+<table>
+    <tbody>
+        <tr>
+            <td align="right"></td>
+        </tr>
+    </tbody>
+</table>
+HTML;
+
+$debug = false;
+include 'MPDF/mpdf.php';
+$mpdf = new mPDF('', 'A4', 10, 'Arial', 15, 15, 55, 16, 9, 9, 'P');
+ini_set('memory_limit', -1);
+ini_set('max_execution_time', -1);
+$mpdf->ignore_invalid_utf8 = true;
+$mpdf->SetImportUse();
+$mpdf->SetDocTemplate('template-2-preto-branco.pdf', true);
+//$mpdf->debug = true;
+//$mpdf->allow_output_buffering = true;
+
+$mpdf->DefHTMLHeaderByName('normal', $htmlheader);
+$mpdf->DefHTMLHeaderByName('vazio', '');
+$mpdf->SetHTMLFooter($htmlfooter);
+
+
+
+
+if ($debug) {
+    echo '<style>' . file_get_contents('css/documento.css') . '</style>';
+} else {
+    $mpdf->WriteHTML('<style>' . file_get_contents('css/documento.css') . '</style>');
+}
+
+$mpdf->TOCpagebreakByArray(array('toc_preHTML' => '<h1>SUMÁRIO</h1>'));
+$mpdf->PageNumSubstitutions[] = array('from' => 1, 'reset' => 0, 'type' => '1', 'suppress' => 'on');
+
+
+ob_start();
+?>
+<table>
+    <tbody>
+        <tr>
+            <td align="center"><h1>RELATÓRIO ANUAL</h1></td>
+        </tr>
+        <tr>
+            <td align="center">ACOMPANHAMENTO DO PROGRAMA DE CONTROLE MÉDICO DE SAÚDE OCUPACIONAL</td>
+        </tr>
+        <?php ient(20) ?>
+        <tr>
+            <td align="center"><h1><?php echo $this->empresa['empresa_fantasia'] ?></h1></td>
+        </tr>
+        <?php ient(25) ?>
+        <tr>
+            <td align="center"><strong>Médico do Trabalho:</strong> <?php echo utf8_decode($this->contrato['coordenacao_medico']) ?></td>
+        </tr>
+        <tr>
+            <!--<td align="center"><strong>Data:</strong> <?php echo Util::nomeDoMes(date('m', strtotime($this->contrato['vigencia_data_inicio']))) . '/' . date('Y', strtotime($this->contrato['vigencia_data_inicio'])) . ' à ' . Util::nomeDoMes(date('m', strtotime($this->contrato['vigencia_data_fim']))) . '/' . date('Y', strtotime($this->contrato['vigencia_data_fim'])) ?></td>-->
+            <td align="center"><strong>Data:</strong> <?php echo Util::nomeDoMes(date('m', strtotime($this->data1))) . '/' . date('Y', strtotime($this->data1)) . ' à ' . Util::nomeDoMes(date('m', strtotime($this->data2))) . '/' . date('Y', strtotime($this->data2)) ?></td>
+        </tr>
+    </tbody>    
+</table>
+
+
+<?php
+$htmlParte = ob_get_clean();
+if ($debug)
+    echo $htmlParte;
+else
+    $mpdf->WriteHTML($htmlParte);
+?>
+
+<?php ob_start(); ?>
+
+<pagebreak type="NEXT-ODD" resetpagenum="3" pagenumstyle="1" suppress="off"/>
+
+<sethtmlpageheader name="normal" value="on" show-this-page="1" />
+
+<tocentry content="1 - Identificação da Empresa"/>
+<h1 class="underline">1 - Identificação da Empresa</h1>
+
+<table class="letramaior">
+    <tbody>
+        <tr>
+            <td><strong>1.1- Razão Social:</strong></td>
+        </tr>
+        <tr>
+            <td><?php echo $this->empresa['empresa_razao'] ?></td>
+        </tr>
+
+        <?php ient(1) ?>
+
+        <tr>
+            <td><strong>1.2 - Endereço:</strong></td>
+        </tr>
+        <tr>
+            <td><?php echo $this->empresa['endereco']['endereco_logradouro'] . ', ' . $this->empresa['empresa_numero'] . ', ' . $this->empresa['endereco']['endereco_bairro'] . ', ' . $this->empresa['endereco']['endereco_cidade'] . ', ' . Util::cep($this->empresa['endereco']['endereco_cep']) . ' ' . $this->empresa['endereco']['endereco_uf'] ?></td>
+        </tr>
+
+        <?php ient(1) ?> 
+
+        <tr>
+            <td><strong>1.3 - CNPJ:</strong></td>
+        </tr>
+        <tr>
+            <td><?php echo Util::cnpj($this->empresa['empresa_cnpj']) ?></td>
+        </tr>
+
+
+        <?php ient(1) ?> 
+
+        <tr>
+            <td><strong>1.4 - CNAE:</strong></td>
+        </tr>
+        <tr>
+            <td><?php echo $this->empresa['empresa_cnae'] ?></td>
+        </tr>
+
+        <?php ient(1) ?> 
+
+        <tr>
+            <td><strong>1.5 - Grau de Risco:</strong></td>
+        </tr>
+        <tr>
+            <td><?php echo $this->empresa['empresa_grau_risco'] ?></td>
+        </tr>
+    </tbody>
+</table>
+
+<?php
+$htmlParte = ob_get_clean();
+if ($debug)
+    echo $htmlParte;
+else
+    $mpdf->WriteHTML($htmlParte);
+?>
+
+<?php ob_start(); ?>
+
+<pagebreak />
+
+<tocentry content="2 - Quadro III da NR-07"/>
+<h1 class="underline">2 - Quadro III da NR-07</h1>
+
+<table border="1">
+    <thead>
+        <tr>
+            <th>EXAME</th>
+            <th colspan="2">NORMAIS</th>
+            <th colspan="2">ALTERADOS</th>
+            <th>TOTAL</th>
+        </tr>
+    </thead>
+    <tbody>
+
+        <?php $tn = 0; ?>
+        <?php $ta = 0; ?>
+        <?php $tg = 0; ?>
+        <?php foreach ($this->quadro3nr07 as $exame => $dados): ?>
+            <?php $n = (int) ($dados['N']); ?>
+            <?php $a = (int) ($dados['A']); ?>
+            <?php $t = (int) ($dados['N']) + (int) ($dados['A']); ?>
+            <tr>
+                <td><?php echo $exame; ?></td>
+                <td align="center"><?php echo $n; ?></td>
+                <td align="right"><?php echo @number_format(($n / $t) * 100, 2, ',', '.'); ?>%</td>
+                <td align="center"><?php echo $a; ?></td>
+                <td align="right"><?php echo @number_format(($a / $t) * 100, 2, ',', '.'); ?>%</td>
+                <td align="center"><?php echo $t; ?></td>
+            </tr>
+            <?php $tn += $n; ?>
+            <?php $ta += $a; ?>
+            <?php $tg += $t; ?>
+        <?php endforeach; ?>
+    </tbody>
+    <tfoot>
+        <tr>
+            <th><strong>TOTAL GERAL</strong></th>
+            <th align="center"><?php echo $tn; ?></th>
+            <th align="right"><?php echo @number_format(($tn / $tg) * 100, 2, ',', '.'); ?>%</th>
+            <th align="center"><?php echo $ta; ?></th>
+            <th align="right"><?php echo @number_format(($ta / $tg) * 100, 2, ',', '.'); ?>%</th>
+            <th align="center"><?php echo $tg; ?></th>
+        </tr>
+    </tfoot>
+</table>
+
+<?php
+$htmlParte = ob_get_clean();
+if ($debug)
+    echo $htmlParte;
+else
+    $mpdf->WriteHTML($htmlParte);
+?>
+
+<?php ob_start(); ?>
+
+<pagebreak />
+
+
+<tocentry content="2.1 - Relação por Exames Clínicos"/>
+<h1 class="underline">2.1 - Relação por Exames Clínicos</h1>
+
+<table style="width: 100%;border-collapse: collapse" width="100%" border="1">
+    <thead>
+        <tr>
+            <th width="25%">SETOR</th>
+            <th width="15%">TIPO DE EXAME</th>
+            <th width="">NORMAIS</th>
+            <th width="">ANORMAIS</th>
+            <th width="">TOTAL</th>
+            <th width="">ANORMAIS %</th>
+            <th width="">Nº EXAMES P/ANO SEG.</th>
+        </tr>
+    </thead>
+    <tbody>
+        <?php foreach ($this->relacaoExamesClinicos as $empresa => $contratos): ?>
+            <?php foreach ($contratos as $contrato => $setores): ?>
+                <?php foreach ($setores as $setor => $exames): ?>
+                    <tr> 
+                        <td rowspan="<?php echo count($exames) + 1 ?>"><?php echo limitarTextoPorLinha($setor,25) ?></td>
+                    </tr>
+                    <?php foreach ($exames as $tipo => $item): ?>
+                        <?php $n = (int) $item['NORMAIS']; ?>
+                        <?php $a = isset($item['ANORMAIS']) ? (int) $item['ANORMAIS'] : 0 ?>
+                        <?php $t = (int) $item['TOTAL']; ?>
+                        <?php $p = @@number_format($a * 100 / $t, 2, ',', '.'); ?>    
+                        <tr>
+                            <td><?php echo limitarTextoPorLinha($tipo,25) ?></td>                            
+                            <td style="text-align: center"><?php echo $n ?></td>                            
+                            <td style="text-align: center"><?php echo $a ?></td>                            
+                            <td style="text-align: center"><?php echo $t ?></td>                            
+                            <td style="text-align: center"><?php echo $p,'%' ?></td>                            
+                            <td style="text-align: center"><?php echo (strtolower($tipo) == 'demissional' ? 0 : $item['TOTAL']) ?></td>                                                      
+                        </tr>
+                    <?php endforeach /* foreach ($contratos as $contrato => $setores) */ ?>
+
+                <?php endforeach /* foreach ($contratos as $contrato => $setores) */ ?>
+            <?php endforeach /* foreach ($contratos as $contrato => $setores) */ ?>
+        <?php endforeach /* foreach ($this->relacaoExamesClinicos as $empresa => $contratos) */ ?> 
+    </tbody>
+</table>
+
+
+<?php
+$htmlParte = ob_get_clean();
+if ($debug)
+    echo $htmlParte;
+else
+    $mpdf->WriteHTML($htmlParte);
+?>
+
+<?php ob_start(); ?>
+
+<pagebreak />
+<tocentry content="2.2 - Relação por Exames Complementares / Laboratoriais"/>
+<h1 class="underline">2.2 - Relação por Exames Complementares / Laboratoriais</h1>
+
+<strong>N:</strong> NORMAIS - <strong>A:</strong> ANORMAIS - <strong>T:</strong> TOTAL <br/> <strong>A%:</strong> Nº de Resultados Anormais X 100 / Nº Anual de Exames - <strong>AS:</strong> Nº de Exames para o Ano Seguinte
+
+<?php
+$htmlParte = ob_get_clean();
+if ($debug)
+    echo $htmlParte;
+else
+    $mpdf->WriteHTML($htmlParte);
+?>
+
+<?php foreach ($this->relacaoExames as $empresa => $contratos): ?>
+
+    <?php foreach ($contratos as $contrato => $setores): ?>
+
+        <?php foreach ($setores as $setor => $exames): ?>
+            <?php $tnp = $tap = $ttp = $tpp = 0 ?>
+            <table style="width: 100%;border-collapse: collapse" width="100%" border="1">
+                <thead>
+                    <tr>
+                        <th width="25%">SETOR</th>
+                        <th width="32%">EXAME</th>
+                        <th width="8%">N</th>
+                        <th width="8%">A</th>
+                        <th width="8%">T</th>
+                        <th width="10%">A%</th>
+                        <th width="8%">AS</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td width="25%" valign="top" rowspan="<?php echo count($exames) + 1 ?>"><?php echo limitarTextoPorLinha($setor, 25) ?></td>
+                    </tr>
+                    <?php foreach ($exames as $exame => $dados): ?>
+                        <?php $n = (int) $dados['NORMAIS']; ?>
+                        <?php $a = (int) $dados['ANORMAIS']; ?>
+                        <?php $t = (int) $dados['TOTAL']; ?>
+                        <?php $p = @@number_format($a * 100 / $t, 2, ',', '.'); ?>
+                        <tr>
+                            <td width="32%"><?php echo $exame ?></td>
+                            <td width="width: 8%" align="center"><?php echo Util::preencherComZero($n, 2) ?></td>
+                            <td width="width: 8%" align="center"><?php echo Util::preencherComZero($a, 2) ?></td>
+                            <td width="width: 8%" align="center"><?php echo Util::preencherComZero($t, 2) ?></td>
+                            <td width="width: 8%" align="center"><?php echo $p; ?>%</td>
+                            <td width="width: 8%" align="center"><?php echo $t; ?></td>
+                        </tr>
+                        <?php $tnp += $n; ?>
+                        <?php $tap += $a; ?>
+                        <?php $ttp += $t; ?>
+                        <?php $tpp += $p; ?>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
+        <?php endforeach //foreach ($setores as $setor => $exames): ?>
+    <?php endforeach // foreach ($contratos as $contrato => $setores) ?>
+<?php endforeach; // foreach ($this->relacaoExames as $empresa => $contratos)?>
+
+
+<?php
+$htmlParte = ob_get_clean();
+if ($debug)
+    echo $htmlParte;
+else
+    $mpdf->WriteHTML($htmlParte);
+ob_start();
+?>
+
+<pagebreak />
+<tocentry content="3 - Médico Coordenador"/>
+<h1 class="underline">3 - Médico Coordenador</h1>
+
+<table id="tabela-assinatura">
+    <?php ient(10) ?>
+    <tr>
+        <td align="left" colspan="3"><strong>Médico:</strong> <?php echo $this->contrato['coordenacao_medico'] ?></td>
+    </tr>
+    <tr>
+        <td align="left" colspan="3"><strong>CRM:</strong> <?php echo $this->contrato['coordenacao_crm'] ?></td>
+    </tr>
+    <tr>
+        <td align="left" colspan="3"><strong>Endereço:</strong> <?php echo $this->contrato['coordenacao_endereco'] ?></td>
+    </tr>
+    <tr>
+        <td align="left" colspan="3"><strong>Telefone:</strong> <?php echo $this->contrato['coordenacao_telefone'] ?></td>
+    </tr>
+    <?php ient(30) ?>
+    <tr>
+        <td></td>
+        <td align="center" width="300" style="border-top: 1px solid #000;"><?php echo $this->contrato['coordenacao_medico'] ?></td>
+        <td></td>
+    </tr>
+    <tr>
+        <td align="center" colspan="3">CRM: <?php echo $this->contrato['coordenacao_crm'] ?></td>
+    </tr>
+</table>
+
+
+<?php
+$htmlParte = ob_get_clean();
+//$mpdf->AddPage();
+if ($debug)
+    echo $htmlParte;
+else
+    $mpdf->WriteHTML($htmlParte);
+
+if (!$debug)
+    $mpdf->Output();
+
+exit;
+
+/*
+ * ANOTAÇÃO DO SILAS:
+ * Daqui para baixo era o código anterior que não estava funcionando
+ * e que deveria gerar a seção: 2.2 - Relação por Exames Complementares / Laboratoriais.
+ */
+?>
+
+<?php foreach ($this->relacaoExames as $empresa => $contratos): ?>
+    <?php foreach ($contratos as $contrato => $setores): ?>
+        <?php foreach ($setores as $setor => $exames): ?>
+            <?php $tnp = 0; ?>
+            <?php $tap = 0; ?>
+            <?php $ttp = 0; ?>
+            <?php $tpp = 0; ?>
+            <?php ob_start(); ?>
+            <table border="1">
+                <thead>
+                    <tr>
+                        <th width="30%">SETOR</th>
+                        <th width="50%">EXAME</th>
+                        <th>N</th>
+                        <th>A</th>
+                        <th>T</th>
+                        <th>A%</th>
+                        <th>AS</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    <tr>
+                        <td valign="top" rowspan="<?php echo count($exames) + 1 ?>"><?php echo $setor ?></td>
+                    </tr>
+                    <?php foreach ($exames as $exame => $dados): ?>
+                        <?php $n = (int) $dados['NORMAIS']; ?>
+                        <?php $a = (int) $dados['ANORMAIS']; ?>
+                        <?php $t = (int) $dados['TOTAL']; ?>
+                        <?php $p = @@number_format($a * 100 / $t, 2, ',', '.'); ?>
+                        <tr>
+                            <td><?php echo $exame ?></td>
+                            <td align="center"><?php echo Util::preencherComZero($n, 2) ?></td>
+                            <td align="center"><?php echo Util::preencherComZero($a, 2) ?></td>
+                            <td align="center"><?php echo Util::preencherComZero($t, 2) ?></td>
+                            <td align="center"><?php echo $p; ?>%</td>
+                            <td align="center"><?php echo $t; ?></td>
+                        </tr>
+                        <?php $tnp += $n; ?>
+                        <?php $tap += $a; ?>
+                        <?php $ttp += $t; ?>
+                        <?php $tpp += $p; ?>
+                    <?php endforeach; ?>
+                </tbody>
+
+                <tfoot>
+                    <tr>
+                        <th colspan="2"></th>
+                        <th align="center"><?php echo Util::preencherComZero($tnp, 2); ?></th>
+                        <th align="center"><?php echo Util::preencherComZero($tap, 2); ?></th>
+                        <th align="center"><?php echo Util::preencherComZero($ttp, 2); ?></th>
+                        <th align="right"><?php echo @number_format($tpp, 2, ',', '.'); ?>%</th>
+                        <th align="center"><?php echo $t; ?></th>
+                    </tr>
+                </tfoot>
+            </table>
+            <?php
+            $parteHtml = ob_get_clean();
+            $mpdf->WriteHTML($parteHtml);
+            ?>
+        <?php endforeach; ?>
+    <?php endforeach; ?>
+
+    <?php
+endforeach;

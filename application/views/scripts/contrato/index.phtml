@@ -1,0 +1,110 @@
+<style type="text/css">
+    .entiqueta {font-weight: bold; text-align: left}
+    #area-produto ul {margin: 0px;}
+    #area-produto ul li {list-style: none}
+</style>
+
+<script type="text/javascript">
+    function habilitardescricao(id) {
+        var produto = "descricaoProduto-" + id;
+        //alert(document.getElementById(produto).style.display == "none");
+        if (document.getElementById(produto).style.display == "none") {
+            document.getElementById(produto).style.display = "block";
+        } else {
+            document.getElementById(produto).style.display = "none";
+        }
+    }
+    $(document).ready(function () {
+        igualarAlturaPelaClasse('card');
+    });
+</script>
+
+<?php
+$endereco = $this->atributos['empresa']['endereco'];
+$vigencia = $this->atributos['contrato']['vigencia'];
+?>
+
+<div class="row">
+
+    <div class="col-md-6">
+        <div class="panel panel-primary">
+            <div class="panel-heading"><i class="fa fa-file-text"></i>Informações do Contrato</div>
+            <div class="panel-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="panel panel-info card">
+                            <div class="panel-heading"><i class="fa fa-warning"></i>Mantenha seus dados atualizados</div>
+                            <div class="panel-body">
+                                <p style="text-align: justify;">Eles são utilizados para confecção e envio de faturas, notas fiscais, boletos, PGR, PCMSO, dentre outros documentos. Há ainda informações enviadas automaticamente por e-mail e o cadastro correto é imprescindível para a comunicação.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="panel panel-default card">
+                            <div class="panel-heading"><i class="fa fa-building"></i>Seus Dados<span class="pull-right"><a class="btn btn-xs btn-success" href="/empresa/alterar"><i class="fa fa-pencil-square-o"></i>Atualizar</a></span></div>
+                            <div class="panel-body">
+                                <table class="table">
+                                    <tr><td class="entiqueta">Contrato:</td><td>&nbsp;<?php echo $this->atributos['contrato_numero'] ?></td></tr>
+                                    <tr><td class="entiqueta">Razão Social:</td><td>&nbsp;<?php echo $this->atributos['empresa']['empresa_razao'] ?></td></tr>
+                                    <tr><td class="entiqueta">Obra:</td><td>&nbsp;<?php echo $this->atributos['empresa']['empresa_fantasia'] ?></td></tr>
+                                    <tr><td class="entiqueta">Endereço:</td><td>&nbsp;<?php echo $endereco['endereco_logradouro'] ?> N°<?php echo $this->atributos['empresa']['empresa_numero'] ?></td></tr>
+                                    <tr><td class="entiqueta">Bairro:</td><td>&nbsp;<?php echo $endereco['endereco_bairro'] ?></td></tr>
+                                    <tr><td class="entiqueta">Cidade:</td><td>&nbsp;<?php echo $endereco['endereco_cidade'] ?> - <?php echo $endereco['endereco_uf'] ?></td></tr>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6">
+        <div class="panel panel-primary">
+            <div class="panel-heading"><i class="fa fa-phone"></i>Contato HTMED</div>
+            <div class="panel-body">
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="panel panel-default card">
+                            <div class="panel-heading"><i class="fa fa-user"></i>Representante Comercial</div>
+                            <div class="panel-body">
+                                <table class="table">
+                                    <tr><td class="entiqueta">Contato:</td><td>&nbsp;<?php echo @$this->contato[0]['pessoa_nome']; ?></td></tr>
+                                    <tr><td class="entiqueta">Telefone:</td><td>&nbsp;<?php echo isset($this->contato[0]) ? Util::telefone($this->contato[0]['telefone_ddd'] . $this->contato[0]['telefone_numero']) : ""; ?></td></tr>
+                                    <tr><td class="entiqueta">E-mail:</td><td>&nbsp;<?php echo @$this->contato[0]['usuario_email']; ?></td></tr>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    <!--
+                    <div class="col-md-6">
+                        <div class="panel panel-default card">
+                            <div class="panel-heading"><i class="fa fa-phone"></i>Contatos Diversos</div>
+                            <div class="panel-body">
+
+                                <ul class="nav nav-pills nav-justified">
+                                    <li class="active"><a data-toggle="pill" href="#pill1" id="pill1-tab">Vitória / ES</a></li>                                    
+                                </ul>
+
+                                <div class="tab-content">
+                                    <div id="pill1" class="tab-pane fade in active">
+                                        <table class="table">
+                                            <tr><td class="entiqueta">Recepção:</td><td>&nbsp;(27) 3064-7373 | 3064-7350 | 3064-7351</td></tr>
+                                            <tr><td class="entiqueta">Financeiro:</td><td>&nbsp;(27) 3064-7359</td></tr>
+                                            <tr><td class="entiqueta">Comercial:</td><td>&nbsp;(27) 3064-7355</td></tr>
+                                            <tr><td class="entiqueta">Segurança:</td><td>&nbsp;(27) 3064-7354</td></tr>
+                                            <tr><td class="entiqueta">Medicina:</td><td>&nbsp;(27) 3064-7351</td></tr>
+                                        </table>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+                    -->
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>

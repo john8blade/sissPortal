@@ -1,0 +1,191 @@
+<?php ob_start(); ?>
+
+<style>
+    table tr td,
+    table tr th,
+    body {
+        font: 10px monospace;
+    }
+    table {
+        float: left;
+        border-collapse: collapse;
+    }
+    table tr th {
+        font-weight: bold;
+        padding: 2px;
+        text-align: center;
+    }
+    table tr td {
+        padding: 2px;
+        text-align: center;
+        white-space: nowrap;
+    }
+    #principal tr th,
+    #principal tr td {
+        border: 1px solid #ddd;
+    }
+    table tr td.info {
+        text-align: right;
+    }
+    table tr td.dado {
+        text-align: left;
+        font-weight: bold;
+    }
+    table tr td.bordado {
+        border: 1px solid #999;
+    }
+</style>
+
+<table width="100%" border="0">
+    <tr>
+        <td rowspan="5" align="left"><?php echo is_null($this->funcionario['rh_funcionario_foto']) ? '&nbsp;' : ('<img src="data:' . $this->funcionario['rh_funcionario_foto_type'] . ';base64,' . base64_encode($this->funcionario['rh_funcionario_foto']) . '" height="100"/>') ?></td>
+        <td colspan="14">&nbsp;</td>
+        <td class="bordado"><p><?php echo $this->funcionario['rh_funcionario_funcao'] ?></p></td>
+    </tr>
+    <tr>
+        <td colspan="15">&nbsp;</td>
+    </tr>
+    <tr>
+        <td class="info">EMPREGADO:</td>
+        <td class="dado"><?php echo $this->funcionario['rh_funcionario_nome'] ?></td>
+        <td rowspan="3">&nbsp;</td>
+        <td class="info">COORDENADOR:</td>
+        <td class="dado" colspan="5"><?php echo $this->ponto['coordenador'] ?></td>
+        <td class="bordado" colspan="5" width="120"><strong>ESCALA</strong></td>
+        <td class="bordado">Dias Trabalhados no Mês</td>
+    </tr>
+    <tr>
+        <td class="info">MÊS/ANO:</td>
+        <td class="dado"><?php echo strtoupper(Data::nomeDoMes($this->ponto['rh_ponto_periodo_2'])) . "/" . Data::ano($this->ponto['rh_ponto_periodo_2']) ?></td>
+        <td class="info">LOCAL DE TRABALHO:</td>
+        <td class="dado" colspan="5"><?php echo $this->ponto['local'] ?></td>
+        <td class="bordado">PAR</td>
+        <td class="bordado">&nbsp;</td>
+        <td class="bordado">&nbsp;</td>
+        <td class="bordado">&nbsp;</td>
+        <td class="bordado">IMPAR</td>
+        <td class="bordado"><?php echo $this->ponto['rh_ponto_dias_trabalhados'] ?></td>
+    </tr>
+    <tr>
+        <td class="info">PERÍODO:</td>
+        <td class="dado"><?php echo "{$this->ponto['rh_ponto_periodo_1']} A {$this->ponto['rh_ponto_periodo_2']}" ?></td>
+        <td class="info">HORÁRIO DE TRABALHO:</td>
+        <td class="dado" colspan="5"><?php echo $this->funcionario['rh_funcionario_horario'] ?></td>
+        <td class="bordado"><?php echo $this->funcionario['rh_funcionario_escala'] == 'PAR' ? '&#8226;' : '' ?></td>
+        <td class="bordado">&nbsp;</td>
+        <td class="bordado">&nbsp;</td>
+        <td class="bordado">&nbsp;</td>
+        <td class="bordado">&nbsp;</td>
+        <td class="bordado"><?php echo $this->funcionario['rh_funcionario_escala'] == 'IMPAR' ? '&#8226;' : '' ?></td>
+    </tr>
+</table>
+
+<br>
+
+<table id="principal" width="100%">
+    <thead>
+        <tr>
+            <th rowspan="2" width="1">Data</th>
+            <th rowspan="2" width="1">Dia</th>
+            <th rowspan="2" width="50">Entrada</th>
+            <th colspan="2">Intervalo</th>
+            <th rowspan="2" width="50">Saída</th>
+            <th colspan="2">Extra</th>
+            <th rowspan="2" width="80">Horas</th>
+            <th rowspan="2" width="80">Extra</th>
+            <th rowspan="2" width="80">Extra 60%</th>
+            <th rowspan="2" width="80">Extra 100%</th>
+            <th rowspan="2" width="80">Ad. Noturno</th>
+            <th rowspan="2" width="80">Desconto</th>
+            <th rowspan="2" width="50">Atestado Médico</th>
+            <th rowspan="2" width="50">Falta</th>
+            <th rowspan="2" width="50">D.S.R</th>
+            <th rowspan="2">Observações</th>
+        </tr>
+        <tr>
+            <th width="50">Saída</th>
+            <th width="50">Entrada</th>
+            <th width="50">Entrada</th>
+            <th width="50">Saída</th>
+        </tr>
+    </thead>
+    <tbody>
+        <?php $j = 0 ?>
+        <?php foreach ($this->registros as $i => $registro) : ?>
+            <tr>
+                <td><?php echo Data::testeFDS($registro['rh_registro_data']) ? ('<font style="font-weight:bold;color:crimson;">' . Data::converterParaBR($registro['rh_registro_data']) . '</font>') : Data::converterParaBR($registro['rh_registro_data']) ?></td>
+                <td><?php echo Data::testeFDS($registro['rh_registro_data']) ? ('<font style="font-weight:bold;color:crimson;">' . $registro['rh_registro_dia_semana'] . '</font>') : $registro['rh_registro_dia_semana'] ?></td>
+                <td><?php echo Data::eliminarSegundos($registro['rh_registro_entrada_1']) ?></td>
+                <td><?php echo Data::eliminarSegundos($registro['rh_registro_saida_1']) ?></td>
+                <td><?php echo Data::eliminarSegundos($registro['rh_registro_entrada_2']) ?></td>
+                <td><?php echo Data::eliminarSegundos($registro['rh_registro_saida_2']) ?></td>
+                <td><?php echo Data::eliminarSegundos($registro['rh_registro_entrada_3']) ?></td>
+                <td><?php echo Data::eliminarSegundos($registro['rh_registro_saida_3']) ?></td>
+                <td><?php echo Data::eliminarSegundos($registro['rh_registro_horas_trabalhadas']) ?></td>
+                <td><?php echo Data::eliminarSegundos($registro['rh_registro_horas_extra']) ?></td>
+                <td><?php echo Data::eliminarSegundos($registro['rh_registro_horas_extra_60']) ?></td>
+                <td><?php echo Data::eliminarSegundos($registro['rh_registro_horas_extra_100']) ?></td>
+                <td><?php echo Data::eliminarSegundos($registro['rh_registro_horas_noturno']) ?></td>
+                <td><?php echo Data::eliminarSegundos($registro['rh_registro_horas_desconto']) ?></td>
+                <td><?php echo $registro['rh_registro_atestado_medico'] == '1' ? '&#8226;' : '' ?></td>
+                <td><?php echo $registro['rh_registro_falta'] == '1' ? '&#8226;' : '' ?></td>
+                <td><?php echo $registro['rh_registro_dsr'] == '1' ? '&#8226;' : '' ?></td>
+                <td align="left"><?php echo substr($registro['rh_registro_observacoes'], 0, 20) ?></td>
+            </tr>
+        <?php endforeach ?>
+        <tr>
+            <td colspan="9" rowspan="3">APURAÇÃO DE HORAS</td>
+            <td>HE-Jantar Almoço</td>
+            <td>Hs. Extras 60%</td>
+            <td>Hs. Extras 100%</td>
+            <td>Adicional Noturno</td>
+            <td>Desconto Horas</td>
+            <td>Atestado Médico</td>
+            <td>Falta</td>
+            <td>D.S.R</td>
+            <td rowspan="3"><?php echo $this->ponto['rh_ponto_direito_premio'] == '1' ? 'DIREITO AO PRÊMIO' : 'SEM DIREITO AO PRÊMIO' ?></td>
+        </tr>
+        <tr>
+            <td><?php echo Data::eliminarSegundos($this->ponto['rh_ponto_intervalo']) ?></td>
+            <td><?php echo Data::eliminarSegundos($this->ponto['rh_ponto_horas_60']) ?></td>
+            <td rowspan="2"><?php echo Data::eliminarSegundos($this->ponto['rh_ponto_horas_100']) ?></td>
+            <td rowspan="2"><?php echo Data::eliminarSegundos($this->ponto['rh_ponto_horas_noturno']) ?></td>
+            <td rowspan="2"><?php echo Data::eliminarSegundos($this->ponto['rh_ponto_horas_desconto']) ?></td>
+            <td rowspan="2">&nbsp;</td>
+            <td rowspan="2">&nbsp;</td>
+            <td rowspan="2">&nbsp;</td>
+        </tr>
+        <tr>
+            <td colspan="2">&nbsp;</td>
+        </tr>
+    </tbody>
+</table>
+
+<?php
+$table = ob_get_clean();
+
+$header = <<<EOF
+<table width="100%">
+    <tr>
+        <td align="left"><img src="/img/logoHTMED.png" alt="" width="100"/></td>
+        <td style="padding-right: 200px;"><h1>HTMED.</h1></td>
+    </tr>
+</table>
+EOF;
+
+$footer = <<<EOF
+<table width="100%">
+    <tr>
+        <td align="left"></td>
+    </tr>
+</table>
+EOF;
+
+//die(utf8_decode($table));
+
+include 'MPDF/mpdf.php';
+$mpdf = new mPDF('utf-8', 'A4-L', 0, '', 5, 5, 20, 12, 9, 9, 'L');
+$mpdf->SetHTMLHeader($header);
+$mpdf->SetHTMLFooter($footer);
+$mpdf->WriteHTML($table);
+$mpdf->Output();

@@ -1,0 +1,76 @@
+<div class="well well-small"><i class="icon-plus-sign"></i>&nbsp;<strong>Relatório de Empresas</strong></div>
+
+<div><?php echo $this->erros ?></div>
+
+<div class="well well-small div-transparente">
+
+    <form target="_blank" action="/documento-operacional/relatorio-contrato" method="post">
+
+        <div class="row-fluid">
+
+            <div class="span1" id="unidades">
+                <label>Unidades:</label>
+                <?php foreach ($this->unidades as $key => $unidade) : ?>
+                    <label class="checkbox"><input type="checkbox" checked="checked" name="unidades[]" value="<?php echo $unidade['unidade_id'] ?>"  /><?php echo $unidade['unidade_sigla'] ?></label>
+                <?php endforeach; ?>
+            </div>
+            <div class="span2" id="os">
+                <label>Tipo:</label>
+                <label><input type="radio" checked="checked" name="contrato" /> Contrato</label>
+                <!-- <label><input type="checkbox" checked="checked" name="proposta" /> Proposta</label> -->
+            </div>
+
+            <div class="span2">
+                <label>Período</label>
+                <div class="row-fluid">
+                    <div class="span5">
+                        <input type="text" class="span mask-data" name="data1" value="<?php echo date('01/01/2010') ?>"/>
+                    </div>
+                    <div class="span2">
+                        <input type="text" class="span" value="à" disabled="disabled" style="text-align: center;"/>
+                    </div>
+                    <div class="span5">
+                        <input type="text" class="span mask-data" name="data2" value="<?php echo date('d/m/Y') ?>"/>
+                    </div>
+                </div>
+            </div>
+            <?php $unidade = $_SESSION['usuario']['unidadeativa']['unidade_id']; ?>
+            <div class="span2">
+                <label>Empresa</label>
+                <select class="span" name="empresa" id="empresa">
+                    <option value="0">TODAS</option>
+                    <?php foreach (Util::consultaDireta("SELECT * FROM empresa WHERE empresa.empresa_status = 0 AND empresa.fk_unidade_id = {$unidade} and empresa.empresa_tipo = 'CLIENTE' ORDER BY empresa.empresa_fantasia ASC") as $item): ?>
+                        <option value="<?php echo $item['empresa_id'] ?>"><?php echo $item['empresa_fantasia'] . ' (' . Util::preencherComZero($item['empresa_id'], 5) . ')' ?></option>
+                    <?php endforeach ?>
+                </select>
+            </div>
+
+            <div class="span2">
+                <label>Modo</label>
+                <select class="span" name="modo">
+                    <option value="0">VISUALIZAR</option>
+                    <option value="1">PLANILHA</option>
+                </select>
+            </div>
+
+            <div class="span1">
+                <label>&nbsp;</label>
+                <button class="span btn btn-success" type="submit">Enviar</button>
+            </div>
+
+        </div>
+
+    </form>
+
+</div>
+
+            <script>     $("#empresa").change(function() {
+            if (parseInt(this.value) > 0) {
+            $("#unidades").css('display', 'none');
+            $("#os").css('display', 'none');
+        } else {
+    $("#unidades").css('display', 'block');
+            $("#os").css('display', 'block');
+        }
+    });
+</script>

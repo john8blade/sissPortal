@@ -1,0 +1,68 @@
+<div class="panel panel-primary">
+
+    <div class="panel-heading"><i class="fa fa-history"></i>Convocação de Periódico</div>
+
+    <div class="panel-body">
+
+        <form action="" method="post" target="_blank">
+
+            <input type="hidden" id="contrato" name="contrato" value="<?php echo $_SESSION['fk_contrato_id']; ?>">
+            <input type="hidden" id="empresa" name="empresa" value="<?php echo $_SESSION['empresa']['empresa_id']; ?>">
+
+            <div class="row">
+
+                <div class="col-md-2">
+                    <label>Data de Início</label>
+                    <input type="text" class="form-control mask-data" name="data1" value="<?php echo date('01/m/Y') ?>"/>
+                </div>
+
+                <div class="col-md-2">
+                    <label>Data de Início</label>
+                    <input type="text" class="form-control mask-data" name="data2" value="<?php echo date('t/m/Y') ?>"/>
+                </div>
+
+                <div class="col-md-3">
+                    <label>Setor</label>
+                    <select name="setor" id="setor" name="setor" class="form-control">
+                        <option value="0">---</option>
+                    </select>
+                </div>
+
+                <div class="col-md-3">
+                    <label>Funcionário</label>
+                    <select name="funcionario" id="funcionario" name="funcionario" class="form-control">
+                        <option value="0">---</option>
+                    </select>
+                </div>
+
+                <div class="col-md-2">
+                    <label>&nbsp;</label>
+                    <button type="submit" class="form-control btn btn-primary"><i class="icon-ok"></i>&nbsp;Processar</button>
+                </div>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+<script type="text/javascript" src="/js/AjaxComResultadoJson.js"></script>
+
+<script>
+
+    // resgata setores
+    $.post('/ajax/json/servico/obter-setores-pela-empresa', {empresa: $('#empresa').val()}, function (q) {
+        adicionarOptions('setor', q, 'setor_id', 'alocacao', true);
+    }, 'json');
+
+    // resgatas funcionarios
+    $.post('/ajax/json/servico/obter-funcionarios-pela-empresa-e-contrato', {
+        empresa: $('#empresa').val(),
+        contrato: $('#contrato').val()
+    }, function (p) {
+        adicionarOptions('funcionario', p, 'funcionario_id', 'pessoa_nome', true);
+    }, 'json');
+
+</script>

@@ -1,0 +1,23 @@
+<table class="cabecalho sem-bordas">
+    <tr>
+        <td width="33%"><img src="/img/logo-relatorio.png" /></td>
+        <td style="text-align: center">
+            <p style="color: dark;">
+                <strong><?php echo is_null($this->modo) ? 'Atestado de Saúde Ocupacional' : 'Relatório Complementar' ?></strong>
+            </p>
+            <p style="font-size: 14px;"><strong><?php echo is_null($this->modo) ? $this->atributos['tipoexame_nome'] : 'Exame Semestral' ?></strong></p>
+        </td>
+    </tr>
+</table>
+
+<table class="sem-bordas">
+    <!-- Data atual e portaria -->
+    <tr>
+        <td colspan="2" style="padding: 4px; border: 1px solid #DDD; border-left: none; border-right: none; font-weight: normal;"><[ParamCidade]>, <?php echo date('d'); ?> de <?php echo util::nomeDoMes(date('m')); ?> de <?php echo date('Y'); ?></td>
+        <td colspan="7" style="padding: 4px; border: 1px solid #DDD; border-right:none; text-align: right; border-left: none; font-weight: normal;">NR 7 Portaria 3214/78 alterada pelas portarias 24/94 e 08/96</td>
+    </tr>
+    <!-- separador -->
+    <tr>
+        <td colspan="7" class="separador"></td>
+    </tr>
+</table>

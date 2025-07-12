@@ -1,0 +1,86 @@
+ul { list-style: none; }
+body { background: #ffffff; }
+ul.recuado { margin-left: -40px; }
+iframe { display: block; background: #eeeeee; border: none; width: 100%; }
+
+/* loading */
+#sombra { display: none; z-index: 499; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; opacity: 0.8; }
+#aguarde { display: none; z-index: 500; position: fixed; top: 10px; left: 10px; padding: 6px 12px; border-radius: 4px; background: #fff; font-weight: bold; }
+
+/* menu */
+#menu-bar { padding-top: 10px; }
+
+/* content */
+#content { padding-bottom: 20px; }
+
+/* footer */
+footer { margin-bottom: 10px; padding: 10px; background: #f5f5f5; border-radius: 4px; }
+
+/* coluna justa */
+.fit { width: 1px; white-space: nowrap; text-align: center; }
+
+/* icones */
+.fa { margin-right: 5px; }
+.fa-white { color: #ffffff; }
+.no-margin { margin: 0px !important; }
+
+/* tables */
+.table { margin-top: 10px; }
+.table td, .table th { font-size: 12px; padding: 2px 4px !important; vertical-align: middle !important; }
+.tr-filtro { background: #f5f5f5; }
+.tr-filtro input, .tr-filtro select { border: none; background: none; width: 100%; }
+.text-center input { text-align: center; }
+
+/* paginação */
+.pagination { margin: 20px 0 0 0 !important; }
+
+/* modal */
+.modal-dialog { width: 90% !important; }
+
+/* carousel */
+.carousel, .carousel-inner, .carousel-control.left, .carousel-control.right, .carousel .item { border-radius: 4px; overflow: hidden; }
+.carousel-inner img { min-width: 100%; }
+
+/* panel */
+.panel-heading { font-weight: bold; }
+
+/* form */
+input, select, textarea { box-shadow: none !important; }
+
+/* navbar toggle */
+@media (max-width: 991px) {
+    .navbar-header {
+        float: none;
+    }
+    .navbar-left,.navbar-right {
+        float: none !important;
+    }
+    .navbar-toggle {
+        display: block;
+    }
+    .navbar-collapse {
+        border-top: 1px solid transparent;
+        box-shadow: inset 0 1px 0 rgba(255,255,255,0.1);
+    }
+    .navbar-fixed-top {
+        top: 0;
+        border-width: 0 0 1px;
+    }
+    .navbar-collapse.collapse {
+        display: none!important;
+    }
+    .navbar-nav {
+        float: none!important;
+        margin-top: 7.5px;
+    }
+    .navbar-nav>li {
+        float: none;
+    }
+    .navbar-nav>li>a {
+        padding-top: 10px;
+        padding-bottom: 10px;
+    }
+    .collapse.in{
+        display:block !important;
+    }
+}

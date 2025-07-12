@@ -1,0 +1,94 @@
+<?php ob_start() ?>
+
+<table border="0" class="largo sem-bordas header">
+    <tbody>
+        <tr>
+            <td style="width: 10%"><img src="img/logo-relatorio.png"/></td>
+            <td style="width: 80%" align="left" valign="middle"><h1><?php echo $this->relatorioTitulo; ?></h1></td>
+            <td style="width: 10%" align="right" valign="top">{PAGENO}/{nbpg}</td>
+        </tr>
+
+        <tr>
+            <td colspan="3"><[AtributoTextoFiltro]/></td>
+        </tr>
+    </tbody>
+</table>
+
+<?php $header = ob_get_clean() ?>
+
+<?php ob_start() ?>
+
+<style type="text/css">
+    * { margin: 0; padding: 0; position: relative; }
+    body, table { font: normal 10px Arial; }
+    h2 { font-size: 14px; }
+    table { border-collapse: collapse; }
+    table tr th, table tr td { padding: 2px; white-space: nowrap; vertical-align: top; }
+    table tr th { border-top: 1px solid black; border-bottom: 1px solid black; text-align: left; }
+    table tr td { border-bottom: 1px solid lightgrey; }
+    table.sem-bordas tr th, table.sem-bordas tr td { border: none; }
+    .sem-bordas { border: none; }
+    .largo { width: 100%; }
+    .justo { width: 1px; }
+    .moeda { text-align: right; }
+    .label { font-weight: bold; text-align: right; }
+</style>
+
+<table class="table table-hover table-bordered table-condensed" style="width: 99%">
+    <thead>
+        <tr>
+            <th>CPF</th>
+            <th>Nome</th>
+            <th>Cargo</th>
+            <th>Data de Adm.</th>
+            <th>Empresa</th>
+            <th>Contrato</th>
+        </tr>
+    </thead>
+    <tbody>
+
+        <?php #var_dump("<pre>",$this->resultados,"</pre>"); die; ?>
+        <?php foreach ($this->resultados as $k => $item): ?>
+            <tr id="tr-<?php echo $k; ?>">
+                <td><?php echo Util::cpf($item['pessoa_cpf']); ?></td>
+                <td><?php echo $item['pessoa_nome']; ?></td>
+                <td><?php echo $item['cargo_nome']; ?></td>
+                <td><?php echo (strlen($item['funcionario_data_admissao']) > 0 && $item['funcionario_data_admissao'] != '0000-00-00' ) ? date('d/m/Y', strtotime($item['funcionario_data_admissao'])) : null ?></td>
+                <td><?php echo $item['empresa_fantasia']; ?></td>
+                <td><?php echo $item['contrato_numero']; ?></td>
+            </tr>
+        <?php endforeach; ?>
+    </tbody>
+
+    <tfoot>
+        <tr>
+            <td colspan="4" style="text-align: right"><strong>Quantidade de Funcionários:</strong></td> 
+            <td colspan="2"><?php echo '<strong>', str_pad((string) count($this->resultados), 9, '0', STR_PAD_LEFT), '</strong>' ?></td> 
+        </tr>
+    </tfoot>
+</table>
+<?php
+$html = ob_get_clean();
+
+$localScripts = '../application/views/scripts/documento-operacional/';
+require_once "{$localScripts}include/funcoes.php";
+$footer = obterHtmlDoRodapeEmPdf();
+
+include 'MPDF/mpdf.php';
+$mpdf = new mPDF('', 'A4-L', 0, '', 15, 15, 40, 30, 9, 9, 'L');
+
+$textoFiltroCabecao = '<strong>Relatório:</strong>&nbsp;' . $this->paramFiltroUsados['filtro_tipo_relatorio'];
+$textoFiltroCabecao .= '&nbsp;&nbsp;<strong>Contrato:</strong>&nbsp;' . $this->paramFiltroUsados['filtro_contrato_numero'] . '&nbsp;&nbsp;<strong>Empresa:</strong>&nbsp;' . $this->paramFiltroUsados['filtro_empresa_razao'];
+
+$cabecalho = str_replace('<[AtributoTextoFiltro]/>', $textoFiltroCabecao, $header);
+$mpdf->SetHTMLHeader($cabecalho);
+$mpdf->SetHTMLFooter($footer);
+
+$mpdf->WriteHTML($html);
+$mpdf->Output();
+
+
+
+
+
+

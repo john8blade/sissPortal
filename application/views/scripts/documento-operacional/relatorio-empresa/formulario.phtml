@@ -1,0 +1,51 @@
+<div class="well well-small"><i class="icon-plus-sign"></i>&nbsp;<strong>Relatório de Empresas</strong></div>
+
+<div><?php echo $this->erros ?></div>
+
+<div class="well well-small div-transparente">
+
+    <form target="_blank" action="/documento-operacional/relatorio-empresa" method="post" >
+
+        <div class="row-fluid">
+
+            <div class="span1">
+                <label>Unidades:</label>
+                <?php foreach ($this->unidades as $key => $unidade) : ?>
+                    <label class="checkbox"><input type="checkbox" checked="checked" name="unidades[]" value="<?php echo $unidade['unidade_id'] ?>"  /><?php echo $unidade['unidade_sigla'] ?></label>
+                <?php endforeach; ?>
+            </div>
+
+            <div class="span2">
+                <label>Tipo:</label>
+                <label class="checkbox"><input type="checkbox" checked="checked" name="tipos[]" value="c"/>Cliente</label>
+                <label class="checkbox"><input type="checkbox" checked="checked" name="tipos[]" value="f"/>Fornecedor</label>
+            </div>
+
+            <div class="span4">
+                <label>Empresa:</label>
+                <select class="span" name="empresa">
+                    <option value="0">---</option>
+                    <?php foreach ($this->empresas as $value): ?>
+                        <option value="<?php echo $value['empresa_id'] ?>"><?php echo $value['empresa_fantasia'] . ' (' . Util::preencherComZero($value['empresa_id'], 5) . ')' ?></option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
+
+            <div class="span2">
+                <label>Modo</label>
+                <select class="span" name="modo">
+                    <option value="0">VISUALIZAR</option>
+                    <option value="1">PLANILHA</option>
+                </select>
+            </div>
+
+            <div class="span1">
+                <label>&nbsp;</label>
+                <button class="span btn btn-success" type="submit">Enviar</button>
+            </div>
+
+        </div>
+
+    </form>
+
+</div>

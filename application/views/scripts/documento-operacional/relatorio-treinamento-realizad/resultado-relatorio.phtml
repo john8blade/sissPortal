@@ -1,0 +1,8 @@
+
+<?php
+
+$script = 'pdf.phtml';
+if ($this->paramFormatoSaida == 'xls') {
+    $script = 'xls.phtml';
+}
+require($script);

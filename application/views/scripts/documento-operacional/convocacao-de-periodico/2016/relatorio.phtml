@@ -1,0 +1,72 @@
+<?php
+
+$html = '<style>';
+$html .= 'table { font-size: 12px; }';
+$html .= 'table tr td.center { text-align: center; }';
+$html .= 'table tr td, table tr th { white-space: nowrap; padding: 2px 6px; }';
+$html .= '</style>';
+
+$html .= '<table border="1">';
+
+# HEADER
+$html .= '<tr>';
+$html .= '<td colspan="15">'
+        . '<h1>SISS - CONVOCAÇÃO DE PERIÓDICOS</h1>'
+        . '<b>Período:</b> ' . $this->resultado['info']['data1'] . ' à ' . $this->resultado['info']['data2'] . '<br>'
+        . (strlen($this->resultado['info']['empresa']) ? '<b>Empresa:</b> ' . $this->resultado['info']['empresa'] . '<br>' : '')
+        . (strlen($this->resultado['info']['contrato']) ? '<b>Contrato:</b> ' . $this->resultado['info']['contrato'] . '<br>' : '')
+        . (strlen($this->resultado['info']['funcionario']) ? '<b>Funcionário:</b> ' . $this->resultado['info']['funcionario'] : '')
+        . (strlen($this->resultado['info']['setor']) ? '<b>Setor:</b> ' . $this->resultado['info']['setor'] . '<br>' : '')
+        . '</td>';
+$html .= '</tr>';
+
+# TITLES
+$html .= '<tr class="titles">';
+$html .= '<th>OBRA</th>';
+$html .= '<th>FUNCIONÁRIO</th>';
+$html .= '<th>CPF</th>';
+$html .= '<th>CARGO</th>';
+$html .= '<th>TIPO DE EXAME</th>';
+$html .= '<th>REFERÊNCIA</th>';
+$html .= '<th>AUDIO-POS</th>';
+$html .= '<th>PRÓXIMO SEMESTRAL</th>';
+$html .= '<th>EXAMES</th>';
+$html .= '<th>PRÓXIMO ANUAL</th>';
+$html .= '<th>EXAMES</th>';
+$html .= '<th>PRÓXIMO BIENAL</th>';
+$html .= '<th>EXAMES</th>';
+$html .= '<th>PRÓXIMO TRIENAL</th>';
+$html .= '<th>EXAMES</th>';
+$html .= '</tr>';
+
+foreach ($this->resultado['list'] as $i => $item) {
+    $html .= '<tr ' . ($i % 2 == 0 ? 'bgcolor="#eeeeee"' : '') . '>'
+            . '<td>' . $item['empresa_fantasia'] . '</td>'
+            . '<td>' . $item['pessoa_nome'] . '</td>'
+            . '<td>' . Util::cpf($item['pessoa_cpf']) . '</td>'
+            . '<td>' . $item['cargo_nome'] . '</td>'
+            . '<td>' . strtoupper($item['tipoexame_nome']) . '</td>'
+            . '<td class="center">' . $item['data_referencia'] . '</td>'
+            . '<td class="center" ' . ($item['data_compativel'] == 'AUD' ? 'bgcolor="#eafaea"' : '') . '>' . ($item['possui_audio_pos'] == '1' ? $item['audio_pos'] : '-') . '</td>'
+            . '<td class="center" ' . ($item['data_compativel'] == 'SEM' ? 'bgcolor="#eafaea"' : '') . '>' . (isset($item['retorno']['SEM']) ? $item['retorno']['datas']['SEM'] : '-') . '</td>'
+            . '<td>' . (isset($item['retorno']['SEM']) ? implode(',', $item['retorno']['SEM']) : '') . '</td>'
+            . '<td class="center" ' . ($item['data_compativel'] == 'ANU' ? 'bgcolor="#eafaea"' : '') . '>' . (isset($item['retorno']['ANU']) ? $item['retorno']['datas']['ANU'] : '-') . '</td>'
+            . '<td>' . (isset($item['retorno']['ANU']) ? implode(',', $item['retorno']['ANU']) : '') . '</td>'
+            . '<td class="center" ' . ($item['data_compativel'] == 'BIE' ? 'bgcolor="#eafaea"' : '') . '>' . (isset($item['retorno']['BIE']) ? $item['retorno']['datas']['BIE'] : '-') . '</td>'
+            . '<td>' . (isset($item['retorno']['BIE']) ? implode(',', $item['retorno']['BIE']) : '') . '</td>'
+            . '<td class="center" ' . ($item['data_compativel'] == 'TRI' ? 'bgcolor="#eafaea"' : '') . '>' . (isset($item['retorno']['TRI']) ? $item['retorno']['datas']['TRI'] : '-') . '</td>'
+            . '<td>' . (isset($item['retorno']['TRI']) ? implode(',', $item['retorno']['TRI']) : '') . '</td>';
+    $html .= '</tr>';
+}
+
+$html .= '</table>';
+
+echo utf8_decode($html);
+
+header('Expires: Mon, 26 Jul 1997 05:00:00 GMT');
+header('Last-Modified: ' . gmdate('D,d M YH:i:s') . ' GMT');
+header('Cache-Control: no-cache, must-revalidate');
+header('Pragma: no-cache');
+header('Content-type: application/x-msexcel');
+header('Content-Disposition: attachment; filename="siss-convocacao-de-periodico-' . date('YmdHis') . '.xls"');
+header('Content-Description: PHP Generated Data');

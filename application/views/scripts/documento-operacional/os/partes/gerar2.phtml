@@ -1,0 +1,380 @@
+<?php
+#var_dump('<pre>', $this->atributos['os'], '</pre>');die;
+require_once 'MPDF/mpdf.php';
+$localScripts = '../application/views/scripts/documento-operacional/';
+
+if ($_SESSION['usuario']['unidadeativa']['unidade_id'] == 4) {
+    $unidadeAtivaContrato = "Vitória";
+    $tamanho = 75;
+} else {
+    $unidadeAtivaContrato = "Belo Horizonte";
+    $tamanho = 70;
+}
+
+$dataexplodes = explode(" ", Util::dataBR($this->atributos['os']['os_data_hora_criacao']));
+$dataexplode = explode("/", Util::dataBR($dataexplodes[0]));
+$data1 = $dataexplode[0];
+$data2 = $dataexplode[1];
+$data3 = $dataexplode[2];
+
+$cabecalhos['vazio'] = '';
+
+$html = file_get_contents($diretorioTemplate . 'cabecalho-com-descricao.html');
+$cabecalhos['listaDePresenca'] = $htmlPreparado;
+
+$htmlRodape = file_get_contents($localScripts . 'os/partes/rodape.html');
+ob_start();
+$htmlCabecalho = file_get_contents($localScripts . 'os/partes/cabecalho.html');
+$htmlCabecalho = str_replace('<[atributoComercial]/>', 'PROPOSTA COMERCIAL', $htmlCabecalho);
+$htmlCabecalho = str_replace('<[atributoNome]/>', $this->atributos['empResponsabilidade']['contrato_responsavel_nome'], $htmlCabecalho);
+$htmlCabecalho = str_replace('<[atributoEmail]/>', $this->atributos['empResponsabilidade']['contrato_responsavel_email'], $htmlCabecalho);
+$htmlCabecalho = str_replace('<[atributoTelefone]/>', Util::tel1($this->atributos['empResponsabilidade']['contrato_responsavel_telefone']), $htmlCabecalho);
+$htmlCabecalho = str_replace('<[atributoProposta]/>', Util::formatarNumeroContrato($this->atributos['os']['os_id']), $htmlCabecalho);
+$htmlCabecalho = str_replace('<[atributoEmpresa]/>', (isset($this->atributos['empResponsabilidade']['empresa_fantasia'])) ? $this->atributos['empResponsabilidade']['empresa_fantasia'] : $this->atributos['empResponsabilidade']['empresa_razao'], $htmlCabecalho);
+$htmlCabecalho = str_replace('<[atributoLocal]/>', $unidadeAtivaContrato . ' - ' . $data1 . " de " . Util::nomeDoMes($data2) . " de " . $data3, $htmlCabecalho);
+
+
+$p = new mPDF('utf-8', 'A4', 0, '', 10, 10, 65, 30, 8, 8);
+$p->SetHTMLFooter($htmlRodape);
+$p->setAutoTopMargin = false;
+$p->setAutoBottomMargin = false;
+
+// Ativa página com cabeçalho vazio
+$p->WriteHTML('<sethtmlpageheader name="vazio" value="on" show-this-page="1" />');
+
+ob_start();
+?>
+<style>
+    table#tabela tr td { font: normal 12px Arial; border: 0px solid #ccc; }
+    table{border-collapse: collapse; font: normal 11px Arial;width: 100%;}
+    table#tabela tr td.etiqueta { font-weight: bold; padding: 4px; }
+    table#tabela tr td.titulo { text-align: center; font-weight: bold; background: #ddd; }
+    table#tabela tr td.separador { padding: 10px; border: none; }
+    table#tabela tr td.centro { text-align: center; }
+    .alonga {height: 50px}
+</style>
+<!-- pagina 1 -->
+<div style="height: 100%; width: 100%">
+    <div style="text-align: center"><img src="/img/logoProposta.png" /></div>
+    <br>
+    <div style="text-align: center; font-size: 26px Arial"><strong>PROPOSTA COMERCIAL</strong></div>
+    <div style="text-align: center; font-size: 26px Arial"><p><?php echo (isset($this->atributos['empResponsabilidade']['empresa_fantasia'])) ? $this->atributos['empResponsabilidade']['empresa_fantasia'] : $this->atributos['empResponsabilidade']['empresa_razao'] ?></p></div>
+
+    <div style="margin-top: 320px; margin-bottom: -20px">
+        <div style="font-size: 13px Arial; margin-bottom: -10px"><strong>Prestação de Serviço</strong></div>
+        <hr>
+        <table style="font-size: 12px Arial; font-family: serif">
+            <tr>
+                <td width="15%"><strong>N° da Proposta:</strong></td>
+                <td><?php echo Util::formatarNumeroContrato($this->atributos['os']['os_id']) ?></td>
+            </tr>
+            <tr>
+                <td><strong>A/C:</strong></td>
+                <td><?php echo $this->atributos['empResponsabilidade']['contrato_responsavel_nome'] ?></td>
+            </tr>
+            <tr>
+                <td><strong>Local e Data:</strong></td>
+                <td><?php echo $unidadeAtivaContrato . ' - ' . $data1 . " de " . Util::nomeDoMes($data2) . " de " . $data3 ?></td>
+            </tr>
+        </table>
+        <hr>
+    </div>
+</div>
+</div>
+<!-- fim pagina 1 -->
+<?php
+$html = ob_get_clean();
+$p->WriteHTML($html);
+$p->SetHTMLHeader($htmlCabecalho);
+ob_start();
+?>
+<!-- pagina 2 -->
+<div style="page-break-before: always">
+    <div style="text-align: center; font-size: 15px Arial"><strong>APRESENTAÇÃO DA HIEST</strong></div>
+    <br>
+    <div style="font-size: 12px Arial">
+        <p style="text-align: justify">A HIEST é uma empresa especializada na prestação de serviços nas áreas de Medicina do Trabalho, Engenharia de Segurança, Higiene Ocupacional, Meio Ambiente, Treinamentos e Atendimentos de Urgências e Emergências.</p>
+        <p style="text-align: justify">Fundada em 1999, em Belo Horizonte/MG, onde possui sua sede nacional denominada UBH – Unidade Belo Horizonte, a HIEST ampliou sua atuação, criando em 2005 uma unidade integrada no Estado do Espírito Santo, a UGV – Unidade Grande Vitória.</p>
+        <p style="text-align: justify">Investindo constantemente em projetos, em 2009, a HIEST assumiu a responsabilidade pelos Serviços de Apoio à Saúde, Segurança e Higiene Ocupacional, para os empregados da VALE S/A e de empresas contratadas que atuam no Estado do Espírito Santo, estruturando equipes especializadas, totalmente direcionadas e focadas às demandas dessa grande Contratante.</p>
+        <p style="text-align: justify">Em 2010 iniciou suas atividades internacionais onde prestou serviços de Higiene Ocupacional para a VALE S.A, Odebrecht e Camargo Correa, em Moçambique.</p>
+        <p style="text-align: justify">O ano de 2012 foi marcado por importantes conquistas: o início de atividades nas áreas da Samarco Mineração S/A - Ubu (Anchieta/ES) – onde os serviços prestados estão voltados para a Gestão da Saúde Ocupacional das contratadas dessa corporação, e a inauguração de uma nova unidade HIEST, a UVC – Unidade Vitória Camburi, em Vitória/ES, fruto de uma visão sistêmica e empreendedora, cujo objetivo é levar aos seus clientes o que há de mais moderno em saúde ocupacional, segurança do trabalho e treinamentos. A UVC conta com estrutura de excelente porte, além de equipamentos de última geração e salas para capacitação do trabalhador, de altíssimo padrão.</p>
+        <p style="text-align: justify">Finalmente, em 2013, graças ao desempenho atingido na unidade Samarco Mineração S/A, em Ubu, a HIEST expande suas atividades a outras áreas dessa organização: as unidades de Germano e Matipó, localizadas na cidade de Mariana, em Minas Gerais.</p>
+        <p style="text-align: justify">Certificada desde 2008 (ISO 9001-2008) pelo PRODFOR, a Hiest mantém em franca aplicação seu Sistema de Gestão da Qualidade de Fornecimento ampliando seu campo de atuação, conquistando o respeito cada vez maior das empresas atendidas e colocando-se de forma definitiva em uma posição privilegiada no mercado. Com uma equipe de profissionais altamente capacitados e equipamentos de alta tecnologia, a HIEST possui um dos laboratórios de Higiene Ocupacional mais modernos e bem aparelhados do país, o que contribui para o desenvolvimento de um trabalho mais ágil e de absoluta qualidade técnica. Para a área de Medicina Ocupacional, em suas unidades, encontram-se os melhores equipamentos para diagnóstico e as melhores instalações, onde se assegura resultados precisos e o respeito no atendimento ao trabalhador.</p><br><br>
+    </div>
+</div>
+<br><br><br><br><br><br><br><br><br><br><br><br>
+<!--fim pagina 2 
+pagina 3 -->
+<!--<div>
+    <div style="text-align: center; font-size: 15px Arial"><strong>APRESENTAÇÃO DA HIEST</strong></div>   
+    <br>
+    <div style="font-size: 14px Arial; text-align: justify">
+        Atualmente, a HIEST atende centenas de clientes que, graças ao reconhecimento, embasado na satisfação e confiabilidade constantes, 
+        fazem da HIEST uma parceira definitiva nas questões de promoção, manutenção e prevenção da saúde do trabalhador.	
+    </div>
+    <div style="margin-left: 20%; margin-top: 5%">
+        <img src="/img/evolucao.png" />
+        <br><br>
+        <img src="/img/crescimento.png" />
+    </div>
+</div>-->
+<!--fim pagina 3 
+pagina 4 -->
+<div>
+    <div style="margin-left: 17%; margin-top: 5%">
+        <img src="/img/empresas.png" />
+    </div>
+</div>
+<!--fim pagina 4 
+<br><br><br><br><br><br><br><br><br><br><br><br><br><br>
+pagina 5 -->
+<div style="page-break-before: always">
+    <div style="text-align: center; font-size: 15px Arial"><strong>NOSSOS SERVIÇOS</strong></div>
+    <br>
+    <div style="font-size: 12px Arial">
+        <strong>Medicina Ocupacional</strong><br>
+        • PCMSO – NR-7 – Elaboração e Coordenação;<br>
+        • Exames Médicos Ocupacionais – Execução e Controle;<br>
+        • Controle de Absenteísmo;<br>
+        • Relatório Anual;<br>
+        • PCA – Elaboração e Implantação;<br>
+        • Avaliação para tarefas de risco;<br><br>
+        <strong>Atendimento de urgência e emergência</strong><br>
+        • Atendimentos de urgência e emergência nas instalações do cliente;<br>
+        • Remoção em ambulâncias: UTI e básicas;<br><br>
+        <strong>Engenharia de Segurança do Trabalho</strong><br>
+        • Elaboração PPRA (NR-9);<br>
+        • Elaboração PGR (NR-22);<br>
+        • Elaboração PCMAT (NR-18); <br>
+        • Avaliações Ambientais;<br>
+        • Elaboração PPR;<br>
+        • Elaboração de laudos para atividades insalubres e/ou perigosas – LTCAT;<br>
+        • Elaboração e administração de PPP.<br><br>
+        <strong>Treinamentos</strong><br>
+        Os treinamentos desenvolvidos pela HIEST atendem tanto a Portaria 3214/78, do Ministério do Trabalho e Emprego, como também aos pré-requisitos para o ingresso às atividades consideradas críticas pela VALE, definidas nos RAC.<br><br>
+        <strong>Ergonomia</strong><br>
+        • Análise Ergonômica do Trabalho (NR-17);<br><br>
+        <strong>Meio Ambiente</strong><br>
+        • Avaliação de Ruído - Perturbação do Sossego Público.<br>
+    </div>
+</div>
+<!--fim pagina 5 
+pagina 6 
+<div>
+    <div style="text-align: center; font-size: 15px Arial"><strong>DISPOSIÇÕES DIVERSAS</strong></div>
+    <br>
+    <div style="font-size: 14px Arial">
+        → Sendo necessário o deslocamento e/ou permanência dos profissionais da HIEST ASSESSORIA fora do seu domicílio, às despesas decorrentes de estadia, transporte e alimentação serão custeadas pela contratante.<br>
+        → Não contemplam nos valores do item 03 solicitação de cópias de documentos, inclusão de funções, segunda via de ASO, formulário da RAC e certificados, os mesmos serão cobrados a parte, caso solicitados.<br>
+        → Caso necessário avaliações ambientais será considerado o preço da tabela Hiest e deverá ser solicitada por meio de O.S.<br>
+        → Despesas com entrega de documentos via correios é de responsabilidade da contratante.<br>
+        → A CONTRATADA não será responsabilizada por ações não cumpridas, sugeridas à CONTRATANTE.<br>
+        → A CONTRATADA não será responsabilizada por ações não cumpridas, sugeridas à CONTRATANTE.<br>
+        → Caso não tenha interesse na coordenação do PCMSO e queira somente comprar o documento, desconsiderar a planilha de “Investimento em Gestão da Saúde Ocupacional”. O documento será vendido no valor de <br>R$ 724,00.<br><br><br><br>
+        Esperando atender sua solicitação, fico à disposição para esclarecimentos. <br><br><br><br><br><br><br>
+        <table>
+            <tr>
+                <td style="width: 48%;">_______________________________________</td>
+                <td style="width: 4%">&nbsp;</td>
+                <td style="width: 48%">_______________________________________</td>
+            </tr>
+        </table>
+    </div>
+    <br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
+</div>-->
+<!-- fim pagina 6 -->
+<!-- pagina 7 -->
+<div style="page-break-before: always; height: 100%; width: 100%">
+    <div style="text-align: center; font-size: 15px Arial"><strong>ORDEM DE SERVIÇO</strong></div>
+    <div style="font-size: 15px Arial; margin-bottom: 0; width: 100%; height: 100%">
+        <?php $cont = 0; ?>
+        <?php foreach ($this->atributos['locaisEntrega'] as $key => $value) : ?>
+            <?php foreach ($value['produtos'] as $keys => $values) : ?>
+                <?php
+                $cont++;
+                if ($values['categoriadoproduto_id'] == 2) : $produtoListar = TRUE;
+                    $contP = 1;
+                    ?>
+                                                                    <!--<table class="alonga" border="1">
+                                                                        <tr>
+                                                                            <th style="text-align: left" colspan="6">CATEGORIA - <?php echo $value['categoriadoproduto_nome'] ?></th>
+                                                                        </tr>
+                                                                        <tr>
+                                                                            <th style="text-align: left">DESCRIÇÃO</th>
+                                                                            <th style="text-align: left">LOCAL</th>
+                                                                            <th style="text-align: left">VALOR</th>
+                                                                            <th style="text-align: left">QTDE</th>
+                                                                            <th style="text-align: left">VALOR DA PARCELA</th>
+                                                                            <th style="text-align: left">VALOR TOTAL</th>
+                                                                        </tr>
+                                                                        <tr>
+                                                                            <td>EXAMES</td>
+                                                                            <td>---</td>
+                                                                            <td>---</td>
+                                                                            <td>---</td>
+                                                                            <td>---</td>
+                                                                            <td>---</td>
+                                                                        </tr>
+                                                                    </table>
+                                                                    <div>__________________________________________________________________________________________________________</div>
+                    -->
+                    <?php break; ?>
+                <?php endif; ?>
+            <?php endforeach; ?>
+
+            <?php
+            if ($value['formapagamento']['cobrancaos_quantidade_parcela'] == 0) {
+                $value['formapagamento']['cobrancaos_quantidade_parcela'] = 1;
+            }
+            ?>
+            <div style="page-break-after: always">
+                <?php if ($value['produtos'][$key]['categoriadoproduto_id'] != 2) { ?>
+                    <div style="margin-top: 5px"><strong><?php echo strtoupper($value['categoriadoproduto_nome']) ?></strong></div><br>
+                    <div style="margin-top: -35px"><hr></div>
+                <?php } ?>
+                <?php if ($values['categoriadoproduto_id'] != 2) : ?>    
+                    <div>
+                        <div style="font-size: 12px"><strong>INFORMAÇÕES DO SERVIÇO</strong></div>
+                        <div width="100%"><textarea rows="4" style="width: 100%; font: 12px Arial"><?php echo $value['cobranca']['cobrancaos_observacao'] ?></textarea></div>
+                    </div><br>
+                <?php endif; ?>
+                <table class="alonga" border="1" style="font: 10px Arial; border-right: none;">
+                    <?php if ($value['produtos'][$key]['categoriadoproduto_id'] != 2) : ?>
+                        <tr>
+                            <th style="text-align: left;border-left: none;border-right: none" colspan="8">CATEGORIA - <?php echo $value['categoriadoproduto_nome'] ?></th>
+                        </tr>
+                        <tr>
+                            <th style="text-align: left; width: 32.4%; border-left: none;">DESCRIÇÃO</th>
+                            <th style="text-align: left">LOCAL</th>
+                            <th style="text-align: left"><?php echo ($values['categoriadoproduto_id'] == 4) ? "VALOR P/EMPREGADO" : "VALOR" ?></th>
+                            <th style="text-align: left">QTDE</th>
+                            <th style="text-align: left">VALOR TOTAL</th>
+                            <th style="text-align: left">VALOR DA PARCELA</th>
+                            <th style="text-align: left">VENCIMENTO</th>
+                            <th style="text-align: left; border-right: none;">ENTREGA</th>
+                        </tr>
+                    <?php endif; ?>
+                    <?php $valorTotalCategoria = 0; ?>
+                    <?php foreach ($value['produtos'] as $keys => $values) : ?>
+                        <?php if ($values['categoriadoproduto_id'] != 2) : ?>
+                            <tr>
+                                <td style="font: 10px Arial;border-left: none;"><?php echo $values['produto_nome']; ?></td>
+                                <td><?php echo $value['localentrega_identificacao'] ?></td>
+                                <td>R$ <?php echo Util::moeda(($values['produto_contratado_valor_venda'])) ?></td>
+                                <td style="text-align: center"><?php echo $values['produto_contratado_quantidade'] ?></td>
+                                <?php if ($values['categoriadoproduto_id'] == 4) { ?>
+                                    <?php if ($values['produto_contratado_faturamento_minimo'] > ($values['produto_contratado_valor_venda'] * $values['produto_contratado_quantidade'])) { ?>
+                                        <td style=" border-right: none;"><?php echo "R$ " . Util::moeda($values['produto_contratado_faturamento_minimo']) ?></td>
+                                    <?php } else { ?>
+                                        <td style=" border-right: none;"><?php echo "R$ " . Util::moeda(($values['produto_contratado_valor_venda'] * $values['produto_contratado_quantidade'])) ?></td>
+                                    <?php } ?>
+                                <?php } else { ?>
+                                    <td><?php echo "R$ " . Util::moeda(($values['produto_contratado_valor_venda'] * $values['produto_contratado_quantidade'])) ?></td>
+                                <?php } ?>
+                                <?php if ($values['categoriadoproduto_id'] == 4) { ?>
+                                    <td><?php echo "CONFORME DEMANDA" ?></td> 
+                                <?php } else { ?>
+                                    <td><?php echo "R$ " . Util::moeda(($values['produto_contratado_valor_venda'] * $values['produto_contratado_quantidade']) / $value['formapagamento']['cobrancaos_quantidade_parcela']) ?></td>
+                                <?php } ?>
+                                <td><?php echo $values['produto_contratado_observacao_vencimento'] ?></td>
+                                <td style="border-right: none;"><?php echo $values['produto_contratado_observacao_entrega'] ?></td>
+                            </tr>
+                            <?php $valorTotalCategoria += $values['produto_contratado_valor_venda'] * $values['produto_contratado_quantidade']; ?>
+                        <?php endif; ?>
+                    <?php endforeach; ?>
+                </table>
+                <?php if ($values['categoriadoproduto_id'] != 2) : ?>
+                    <div style="width: 100%; height: 100%">
+                        <!--<div style="text-align: center; font-size: 15px Arial"><strong>OBSERVAÇÃO DA OS</strong></div><br>-->
+                        <br>
+                        <div style="font-size: 12px Arial; text-align: justify"><?php echo $this->atributos['locaisEntrega'][0]['os_observacao'] ?></div>
+                        <div style="font-size: 10px Arial"><p style="font-size: 12px Arial">Autorizo a execução dos serviços acima listados, conforme condições comerciais informada.</p></div>
+                        <div><p style="margin-left: <?php echo $tamanho; ?>%; font-size: 14px Arial"><?php echo $unidadeAtivaContrato ?>, ____/____/______</p></div>
+                        <div><p style="margin-left: 50%; margin-bottom: none">_____________________________________________________</p></div>
+                        <div><p style="margin-left: 50%; margin-top: none; text-align: center; font-size: 12px Arial"><?php echo (isset($this->atributos['empResponsabilidade']['empresa_fantasia'])) ? $this->atributos['empResponsabilidade']['empresa_fantasia'] : $this->atributos['empResponsabilidade']['empresa_razao'] ?></p></div>
+                        <div style="margin-top: -100px; font-size: 12px Arial">
+                            <?php
+                            $what = array('ä', 'ã', 'à', 'á', 'â', 'ê', 'ë', 'è', 'é', 'ï', 'ì', 'í', 'ö', 'õ', 'ò', 'ó', 'ô', 'ü', 'ù', 'ú', 'û', 'À', 'Á', 'Ã', 'É', 'Í', 'Ó', 'Ú', 'ñ', 'Ñ', 'ç', 'Ç', ' ', '-', '(', ')', ',', ';', ':', '|', '!', '"', '#', '$', '%', '&', '/', '=', '?', '~', '^', '>', '<', 'ª', 'º');
+                            $by = array('a', 'a', 'a', 'a', 'a', 'e', 'e', 'e', 'e', 'i', 'i', 'i', 'o', 'o', 'o', 'o', 'o', 'u', 'u', 'u', 'u', 'A', 'A', 'ã', 'E', 'I', 'O', 'U', 'n', 'n', 'ç', 'ç', ' ', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_');
+                            $nomeContato = strtolower(str_replace($what, $by, $this->atributos['usuario']['pessoa_nome']));
+                            $nomeSetor = strtolower(str_replace($what, $by, $this->atributos['usuario']['usuario_setor']));
+                            ?>
+                            <?php echo ucwords(strtolower($nomeContato)); ?><br>
+                            <?php echo ucwords(strtolower($nomeSetor)); ?><br>
+                            <?php echo "Tel: (" . $this->atributos['usuario']['telefone_ddd'] . ")" . $this->atributos['usuario']['telefone_numero'] . " - Ramal " . $this->atributos['usuario']['telefone_ramal'] ?><br>
+                            <?php echo strtolower($this->atributos['usuario']['usuario_email']) ?>
+                        </div>
+                        <br>
+                    </div>
+                <?php endif; ?>
+                <?php if ($deveVoltar == true) : ?>
+                    <?php if ($value['produtos'][$key]['categoriadoproduto_id'] != 2) : ?>
+                        <table border="1" width="50%" style="text-align: left; font: 10px Arial">
+                            <tr>
+                                <?php #echo $teste;      ?>
+                                <th style="text-align: left; width: 65%">Forma de Pagamento</th>
+                                <td><?php echo $value['formapagamento']['formapagamento_nome'] ?></td>
+                            </tr>
+                            <?php if ($values['categoriadoproduto_id'] != 4) { ?>
+                                <tr>
+                                    <th style="text-align: left">Quantidade de Parcelas</th>
+                                    <td><?php echo $value['formapagamento']['cobrancaos_quantidade_parcela'] . " Parcela(s)" ?></td>  
+                                </tr>
+                            <?php } ?>
+                        </table><br>
+                        <?php if ($values['categoriadoproduto_id'] != 4) { ?>
+                            <table border="1" width="50%" style="font: 10px Arial">
+                                <tr>
+                                    <th style="width: 65%">Data das Parcelas</th>
+                                    <th>Valor da Parcela</th>
+                                </tr>
+                                <?php
+                                $i = 1;
+                                foreach ($value['parcelamento'] as $parcela):
+                                    ?>
+                                    <tr>
+                                        <td><?php echo $i . "° Parcela(s) " . Util::dataBR($parcela['parcelamento_data']) ?></td>
+                                        <td><?php echo "R$ " . Util::moeda($valorTotalCategoria / $value['formapagamento']['cobrancaos_quantidade_parcela']) ?></td>
+                                    </tr>
+                                    <?php
+                                    $i++;
+                                endforeach;
+                                ?>
+                            </table>
+                            <br>
+                        <?php } ?>
+                    <?php endif; ?>
+                    <br>
+                <?php endif; ?>
+            </div>
+        <?php endforeach; ?>
+    </div>
+</div>
+<!-- fim pagina 7 -->
+<!-- pagina 8 -->
+<?php if ($produtoListar) : ?>
+    <div style="page-break-before: always">
+        <div style="text-align: center; font-size: 15px Arial"><strong>TABELA DE PREÇOS</strong></div>   
+        <br>
+        <table border="0">
+            <tr>
+                <th style="text-align: left; border-bottom: 1px solid; border-right: 1px solid">PRODUTO</th>
+                <th style="text-align: left; border-bottom: 1px solid; border-right: 1px solid">PREÇO</th>
+                <th style="text-align: left; border-bottom: 1px solid">COBRANÇA</th>
+            </tr>
+            <?php foreach ($this->produtosExames as $key => $value) : ?>
+                <tr>
+                    <td style="border-bottom: 1px solid; border-right: 1px solid"><?php echo $value['produto_nome'] ?></td>
+                    <td style="border-bottom: 1px solid; border-right: 1px solid"><?php echo "R$ " . Util::moeda($value['produto_valor']) ?></td>
+                    <td style="border-bottom: 1px solid"><?php echo "CONFORME DEMANDA" ?></td>
+                </tr>
+            <?php endforeach; ?>
+        </table>
+    </div>
+<?php endif; ?>
+<!-- fim pagina 8 -->
+<?php
+$htmlCorpo = ob_get_clean();
+$htmlCorpo . '</body></html>';
+$p->WriteHTML($htmlCorpo);
+$p->Output();

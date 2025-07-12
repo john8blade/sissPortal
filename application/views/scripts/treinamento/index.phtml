@@ -1,0 +1,296 @@
+<script type="text/javascript">
+
+    ConstrutorUrlConsulta.PrefixoUrl = '/treinamento/index/?';
+
+    function ParametrizarExecutarUrlConsulta(pagina) {
+        $(function () {
+            var Params = {
+                paramModalidade: $('#param-modalidade').val(),
+                paramData: $('#paramData').val(),
+                paramHInicio: $('#paramHInicio').val(),
+                paramHTermino: $('#paramHTermino').val(),
+                paramCargah: $('#paramCargah').val(),
+                paramTreinamento: $('#paramTreinamento').val(),
+                paramInstrutor: $('#paramInstrutor').val(),
+                page: (pagina) ? pagina : '1'
+            };
+            ConstrutorUrlConsulta.MapearParametro(Params);
+            ConstrutorUrlConsulta.ExecutarChamadaUrl();
+        });
+    }
+
+    $(function () {
+        $('#param-modalidade,#paramData,#paramHInicio,#paramHTermino,#paramCargah,#paramTreinamento,#paramInstrutor').blur(function () {
+            ParametrizarExecutarUrlConsulta('1');
+        });
+        $('#filtar-item-grid').click(function () {
+            ParametrizarExecutarUrlConsulta('1');
+        });
+    });
+
+</script>
+
+<style type="text/css">
+    .item-filtro-pesquisa { 
+        box-shadow: none !important; 
+        background: transparent !important; 
+        border: none !important; 
+        border-radius: 0px !important; 
+        margin: 0px !important; 
+        padding: 0px !important; 
+        width: 100%; 
+        float: left;
+        font-size: 11px !important
+    }
+</style>
+
+<?php $like = (isset($_GET["like"]) && !empty($_GET["like"])) ? $_GET["like"] : ''; ?>
+
+<div class="panel panel-primary">
+
+    <div class="panel-heading"><i class="fa fa-calendar"></i>AGENDA DE TREINAMENTOS</div>
+  
+    <div class="span8">
+
+        <?php #if (!isset($this->agenda['treinamento_agenda_id'])): ?>
+        <?php $this->render('configuracao-paginador.php'); ?>
+
+            <table class="table table-hover table-bordered table-condensed">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Modalidade</th>
+                        <th>Data</th>
+                        <th>Início</th>
+                        <th>Término</th>
+                        <th>Carga Horária</th>
+                        <th>Treinamento</th>
+                        <th>Instrutor</th>
+                        <th>Vagas dispo.</th>
+                        <th>Participantes</th>
+                    </tr>
+                    <tr style="background: #f5f5f5 !important">
+                        <th style="text-align: center!important"><a id="filtar-item-grid" href="javascript:;"><span class="icon-search"></span></a></th>                        
+                        <th><input placeholder="Pesquisar modalidade" value="<?php echo $this->form['paramModalidade'] ?>" class="item-filtro-pesquisa" type="text" id="param-modalidade"/></th>
+                        <th><input placeholder="Pesquisar data" maxlength="10" style="text-align: center;" value="<?php echo $this->form['paramData'] ?>" class="item-filtro-pesquisa mask-data" type="text" id="paramData"/></th>
+                        <th><input placeholder="Pesquisar inicio" maxlength="10" style="text-align: center;" value="<?php echo $this->form['paramHInicio'] ?>" class="item-filtro-pesquisa" type="text" id="paramHInicio"/></th>
+                        <th><input placeholder="Pesquisar término" maxlength="10" style="text-align: center;" value="<?php echo $this->form['paramHTermino'] ?>" class="item-filtro-pesquisa" type="text" id="paramHTermino"/></th>
+                        <th><input placeholder="Pesquisar carga horária" maxlength="10" style="text-align: center;" value="<?php echo $this->form['paramCargah'] ?>" class="item-filtro-pesquisa" type="text" id="paramCargah"/></th>
+                        <th><input placeholder="Pesquisar treinamento" maxlength="255" value="<?php echo $this->form['paramTreinamento'] ?>" class="item-filtro-pesquisa" type="text" id="paramTreinamento"/></th>
+                        <th><input placeholder="Pesquisar instrutor" maxlength="55" value="<?php echo $this->form['paramInstrutor'] ?>" class="item-filtro-pesquisa" type="text" id="paramInstrutor"/></th>
+                        <th><input class="item-filtro-pesquisa" disabled="true" id="param-vagas"/></th>
+                        <th><input class="item-filtro-pesquisa" disabled="true" id="param-alunos"/></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php $paginados = []; ?>
+                    <?php foreach ($this->itensPaginados as $i => $item): ?>
+                        <?php $paginados[] = $i; ?>
+                        <tr id="tr<?php echo $i ?>">
+                            <td class="fit">
+                                <a data-toggle="tooltip"  title="Agendamento" class="btn btn-xs btn-default" href="/treinamento/agendamento/agenda/<?php echo $item['treinamento_agenda_id'] ?>"><i class="fa fa-user no-margin"></i></a>
+                                <a data-toggle="tooltip"  title="Imprimir Certificados" class="btn btn-xs btn-default" href="/treinamento/imprimir-certificado/agenda/<?php echo $item['treinamento_agenda_id'] ?>" target="_blank"><i class="fa fa-print no-margin"></i></a>
+                            </td>
+                            <td style="text-align: center;">
+                               <?php if ($item['treinamento_modalidade'] == 0) {
+                                        echo 'A Distância'; 
+                                    } elseif ($item['treinamento_modalidade'] == 1) {
+                                        echo 'Presencial'; 
+                                    } else {
+                                        echo 'Semipresencial'; 
+                                    } ?>                                
+                            </td>
+                            <td style="text-align: center;" id="data<?php echo $i; ?>" value="<?php echo $item['treinamento_agenda_data_inicio']; ?>">
+                                <?php echo Util::dataBR($item['treinamento_agenda_data_inicio']) ?>
+                            </td>
+                            <td style="text-align: center;"><?php echo $item['treinamento_agenda_hora_inicio'] ?></td>
+                            <td style="text-align: center;"><?php echo $item['treinamento_agenda_hora_fim'] ?></td>
+                            <td style="text-align: center;"><?php echo $item['treinamento_agenda_carga_horaria'] ?></td>
+                            <td><?php echo $item['produto_nome'] ?></td>
+                            <td><?php echo $item['pessoa_nome'] ?></td>
+                            <td style="text-align: center;">
+                                <?php 
+                                    $vaga = $item['treinamento_agenda_vagas'] - (int) $item['alunos'];
+                                        if ($vaga < 0) {
+                                            $vaga = 0;
+                                        }
+                                    echo $vaga; 
+                                ?>                            
+                            </td>
+                            <td style="text-align: center;">
+                                <?php 
+                                    
+                                        if ($item['alunos_empresa'] > 0) {
+                                            $aluno = $item['alunos_empresa'];
+                                        }else{
+                                            $aluno = 0;
+                                        }
+                                    echo $aluno; 
+                                ?>
+                            </td>
+                        </tr>
+                    <?php endforeach ?>
+                </tbody>
+            </table>
+
+        <?php if (isset($this->itensPaginados) && $this->itensPaginados instanceof Zend_Paginator): ?>
+
+        <style type="text/css">
+
+            .pagination table {
+                /*width: 100%;*/
+            }
+            .pagination table tr td {
+            }
+            .pagination table tr td a {
+                -moz-border-bottom-colors: none;
+                -moz-border-left-colors: none;
+                -moz-border-right-colors: none;
+                -moz-border-top-colors: none;
+                background: none repeat scroll 0 0 #FFFFFF;
+                border-color: #DDDDDD #DDDDDD #DDDDDD -moz-use-text-color;
+                border-image: none;
+                border-style: solid solid solid none;
+                border-width: 1px 1px 1px medium;
+                display: block;
+                padding: 4px 10px;
+                text-align: center;
+                text-decoration: none;
+            }
+            .pagination table tr td a.item-inicial {
+                border: 1px solid #DDDDDD;
+                border-radius: 4px 0 0 4px;
+            }
+            .pagination table tr td a.item-final {
+                border: 1px solid #DDDDDD;
+                border-radius: 0 4px 4px 0;
+            }
+            .pagination table tr td a.inativo {
+                background: none repeat scroll 0 0 #EEEEEE;
+                color: #AAAAAA;
+                cursor: default;
+            }
+            .pagination table tr td a.ativo, .pagination table tr td a.ativo:hover {
+                background: none repeat scroll 0 0 #0099FF;
+                border: 1px solid #006699;
+                color: #FFFFFF;
+            }
+            .pagination table tr td a:hover {
+                background: none repeat scroll 0 0 #EEEEEE;
+            }
+        </style>
+
+            <?php $paginator = $this->itensPaginados->getPages() ?>
+
+            <?php if ($paginator->pageCount): ?>
+                <div class="pagination">
+                    <table>
+                        <tr>
+                            <?php if (isset($paginator->previous)): ?>
+                                <td><a class="item-inicial" onclick="ParametrizarExecutarUrlConsulta('<?php echo $paginator->previous ?>')" href="javascript:;">«</a></td>
+                            <?php else: ?>
+                                <td><a class="item-inicial inativo" href="javascript:void(0);">«</a></td>
+                            <?php endif; ?>
+
+                            <?php foreach ($paginator->pagesInRange as $page): ?>
+                                <?php if ($page != $paginator->current): ?>
+                                    <td><a onclick="ParametrizarExecutarUrlConsulta('<?php echo $page ?>')" href="javascript:;"><?php echo $page ?></a></td>
+                                <?php else: ?>
+                                    <td><a class="ativo" href="javascript:void(0);"><?php echo $page ?></a></td>
+                                <?php endif; ?>
+                            <?php endforeach; ?>
+
+                            <?php if (isset($paginator->next)): ?>
+                                <td><a class="item-final" onclick="ParametrizarExecutarUrlConsulta('<?php echo $paginator->next ?>')" href="javascript:;">»</a></td>
+                            <?php else: ?>
+                                <td><a class="item-final inativo" href="javascript:void(0);">»</a></td>
+                            <?php endif ?>
+
+                        </tr>
+                    </table>
+                </div>
+            <?php endif; ?>
+        <?php endif; ?>
+        <?php #endif ?>
+
+    </div>
+
+</div>
+
+<script type="text/javascript">
+    const linhas = <?php echo json_encode($paginados); ?>;
+
+    $(() => {
+        (function pintaDataMaior() {
+            let data      // string
+            let timestamp // number
+
+            linhas.forEach(element => {
+                data = $(`#data${element}`).attr('value');
+                timestamp = new Date(data).getTime();
+
+                if (timestamp > Date.now())
+                    $(`#tr${element}`).css('background-color', '#4d94ff');
+            });
+        })();
+    });
+</script>
+
+<!--
+<style type="text/css">
+    table tr td, table tr th, table tr td input { font-size: 95%; }
+    table tr th { text-align: center !important; }
+    table tr td { white-space: nowrap; vertical-align: middle !important; padding: 0 8px !important; }
+    table tr td input, table tr td select { border: none !important; margin: 0 !important; background: none !important; }
+    table.centro tr td input { text-align: center; }
+    .negrito { font-weight: bold; }
+</style>
+
+
+<script>
+    $(".proc").blur(function() {
+        processaCalculo();
+    });
+
+    function processaCalculo() {
+        var i3 = $(".i3");
+        var i2 = $(".i2");
+        var i1 = $(".i1");
+        var i0 = $(".i0");
+
+        var soma_i3 = 0;
+        var soma_i2 = 0;
+        var soma_i1 = 0;
+        var soma_i0 = 0;
+
+        for (var i = 0; i < i3.length; i++)
+            soma_i3 = (soma_i3 + parseInt(i3[i].value !== '' ? i3[i].value : 0));
+        for (var i = 0; i < i2.length; i++)
+            soma_i2 = (soma_i2 + parseInt(i2[i].value !== '' ? i2[i].value : 0));
+        for (var i = 0; i < i1.length; i++)
+            soma_i1 = (soma_i1 + parseInt(i1[i].value !== '' ? i1[i].value : 0));
+        for (var i = 0; i < i0.length; i++)
+            soma_i0 = (soma_i0 + parseInt(i0[i].value !== '' ? i0[i].value : 0));
+
+        $("#p3").val(soma_i3);
+        $("#p2").val(soma_i2);
+        $("#p1").val(soma_i1);
+        $("#p0").val(soma_i0);
+
+        $("#t1").val(soma_i3 + soma_i2);
+        $("#t2").val(soma_i1 + soma_i0);
+
+        var x = parseInt($("#t1").val());
+        var y = parseInt($("#t2").val());
+
+        $("#is").val((x / (x + y) * 100).toFixed(1) + '%');
+    }
+
+    function resetar(form) {
+        setTimeout(function() {
+            form.reset();
+        }, 500);
+    }
+</script>
+
+-->

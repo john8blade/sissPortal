@@ -1,0 +1,455 @@
+<?php # var_export($_SESSION); exit;                        ?>
+<div class="panel panel-primary">
+
+    <div class="panel-heading"><i class="fa fa-pencil-square-o"></i><?php echo @$this->atributos['empresa_razao'] ?></div>
+
+    <div class="panel-body">
+
+        <!-- CÓPIA -->
+        <?php
+        $listaGrauRisco = array(1, 2, 3, 4);
+        $colecaoSN = array(array('value' => '1', 'display' => 'Sim'), array('value' => '0', 'display' => 'Não'));
+        ?>
+
+        <form id="formulario" action="/empresa/salvar" method="post" target="iframe-receptor" onsubmit="Util.requisicao();" enctype="multipart/form-data">
+            <input type="hidden" name="empresa_id" id="empresa_id" value="<?php echo @$this->atributos['empresa_id'] ?>"/>
+
+            <div class="panel panel-default">
+
+                <div class="panel-heading">Empresa</div>
+
+                <div class="panel-body">
+
+                    <div class="row">
+                        <div class="col-md-1">
+                            <div class="form-group">
+                                <label>Logo</label>
+                                <?php if ((int) $this->atributos['empresa_id'] > 0): ?>
+                                    <a href="javascript:;" class="form-control btn btn-default" onclick="$('#empresa_logo').click();"><i class="fa fa-picture-o"></i></a>
+                                <?php else: ?>
+                                    <a href="javascript:;" class="form-control btn btn-default disabled"><i class="fa fa-picture-o"></i></a>
+                                <?php endif; ?>
+                                <input style="display:none;" type="file" name="empresa_logo" id="empresa_logo" value="" accept="image/*"/>
+                            </div>
+                        </div>
+                        <div class="col-md-1">
+                            <div class="form-group">
+                                <label>Grau</label>
+                                <select class="form-control" name="empresa_grau_risco">
+                                    <?php foreach ($listaGrauRisco as $item): ?>
+                                        <option <?php echo (isset($this->atributos['empresa_grau_risco']) && (int) $this->atributos['empresa_grau_risco'] == $item) ? ' selected="selected" ' : ''; ?> value="<?php echo $item ?>"><?php echo $item ?></option>
+                                    <?php endforeach ?>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label>CNPJ</label>
+                                <input readonly type="text" class="form-control mask-cnpj" id="cnpj" name="empresa_cnpj" value="<?php echo @$this->atributos['empresa_cnpj'] ?>" />
+                            </div>
+                        </div>
+
+                        <div class="col-md-7">
+                            <div class="form-group">
+                                <label>Razão Social</label>
+                                <input readonly type="text" class="form-control" name="empresa_razao" value="<?php echo @$this->atributos['empresa_razao'] ?>" maxlength="100" />
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-5">
+                            <div class="form-group">
+                                <label>Identificação/Obra</label>
+                                <input readonly maxlength="200" type="text" class="form-control" name="empresa_fantasia" value="<?php echo @$this->atributos['empresa_fantasia'] ?>" />
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label>Insc. Estadual</label>
+                                <input type="text" class="form-control" name="empresa_insc_estadual" value="<?php echo @$this->atributos['empresa_insc_estadual'] ?>" />
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label>Insc. municipal</label>
+                                <input type="text" class="form-control" name="empresa_insc_municipal" value="<?php echo @$this->atributos['empresa_insc_municipal'] ?>" />
+                            </div>
+                        </div>
+                        <div class="col-md-1">
+                            <div class="form-group">
+                                <label>CNAE</label>
+                                <input type="text" class="form-control mask-cnae" name="empresa_cnae" value="<?php echo @$this->atributos['empresa_cnae'] ?>" />
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-5">
+                            <div class="form-group">
+                                <label>Logradouro / Rua / Avenida</label>
+                                <input type="text" class="form-control" name="endereco_logradouro" value="<?php echo @$this->atributos['endereco_logradouro'] ?>" />
+                            </div>
+                        </div>
+                        <div class="col-md-1">
+                            <div class="form-group">
+                                <label>Nº</label>
+                                <input type="text" class="form-control" name="empresa_numero" value="<?php echo @$this->atributos['empresa_numero'] ?>" />
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <div class="form-group">
+                                <label>Bairro</label>
+                                <input type="text" class="form-control" name="endereco_bairro" value="<?php echo @$this->atributos['endereco_bairro'] ?>" />
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label>Cidade</label>
+                                <input type="text" class="form-control" name="endereco_cidade" value="<?php echo @$this->atributos['endereco_cidade'] ?>" />
+                            </div>
+                        </div>
+                        <div class="col-md-1">
+                            <div class="form-group">
+                                <label>UF</label>
+                                <input type="text" class="form-control" id="endereco_uf" name="endereco_uf" maxlength="2" value="<?php echo @$this->atributos['endereco_uf'] ?>" />
+                            </div>
+                        </div>
+                    </div>
+
+                    <input type="hidden" class="form-control mask-numero" name="telefone[2]" maxlength="4" value="000" />
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>Complemento</label>
+                                <input type="text" class="form-control" name="empresa_complemento" value="<?php echo @$this->atributos['empresa_complemento'] ?>" />
+                            </div>
+                        </div>
+
+                        <div class="col-md-2">
+                            <div class="form-group">
+                                <label>CEP</label>
+                                <input type="text" class="form-control mask-cep" name="endereco_cep" value="<?php echo @$this->atributos['endereco_cep'] ?>" />
+                            </div>
+                        </div>
+                        <div class="col-md-1">
+                            <div class="form-group">
+                                <label>DDI</label>
+                                <input type="text" class="form-control mask-numero" name="telefone[0]" maxlength="3" value="<?php echo isset($this->atributos['telefones'][0]['telefone_ddi']) ? $this->atributos['telefones'][0]['telefone_ddi'] : 55 ?>" />
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <div class="form-group">
+                                <label>Telefone</label>
+                                <input type="text" class="form-control" name="telefone[1]" maxlength="20" value="<?php echo @$this->atributos['telefones'][0]['telefone_ddd'] . @$this->atributos['telefones'][0]['telefone_numero'] ?>" />
+                            </div>
+                        </div>
+                        <div class="col-md-1">
+                            <div class="form-group">
+                                <label>País</label>
+                                <input type="text" class="form-control" name="endereco_pais" value="<?php echo isset($this->atributos['endereco_pais']) ? $this->atributos['endereco_pais'] : 'BRASIL' ?>" />
+                            </div>
+                        </div>
+
+                    </div>
+                    <input type="hidden" name="fk_endereco_id" value="<?php echo @$this->atributos['fk_endereco_id'] ?>"/>
+
+
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="form-group">
+                                <label>Observação</label>
+                                <textarea class="form-control" name="empresa_observacao"><?php echo @$this->atributos['empresa_observacao'] ?></textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <div class="panel panel-default">
+
+                <div class="panel-heading">Responsável pela Empresa<a class="pull-right btn btn-xs btn-primary" href="javascript:;" id="AdicionarMaisUmResponsavelEmpresa"><i class="fa fa-plus"></i>Adicionar</a></div>
+
+                <div class="panel-body">
+
+                    <?php foreach ($this->colecaoResponsaveisEmpresa as $chave => $item): ?>
+                        <div class="row">
+                            <div class="col-md-3">
+                                <div class="form-group">
+                                    <?php if ($chave == 0): ?> <label>Nome</label> <?php endif ?>
+                                    <input type="text" class="form-control" name="empresa_nome_responsavel[]" value="<?php echo $item['empresa_pessoa_nome'] ?>" />
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="form-group">
+                                    <?php if ($chave == 0): ?><label>Telefone</label><?php endif ?>
+                                    <input type="text" class="form-control mask-telefone" name="empresa_telefone_responsavel[]" value="<?php echo $item['empresa_pessoa_telefone'] ?>" />
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="form-group">
+                                    <?php if ($chave == 0): ?><label>Celular</label><?php endif ?>
+                                    <input type="text" class="form-control mask-telefone" name="empresa_celular_responsavel[]" value="<?php echo $item['empresa_pessoa_celular'] ?>" />
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="form-group">
+                                    <?php if ($chave == 0): ?><label>Email</label><?php endif ?>
+                                    <input type="text" class="form-control ignora-ucase" name="empresa_email_responsavel[]" value="<?php echo $item['empresa_pessoa_email'] ?>" />
+                                </div>
+                            </div>
+                        </div>
+                    <?php endforeach ?>
+
+                    <div id="dados-responsaveis-adicional"></div>
+
+                </div>
+            </div>
+
+            <div class="panel panel-default">
+
+                <div class="panel-heading">Responsável pelo Contrato<a class="pull-right btn btn-xs btn-primary" href="javascript:;" id="AdicionarMaisUmResponsavelContrato"><i class="fa fa-plus"></i>Adicionar</a></div>
+
+                <div class="panel-body">
+
+                    <?php foreach ($this->colecaoResponsaveisContrato as $chave => $item): ?>
+                        <div class="row">
+                            <div class="col-md-3">
+                                <div class="form-group">
+                                    <?php if ($chave == 0): ?><label>Nome</label><?php endif; ?>
+                                    <input type="text" class="form-control" name="empresa_nome_contrato[]" value="<?php echo $item['empresa_pessoa_nome'] ?>" />
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="form-group">
+                                    <?php if ($chave == 0): ?><label>Telefone</label><?php endif; ?>
+                                    <input type="text" class="form-control mask-telefone" name="empresa_telefone_contrato[]" value="<?php echo $item['empresa_pessoa_telefone'] ?>" />
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="form-group">
+                                    <?php if ($chave == 0): ?><label>Celular</label><?php endif; ?>
+                                    <input type="text" class="form-control mask-telefone" name="empresa_celular_contrato[]" value="<?php echo $item['empresa_pessoa_celular'] ?>" />
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="form-group">
+                                    <?php if ($chave == 0): ?><label>Email</label><?php endif; ?>
+                                    <input type="text" class="form-control ignora-ucase" name="empresa_email_contrato[]" value="<?php echo $item['empresa_pessoa_email'] ?>" />
+                                </div>
+                            </div>
+                        </div>
+                    <?php endforeach ?>
+
+                    <div id="dados-contrato-adicional"></div>
+
+                </div>
+            </div>
+
+            <div class="panel panel-default">
+
+                <div class="panel-heading">Responsável pelo Financeiro<a class="pull-right btn btn-xs btn-primary" href="javascript:;" id="AdicionarMaisUmResponsavelFinanceiro"><i class="fa fa-plus"></i>Adicionar</a></div>
+
+                <div class="panel-body">
+
+                    <?php foreach ($this->colecaoResponsaveisFinanceiro as $chave => $item) : ?>
+                        <div class="row">
+                            <div class="col-md-3">
+                                <div class="form-group">
+                                    <?php if ($chave == 0): ?><label>Nome</label><?php endif; ?>
+                                    <input type="text" class="form-control" name="empresa_nome_financeiro[]" value="<?php echo $item['empresa_pessoa_nome'] ?>" />
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="form-group">
+                                    <?php if ($chave == 0): ?><label>Telefone</label><?php endif; ?>
+                                    <input type="text" class="form-control mask-telefone" name="empresa_telefone_financeiro[]" value="<?php echo $item['empresa_pessoa_telefone'] ?>" />
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="form-group">
+                                    <?php if ($chave == 0): ?><label>Celular</label><?php endif; ?>
+                                    <input type="text" class="form-control mask-telefone" name="empresa_celular_financeiro[]" value="<?php echo $item['empresa_pessoa_celular'] ?>" />
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="form-group">
+                                    <?php if ($chave == 0): ?><label>Email</label><?php endif; ?>
+                                    <input type="text" class="form-control ignora-ucase" name="empresa_email_financeiro[]" value="<?php echo $item['empresa_pessoa_email'] ?>" />
+                                </div>
+                            </div>
+                        </div>
+                    <?php endforeach ?>
+
+                    <div id="dados-financeiro-adicional"></div>
+
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-12">
+                    <button type="submit" class="btn btn-success" id="btn-salvar"><i class="fa fa-check"></i>Salvar</button>
+                    <button type="button" class="btn btn-primary" id="btn-cancelar" onclick="Util.redireciona('/contrato');"><i class="fa fa-arrow-left"></i>Voltar</button>
+                </div>
+            </div>
+        </form>
+
+        <!-- FORM UPLOAD -->
+        <form id="fispq-form" action="/fispq/salvar" method="post" enctype="multipart/form-data" target="iframe-receptor" onsubmit="$('#fispq_titulo').val($('#fispq-titulo').val())">
+            <input type="hidden" name="empresa_id" value="<?php echo (int) $this->atributos['empresa_id'] ?>"/>
+            <input type="hidden" name="fispq_titulo" id="fispq_titulo" value=""/>
+            <input type="file" name="fispq" id="fispq-file" value="" style="display:none;"/>
+        </form>
+
+
+        <div id="modelo-dados-contrato" style="display: none">
+            <div class="row">
+                <div class="col-md-3">
+                    <div class="form-group">
+                        <input type="text" class="form-control" name="empresa_nome_contrato[]" value="" onblur="this.value = this.value.toUpperCase()" />
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="form-group">
+                        <input type="text" class="form-control mask-telefone" name="empresa_telefone_contrato[]" value="" />
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="form-group">
+                        <input type="text" class="form-control mask-telefone" name="empresa_celular_contrato[]" value="" />
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="form-group">
+                        <input type="text" class="form-control ignora-ucase" name="empresa_email_contrato[]" value="" />
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+
+        <div id="modelo-dados-responsaveis" style="display: none">
+            <div class="row">
+                <div class="col-md-3">
+                    <div class="form-group">
+                        <input type="text" class="form-control" name="empresa_nome_responsavel[]" value="" onblur="this.value = this.value.toUpperCase()" />
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="form-group">
+                        <input type="text" class="form-control mask-telefone" name="empresa_telefone_responsavel[]" value="" />
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="form-group">
+                        <input type="text" class="form-control mask-telefone" name="empresa_celular_responsavel[]" value="" />
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="form-group">
+                        <input type="text" class="form-control" name="empresa_email_responsavel[]" value="" />
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="modelo-dados-financeiro" style="display: none">
+            <div class="row">
+                <div class="col-md-3">
+                    <div class="form-group">
+                        <input type="text" class="form-control" name="empresa_nome_financeiro[]" value="" onblur="this.value = this.value.toUpperCase()" />
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="form-group">
+                        <input type="text" class="form-control mask-telefone" name="empresa_telefone_financeiro[]" value=""/>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="form-group">
+                        <input type="text" class="form-control mask-telefone" name="empresa_celular_financeiro[]" value=""/>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="form-group">
+                        <input type="text" class="form-control ignora-ucase" name="empresa_email_financeiro[]" value=""  />
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <script type="text/javascript">
+            var empresa = parseInt(<?php echo isset($this->atributos['empresa_id']) ? $this->atributos['empresa_id'] : 0 ?>);
+
+
+            function abrirModalDetalheAvaliacao(Param) {
+                if (Param) {
+                    $('#modal-info-ava-credito-orgao-obs').val(Param.observacao);
+                    $('#modal-info-ava-credito-orgao-res').val(Param.resultado);
+                    $('#modal-info-ava-credito-org').val(Param.orgao_nome);
+                    $('#modal-info-ava-credito-orgao-dat').val(Param.data);
+                    $('#modal-info-ava-credito').modal('show');
+                }
+            }
+
+            $(function () {
+
+                $("#AdicionarMaisUmResponsavelEmpresa").click(function () {
+                    $("#dados-responsaveis-adicional").append($("#modelo-dados-responsaveis").html());
+                });
+
+                $("#AdicionarMaisUmResponsavelContrato").click(function () {
+                    $("#dados-contrato-adicional").append($("#modelo-dados-contrato").html());
+                });
+
+                $("#AdicionarMaisUmResponsavelFinanceiro").click(function () {
+                    $("#dados-financeiro-adicional").append($("#modelo-dados-financeiro").html());
+                });
+
+            });
+            $(function () {
+                $('#cnpj').change(function () {
+                    $.post('/ajax/html/servico/buscar-empresa-pelo-cnpj', {cnpj: this.value}, function (po) {
+                        //alert('Já existe registro desse CNPJ: ' + po.empresa_cnpj);
+                        $("input[name=empresa_razao]").val(po.empresa_razao);
+                        $("input[name=empresa_fantasia]").val(po.empresa_fantasia);
+                        $("input[name=empresa_insc_estadual]").val(po.empresa_insc_estadual);
+                        $("input[name=empresa_insc_municipal]").val(po.empresa_insc_municipal);
+                        $("input[name=empresa_cnae]").val(po.empresa_cnae);
+                        $("input[name=empresa_numero]").val(po.empresa_numero);
+                        $("input[name=endereco_logradouro]").val(po.endereco_logradouro);
+                        $("input[name=endereco_bairro]").val(po.endereco_bairro);
+                        $("input[name=endereco_cidade]").val(po.endereco_cidade);
+                        $("input[name=endereco_uf]").val(po.endereco_uf);
+                        $("input[name=endereco_cep]").val(po.endereco_cep);
+                        $("input[name=empresa_complemento]").val(po.empresa_complemento);
+                    }, 'json');
+                });
+
+                $("#add-email").click(function () {
+                    var email = $("#empresa_email").val();
+                    var categoria = $("#select-email-de").val();
+                    var id = empresa;
+                    $.post('/ajax/json/servico/adicionar-email-para-empresa', {empresa: id, email: email, categoria: categoria}, function (r) {
+                        util.alerta(r.tipo, r.mensagem);
+                    }, 'json');
+                });
+
+                $("#select-email-de").change(function () {
+                    var categoria = this.value;
+                    $('#label-email').html('E-mail de ' + categoria);
+                    $.post('/ajax/json/servico/obter-email-de-empresa', {empresa: empresa, categoria: categoria}, function (r) {
+                        $("#empresa_email").val(r.email);
+                    }, 'json');
+                });
+            });
+
+        </script>
+
+        <!-- FIM DA CÓPIA -->
+
+    </div>
+
+</div>

@@ -1,0 +1,146 @@
+<?php
+ob_start();
+$dataInicio = (isset($this->form['paramDataInicio'])) ? $this->form['paramDataInicio'] : null;
+$dataFim = (isset($this->form['paramDataTermino'])) ? $this->form['paramDataTermino'] : null;
+$empresa = (isset($this->form['paramEmpresaRazao'])) ? $this->form['paramEmpresaRazao'] : null;
+$contrato = (isset($this->form['paramContratoNumero'])) ? $this->form['paramContratoNumero'] : null;
+?>
+
+<!-- CONTEUDO CABEÇALHO -->
+<table border="0"  cellpadding="0"   cellspacing="0" style="border-collapse: collapse;width: 100%">
+    <tbody>
+
+        <tr>
+            <td rowspan="2" style="width: 18%;border-bottom:1px solid black;">
+                <img src="/img/logotipo-siss.png" width="105" height="59"/>
+            </td>
+            <td class="celula-texto-centro">SISS - SISTEMA INTEGRADO DE SAÚDE E SEGURANÇA</td>
+            <td rowspan="2" style="width: 18%;border-bottom:1px solid black"></td>
+        </tr>
+
+        <tr>
+            <td class="celula-texto-centro" style="text-align: center;border-bottom:1px solid black;font-size: 14px;"><strong>RELATÓRIO DE PENDENCIA NA AVALIAÇÃO CLÍNICA</strong></td>
+        </tr>
+        
+        <tr>
+            <td colspan="3">
+                <strong>Período:</strong>&nbsp;<?php echo $dataInicio, ' a ', $dataFim ?>
+                &nbsp;&nbsp;<strong>Empresa:</strong>&nbsp;<?php echo $empresa ?>
+                &nbsp;&nbsp;<strong>Contrato:</strong>&nbsp;<?php echo $contrato ?>
+            </td>
+        </tr>
+        <tr>
+            <td colspan="3"></td>
+        </tr>
+    </tbody>
+</table>
+<!-- FIM: CONTEUDO CABEÇALHO -->
+
+<!-- CSS -->    
+<?php
+$htmlCabecalho = ob_get_clean();
+ob_start();
+$cssLeitura = file_get_contents('css/pdf-css.css');
+?>
+<html>
+    <head>    
+        <style type="text/css">
+<?php echo $cssLeitura ?> 
+            .tabela-descritiva {
+                font-size: 10px;
+            }
+        </style>
+    </head>
+    <body>
+        <!-- FIM CSS -->
+
+        <?php
+        $css = ob_get_clean();
+        $bloco = array();
+        ?>
+        <?php foreach ($this->colecaoResultadoRelatorio as $resultado): ?>
+            <?php ob_start(); ?>
+
+            <table border="1" cellpadding="0"  cellspacing="0" style="border-collapse: collapse;width: 100%;margin-bottom: 6px;">
+                <tbody>
+                    <tr>
+                        <td class="celula-texto-direita" style="width: 10%"><strong>Funcionário:</strong></td>
+                        <td colspan="3"><?php echo $resultado['pessoa_nome'] ?></td>
+                        <td class="celula-texto-direita" style="width: 10%"><strong>CPF:</strong></td>
+                        <td><?php echo Util::cpf($resultado['pessoa_cpf']) ?></td>
+                    </tr>
+
+                    <tr>
+                        <td class="celula-texto-direita"><strong>RG:</strong></td>
+                        <td><?php echo $resultado['pessoa_identidade'] ?></td>
+
+                        <td class="celula-texto-direita" style="width: 10%"><strong>Nascimento:</strong></td>
+                        <td><?php echo Util::dataBR($resultado['pessoa_data_nascimento']) ?></td>
+
+                        <td class="celula-texto-direita"><strong>Tipo Exame:</strong></td>
+                        <td><?php echo $resultado['tipoexame_nome'] ?></td>
+                    </tr>
+
+                    <tr>
+                        <td class="celula-texto-direita"><strong>Cargo:</strong></td>
+                        <td colspan="2"><?php echo $resultado['cargo_nome'] ?></td>                        
+
+                        <td class="celula-texto-direita"><strong>Função:</strong></td>
+                        <td colspan="2"><?php echo $resultado['funcao_nome'] ?></td>  
+                    </tr>
+
+                    <tr>
+                        <td class="celula-texto-direita"><strong>Data Exame:</strong></td>
+                        <td colspan="2"><?php echo Util::dataBR($resultado['agenda_data_clinico']) ?></td>                        
+
+                        <td class="celula-texto-direita"><strong>Resultado:</strong></td>
+                        <td colspan="2">
+                            <?php echo str_replace(array('0', '1', '2'), array('INAPTO', 'APTO', 'PENDENTE'), $resultado['funcao_nome']) ?>
+                        </td>  
+                    </tr>
+
+                    <tr>
+                        <td class="celula-texto-direita"><strong>Empresa:</strong></td>
+                        <td colspan="2"><?php echo $resultado['empresa_razao'] ?></td>
+
+                        <td class="celula-texto-direita"><strong>CNPJ | N°.Contrato:</strong></td>
+                        <td colspan="2"><?php echo Util::cnpj($resultado['empresa_cnpj']) ?> <strong>|</strong> <?php echo $resultado['contrato_numero'] ?></td>
+                    </tr>
+                                        
+                    <tr>
+                        <td colspan="6">
+                            <strong>&nbsp;Descrição da Pendência:</strong><br/>
+                            &nbsp;<?php echo $resultado['fichamedica_detalhe_pedencia'] ?>
+                        </td>
+                    </tr>
+
+                </tbody>
+            </table>
+
+            <?php
+            $html = ob_get_clean();
+            $bloco[] = $html;
+            ?>
+        <?php endforeach ?>
+
+
+        <?php
+        require_once 'MPDF/mpdf.php';
+        $localScripts = '../application/views/scripts/documento-gerencial/';
+        require_once "../application/views/scripts/documento-operacional/include/funcoes.php";
+        $htmlRodape = obterHtmlDoRodapeEmPdf();
+
+        $p = new mPDF('utf-8', 'A4-L', 0, '', 10, 10, 41, 30, 8, 8);
+
+        $p->SetHTMLHeader($htmlCabecalho);
+        $p->SetHTMLFooter($htmlRodape);
+        $p->setAutoTopMargin = false;
+        $p->setAutoBottomMargin = false;
+        $p->WriteHTML($css);
+        foreach ($bloco as $html) {
+            $p->WriteHTML($html);
+        }
+        $html = '<p><strong>Total de Funcionário(s) Pendente(s): </strong>' . count($this->colecaoResultadoRelatorio);
+        $p->WriteHTML($html);
+        $p->WriteHTML('</body></html>');
+        $p->Output();        

@@ -1,0 +1,120 @@
+<?php ob_start() ?>
+<style type="text/css">
+    * { margin: 0; padding: 0; position: relative; }
+    body, table { font: normal 10px Arial; }
+    h2 { font-size: 14px; }
+    table { border-collapse: collapse; }
+    table tr th, table tr td { padding: 2px; white-space: nowrap; vertical-align: top; }
+    table tr th { border-top: 1px solid black; border-bottom: 1px solid black; text-align: left; }
+    table tr td { border-bottom: 1px solid lightgrey; }
+    table.sem-bordas tr th, table.sem-bordas tr td { border: none; }
+    .sem-bordas { border: none; }
+    .largo { width: 100%; }
+    .justo { width: 1px; }
+    .moeda { text-align: right; }
+    .label { font-weight: bold; text-align: right; }
+</style>
+<h2>RESUMO</h2>
+
+<body>
+    <table class="largo">
+        <thead>
+            <tr>
+                <th>PRODUTO</th>
+                <th style="width: 15%" align="center">QUANTIDADE</th>
+                <!--<th align="right" style="width: 20%" class="justo">R$</th>-->
+            </tr>
+        </thead>
+        <tbody>
+            <?php $totalGeral = 0 ?>
+            <?php foreach ($this->resumido as $item): ?>
+                <?php #foreach (array() as $item): ?>
+                <?php $valor = $item['precificacao_valor_venda'] ?>
+                <?php $totalParcial = $valor * $item['qtd'] ?>
+                <?php $totalGeral += $totalParcial ?>
+                <tr>
+                    <td><?php echo utf8_decode($item['produto_nome']) ?></td>
+                    <td align="center" style="width: 15%"><?php echo Util::preencherComZero($item['qtd'], 2) ?></td>
+                    <!--<td align="right"><?php echo Util::moeda($totalParcial) ?></td>-->
+                </tr>
+            <?php endforeach; ?>
+        </tbody>
+        <tfoot>
+            <tr>
+                <td>&nbsp;</td>
+                <td align="center" style="width: 15%">&nbsp;</td>
+                <!--<td align="right"><?php #echo '<strong>R$ ', Util::moeda($totalGeral), '</strong>'          ?></td>-->
+            </tr>
+        </tfoot>
+    </table>
+
+    <br/>
+
+
+
+    <h2>DETALHAMENTO</h2>
+
+    <table class="largo">
+        <thead>
+            <tr>
+                <th>NOME</th>
+                <th>EMPRESA</th>
+                <th>PROCEDIMENTO</th>
+                <th class="justo" align="center">DATA</th>
+                <th class="justo" align="center">PRESENTE?</th>
+                <!--<th class="justo">R$</th>-->
+            </tr>
+        </thead> 
+        <tbody>
+            <?php $item = array(); ?>
+            <?php foreach ($this->detalhado as $item): ?>
+                <?php #foreach (array() as $item): ?>
+
+                <?php
+                if ((int) $item['agenda_presente_exame'] == 0) {
+                    $presente = utf8_decode("NÃO");
+                } else {
+                    $presente = utf8_decode("SIM");
+                }
+                ?>    
+                <tr>
+                    <td><?php echo utf8_decode($item['pessoa_nome']) ?></td>
+                    <td><?php echo utf8_decode(substr($item['empresa_fantasia'], 0, 20)) ?></td>
+                    <td><?php echo utf8_decode($item['produto_nome']) ?></td>
+                    <td><?php echo Util::dataBR($item['agenda_data_exame']) ?></td>
+                    <td align="center"><?php echo $presente ?></td>
+                    <!--<td align="right"><?php echo Util::moeda($item['precificacao_valor_venda']) ?></td>-->
+                </tr>
+                <?php $item = array(); ?>
+            <?php endforeach; ?>
+        </tbody>
+    </table>
+</body>
+<?php
+$html = utf8_encode(ob_get_clean());
+
+$header = '<table class="largo sem-bordas header">
+    <tbody>
+        <tr>
+            <td><img src="/img/logo-relatorio.png"/></td>
+            <td align="center" valign="middle"><h1>RELATÓRIO DE PROCEDIMENTOS REALIZADOS</h1><h4>PERÍODO: ' . Util::dataBR($this->dataV) . ' à ' . Util::dataBR($this->dataVi) . '</h4></td>
+            <td align="right" valign="top">{PAGENO}/{nbpg}</td>
+        </tr>
+    </tbody>
+</table>';
+
+$localScripts = '../application/views/scripts/documento-operacional/';
+require_once "{$localScripts}include/funcoes.php";
+$footer = obterHtmlDoRodapeEmPdf();
+
+
+ini_set('max_execution_time', 15);
+//echo $header, $html, $footer;
+//exit(0);
+//
+require_once 'MPDF/mpdf.php';
+$mpdf = new mPDF('UTF-8', 'A4', 0, '', 15, 15, 35, 30, 9, 9, 'P');
+$mpdf->SetHTMLHeader($header);
+$mpdf->SetHTMLFooter($footer);
+$mpdf->WriteHTML($html);
+$mpdf->Output();

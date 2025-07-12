@@ -1,0 +1,79 @@
+<table class="table table-condensed">
+    <thead>
+        <tr>
+            <th class="text-center">Data</th>
+            <th class="text-center">Vagas</th>
+            <th class="text-center">Agendar</th>
+        </tr>
+    </thead>
+    <tbody>
+        <?php foreach ($this->vagas as $vaga): ?>
+        <tr>
+            <td class="text-center"><?php echo $vaga['data'] ?></td>
+            <td class="text-center"><?php echo $vaga['vagas'] ?></td>
+            <td class="text-center">
+                <?php if ($vaga['vagas'] > 0): ?>
+                <a href="javascript:void(0);" class="btn btn-default bt-agendar btn-xs" onclick="listarHorarios(this)" data="<?php echo $vaga['data'] ?>">Agendar</a>
+                <?php endif;?>
+            </td>
+        </tr>
+        <?php endforeach;?>
+    </tbody>
+</table>
+
+<style>
+.modal { text-align: left; }
+</style>
+
+<div id="modalHorarios" class="modal fade" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title" id="modalTitle"><i class="fa fa-clock-o"></i> Horários disponíveis para <span id="modalData">00/00/0000</span></h4>
+            </div>
+
+            <div class="modal-body" id="modalBody"><!-- JS --></div>
+
+            <div class="modal-footer">
+                <button id="modalHorariosClose" type="button" class="btn btn-default" data-dismiss="modal">Fechar</button>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<script>
+
+    function listarHorarios(a) {
+
+        var data = a.getAttribute('data');
+        $("#agenda_data_exame").val(data);
+
+        $("#modalData").html(data);
+        $("#modalBody").html(`<div class="alert alert-warning"><i class="fa fa-refresh"></i> Carregando tabela de vagas por horário...</div>`);
+
+        var url = '/ajax/html/servico/obter-vagas-por-horario-na-data';
+        var json = { unidade: $("#fk_unidade_id").val(), data: data };
+
+        fetch(url, { method: 'POST', body: JSON.stringify(json) })
+
+            .then(p => p.text()).then(html => {
+
+                $("#modalBody").html(html);
+
+            });
+
+        $("#modalHorarios").modal("show");
+
+        var bts = $(".bt-agendar");
+
+        for (var i = 0; i < bts.length; i++)
+
+            bts[i].className = 'btn btn-default btn-xs bt-agendar';
+
+        a.className = 'btn btn-success bt-agendar btn-xs';
+    }
+
+</script>

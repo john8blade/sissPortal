@@ -1,0 +1,434 @@
+<?php
+$partePagina = array(
+    'css' => '',
+    'cabecalho' => '',
+    'topoInformativo' => '',
+    'tabelaItensFaturados' => '',
+    'tabelaImpostos' => '',
+    'tabelaJurosMultas' => '',
+    'tabelaDescontos' => '',
+    'tabelaFechamento' => '',
+    'tabelaDetalhamento' => ''
+);
+ob_start();
+?>
+
+<html>
+
+    <head>
+        <meta charset="UTF-8"/>
+        <!-- ESTILIZAÇÃO -->
+        <style type="text/css">
+            body {font: normal 10px Arial; border: 0px solid #000;}    
+            table{border-collapse: collapse; font: normal 10px Arial;width: 100%;}
+            .borda-superior {border-top: 1px solid #000!important}
+            .borda-inferior {border-bottom: 1px solid #000!important}
+            .txt-right {text-align: right}
+            .txt-left {text-align: left}
+            .txt-center {text-align: center}
+            .td-label {font-weight: bold}
+            .td-label-15 {width: 15%;font-weight: bold}
+            .td-label-30 {width: 30%;font-weight: bold}
+            .txt-small {font-size: 9px!important}            
+            .txt-f18 {font-size: 18px!important}
+            .txt-f16 {font-size: 14px!important}
+            .txt-f15 {font-size: 14px!important}
+            .txt-f14 {font-size: 14px!important}
+            .txt-f13 {font-size: 13px!important}
+            .txt-f12 {font-size: 12px!important}
+        </style>
+        <!-- ESTILIZAÇÃO:FIM -->
+
+    </head>
+    <body>
+
+        <?php
+        echo $partePagina['css'] = ob_get_clean();
+        ob_start();
+        ?>
+
+        <!-- CABEÇALHO -->
+        <table border="0">
+            <tr>
+                <td style="width: 19%" rowspan="2">
+                    <img src="/img/logotipo-siss_1.png" height="65"/>
+                </td>
+                <td>
+                    <strong style="font-size: 18px;"><?php echo $this->fatura->Cedente['fatura_cedente_nome'] ?></strong><br/>
+                    <?php echo $this->fatura->Cedente['endereco_logradouro'], ' ', $this->fatura->Cedente['endereco_numero'], ', ', $this->fatura->Cedente['endereco_bairro'], '<br/>', $this->fatura->Cedente['endereco_cidade'], ' - ', $this->fatura->Cedente['endereco_uf'] ?>
+                </td>
+                <td style="width: 15%;" class="txt-center">
+                    <strong>FATURA</strong><br/>
+                    <strong><?php echo $this->fatura->faturaId ?></strong>
+                </td>
+            </tr>
+        </table>
+        <!-- CABEÇALHO:FIM -->
+        <?php
+        $partePagina['cabecalho'] = ob_get_clean();
+        ob_start();
+        ?>
+
+        <!-- TOPO -->
+        <div>
+            <table>
+                <tbody>
+                    <tr>
+                        <td style="text-align:center;padding: 5px;" class="borda-superior borda-inferior">
+                            <strong>FATURA</strong>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div style="width: 100%;margin-top: 5px;">
+
+            <div style="float: left;width: 49%">
+                <table border="0" class="tbl-text-small">
+                    <tbody>
+                        
+                        <tr>
+                            <td class="td-label-15 txt-right txt-f15">CNPJ:</td> 
+                            <td class="txt-f16"><strong><?php echo Util::cnpj($this->fatura->EmpresaFaturamento['empresa_cnpj']) ?></strong></td> 
+                        </tr>
+
+                        <tr>
+                            <td class="td-label-15 txt-small txt-right">Cliente:</td> 
+                            <td class="txt-small"><?php echo substr($this->fatura->EmpresaFaturamento['empresa_razao'], 0, 65) ?></td> 
+                        </tr>
+                                                
+                        <tr>
+                            <td class="td-label-15 txt-small txt-right">Endereço:</td> 
+                            <td class="txt-small"><?php echo $this->fatura->EmpresaFaturamento['endereco_logradouro'], ' ', $this->fatura->EmpresaFaturamento['endereco_numero'] ?></td> 
+                        </tr>
+
+                        <tr>
+                            <td class="td-label-15 txt-small txt-right">Complemento:</td> 
+                            <td class="txt-small"><?php echo $this->fatura->EmpresaFaturamento['endereco_complemento'] ?></td> 
+                        </tr>
+
+                        <tr>
+                            <td class="td-label-15 txt-small txt-right">Bairro:</td> 
+                            <td class="txt-small"><?php echo $this->fatura->EmpresaFaturamento['endereco_bairro'] ?></td> 
+                        </tr>
+                        <tr>
+                            <td class="td-label-15 txt-small txt-right">Municipio/UF:</td> 
+                            <td class="txt-small"><?php echo $this->fatura->EmpresaFaturamento['endereco_cidade'], ' / ', $this->fatura->EmpresaFaturamento['endereco_uf'] ?></td> 
+                        </tr>
+                        <tr>
+                            <td class="td-label-15 txt-small txt-right">CEP:</td> 
+                            <td class="txt-small"><?php echo Util::cep($this->fatura->EmpresaFaturamento['endereco_cep']) ?></td> 
+                        </tr>
+
+                        <tr>
+                            <td class="td-label-15 txt-small txt-right">Contrato:</td> 
+                            <td class="txt-small"><?php echo $this->fatura->Contrato['contrato_numero'], '-', $this->fatura->Contrato['contrato_sufixo_numero'] ?></td> 
+                        </tr>
+
+                    </tbody>
+                </table>
+            </div>
+            <div style="float: left;width: 49%">
+
+                <table border="1" style="width: 100%">
+                    <tr>
+                        <td class="txt-small" style="width: 50%;text-align: center;">
+                            <span class="td-label txt-small">Data de Vencimento</span><br/>
+                            <?php echo $this->fatura->faturaDataVencimento ?>
+                        </td>
+                        <td class="txt-small txt-center" style="width: 50%">
+                            <span class="td-label txt-small">Valor a Pagar</span><br/>
+                            R$ <?php echo number_format($this->fatura->faturaValorCobranca, 2) ?>
+                        </td>
+                    </tr>
+                </table>
+
+                <table border="0" style="margin-top: 5px;">
+                    <tr>
+                        <td class="txt-small td-label-30 txt-left">Responsável:</td> 
+                        <td class="txt-small"><?php echo $this->fatura->Contrato['contrato_responsavel_nome'] ?> </td> 
+                    </tr>
+                    <tr>
+                        <td class="txt-small td-label-30 txt-left">Telefone:</td> 
+                        <td class="txt-small"><?php echo Util::telefone($this->fatura->Contrato['contrato_responsavel_telefone']) ?> </td> 
+                    </tr>
+                    <tr>
+                        <td class="txt-small td-label-30 txt-left">E-mail:</td> 
+                        <td class="txt-small"><?php echo $this->fatura->Contrato['contrato_responsavel_email'] ?></td> 
+                    </tr>
+                    <tr>
+                        <td class="txt-small td-label-30 txt-left">Período de Apuração:</td> 
+                        <td class="txt-small"><?php echo $this->fatura->faturaDataInicioApuracao, ' - ', $this->fatura->faturaDataTerminoApuracao ?> </td> 
+                    </tr>
+                    <tr>
+                        <td class="txt-small td-label-30 txt-left">Data de Emissao:</td> 
+                        <td class="txt-small"><?php echo $this->fatura->faturaDataHoraCriacao ?> </td> 
+                    </tr>
+
+                    <!--
+                    <tr>
+                        <td class="txt-small td-label-30 txt-left">Nº da Fatura:</td> 
+                        <td class="txt-small"><?php echo $this->fatura->faturaId ?> </td> 
+                    </tr> -->
+
+                </table>
+
+            </div>
+
+        </div>
+
+        <div>
+            <table>
+                <tbody>
+                    <tr>
+                        <td style="text-align:center;padding: 5px;" class="borda-superior borda-inferior">
+                            <strong>Resumo da Fatura</strong>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- TOPO:FIM -->
+        <?php
+        echo $partePagina['topoInformativo'] = ob_get_clean();
+        ob_start();
+        ?>
+
+        <!-- tabelaItensFaturados -->
+        <table>
+            <thead>
+                <tr>
+                    <th class="txt-left txt-small">Produto</th>
+                    <th class="txt-center txt-small">Data</th>
+                    <th class="txt-center txt-small">Quantidade</th>
+                    <th class="txt-center txt-small">V.Unitário</th>
+                    <th class="txt-center txt-small">V.Total/Parcela</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php foreach ($this->fatura->ItensFaturamento as $Item): ?>
+                    <tr>
+                        <td class="txt-small"><?php echo $Item->nome, ((int) $Item->quantidadeParcelas > 0) ? ' ' . $Item->numeroParcelaContexto . '/' . $Item->quantidadeParcelas : '' ?><?php echo ($Item->tipoFaturamento === 'COORDENACAO') ? ' - ' . $Item->localEntregaNome : '' ?></td>
+                        <td class="txt-center txt-small"><?php echo $Item->parcelamentoData ?></td>
+                        <td class="txt-center txt-small"><?php echo $Item->quantidade ?></td>                        
+                        <td class="txt-center txt-small"><?php echo number_format($Item->valorUnitario, 2) ?></td>
+                        <td class="txt-center txt-small"><?php echo number_format($Item->valorTotal, 2) ?></td>
+                    </tr>
+                <?php endforeach ?>
+            </tbody>
+            <tfoot>
+                <tr>                    
+                    <td colspan="5" class="borda-inferior">&nbsp;</td>
+                </tr>
+                <tr>                    
+                    <td colspan="3" class="txt-right borda-inferior txt-f18"><strong>Valor Total:</strong></td>
+                    <td colspan="2" class="txt-left borda-inferior txt-f18"> <strong>R$ <?php echo number_format($this->fatura->faturaValorTotal, 2) ?></strong></td>
+                </tr>
+                <tr>
+                    <td colspan="5" class="">&nbsp;</td>
+                </tr>
+            </tfoot>
+        </table>
+        <!-- tabelaItensFaturados:fim  -->
+
+        <?php
+        $partePagina['tabelaItensFaturados'] = ob_get_clean();
+        ob_start();
+        $valorComDeducaoImpostos = (float) $this->fatura->faturaValorTotal - ((float) $this->fatura->Imposto->inss + (float) $this->fatura->Imposto->iss + (float) $this->fatura->Imposto->csll + (float) $this->fatura->Imposto->confins + (float) $this->fatura->Imposto->pis + (float) $this->fatura->Imposto->irrf);
+        ?>
+
+        <!-- tabelaImpostos  -->
+        <p><strong>Informações Sobre Impostos</strong></p>
+
+        <table border="1">
+            <tbody>
+                <tr>
+                    <td class="txt-center td-label txt-small">CSLL(R$)</td>
+                    <td class="txt-center td-label txt-small">COFINS(R$)</td>
+                    <td class="txt-center td-label txt-small">PIS(R$)</td>
+                    <td class="txt-center td-label txt-small">INSS(R$)</td>                    
+                    <td class="txt-center td-label txt-small">IRRF(R$)</td>                                                            
+                    <td class="txt-center td-label txt-small">ISS(R$)</td>                    
+                    <td class="txt-center td-label txt-small">Valor c/Deduções(R$)</td>
+                </tr>
+                <tr>
+                    <td class="txt-center txt-small"><?php echo $this->fatura->Imposto->csll ?></td>
+                    <td class="txt-center txt-small"><?php echo $this->fatura->Imposto->confins ?></td>
+                    <td class="txt-center txt-small"><?php echo $this->fatura->Imposto->pis ?></td>
+                    <td class="txt-center txt-small"><?php echo $this->fatura->Imposto->inss ?></td>                     
+                    <td class="txt-center txt-small"><?php echo $this->fatura->Imposto->irrf ?></td>                 
+                    <td class="txt-center txt-small"><?php echo $this->fatura->Imposto->iss ?></td>                                       
+                    <td class="txt-center txt-small"><?php echo number_format($valorComDeducaoImpostos, 2) ?></td>                    
+                </tr>
+            </tbody>
+        </table>
+
+        <!-- tabelaImpostos:fim  -->
+
+        <?php
+        $partePagina['tabelaImpostos'] = ob_get_clean();
+        ob_start();
+        $valorComMultasJuros = $valorComDeducaoImpostos + (float) $this->fatura->faturaValorMultas + $this->fatura->faturaValorJuros;
+        ?>
+
+        <!-- tabelaJurosMultas  -->
+        <p><strong>Informações Sobre Juros e Multas</strong></p>
+
+        <table border="1">
+            <tbody>
+                <tr>
+                    <td class="txt-center td-label txt-small">Multas(R$)</td>
+                    <td class="txt-center td-label txt-small">Juros(R$)</td>
+                    <td class="txt-center td-label txt-small">Justificativa</td>
+                    <td class="txt-center td-label txt-small">Valor c/Deduções(R$)</td>
+                </tr>
+                <tr>
+                    <td class="txt-center"><?php echo $this->fatura->faturaValorMultas ?></td>
+                    <td class="txt-center"><?php echo $this->fatura->faturaValorJuros ?></td>
+                    <td class="txt-center"><?php echo $this->fatura->faturaJustificativaJurosMulta ?></td>                  
+                    <td class="txt-center"><?php echo number_format($valorComMultasJuros, 2) ?></td>                    
+                </tr>
+            </tbody>
+        </table>
+
+        <!-- tabelaJurosMultas:fim  -->
+
+        <?php
+        $partePagina['tabelaJurosMultas'] = ob_get_clean();
+        ob_start();
+        $valorComDesconto = $valorComMultasJuros - (float) $this->fatura->faturaValorDesconto;
+        ?>
+
+        <!-- tabelaDescontos  -->
+        <p><strong>Informações Sobre Descontos</strong></p>
+
+        <table border="1">
+            <tbody>
+                <tr>
+                    <td class="txt-center td-label txt-small" style="width: 20%">Valor(R$)</td>                    
+                    <td class="txt-center td-label txt-small">Justificativa</td>
+                </tr>
+                <tr>
+                    <td class="txt-center"><?php echo $this->fatura->faturaValorDesconto ?></td>                    
+                    <td class="txt-center"><?php echo $this->fatura->faturaJustificativaDesconto ?></td>                                    
+                </tr>
+            </tbody>
+        </table>
+
+        <!-- tabelaDescontos:fim  -->
+
+        <?php
+        $partePagina['tabelaDescontos'] = ob_get_clean();
+        ob_start();
+        ?>
+
+        <!-- tabelaFechamento  -->
+        <p><strong>Informações Para Faturamento</strong></p>
+
+        <table border="1">
+            <tbody>
+                <tr>
+                    <td class="txt-center td-label txt-small">Valor Total da Fatura(R$)</td>                    
+                    <td class="txt-center td-label txt-small">N° da Fatura</td>
+                    <td class="txt-center td-label txt-small">Data Emissão</td>
+                    <td class="txt-center td-label txt-small">Data Vencimento</td>
+                </tr>
+                <tr>
+                    <td class="txt-center"><?php echo number_format($this->fatura->faturaValorCobranca, 2) ?></td>                    
+                    <td class="txt-center"><?php echo $this->fatura->faturaNumero ?></td>                                    
+                    <td class="txt-center"><?php echo $this->fatura->faturaDataHoraCriacao ?></td>                                    
+                    <td class="txt-center"><?php echo $this->fatura->faturaDataVencimento ?></td>                                    
+                </tr>
+            </tbody>
+        </table>
+
+        <!-- tabelaFechamento:fim  -->
+
+        <!-- Seção informações Importantes -->
+        <p><strong>Informações Importantes</strong></p>
+        <p><?php echo $this->fatura->faturaInformacoesImportante ?></p>
+        <!-- Seção informações Importantes -->
+
+        <?php
+        $partePagina['tabelaFechamento'] = ob_get_clean();
+        ob_start();
+        ?>
+
+        <?php if (isset($this->detalhamentos) && count($this->detalhamentos) > 0): ?>
+        <pagebreak />
+
+        <div>
+
+            <!--
+            <table>
+                <tbody>
+                    <tr>
+                        <td style="text-align:center;padding: 5px;" class="borda-superior borda-inferior">
+                            <strong>Romaneio</strong>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            -->
+            <?php echo str_ireplace(array('FATURA', 'Resumo da ROMANEIO'), array('ROMANEIO', 'DETALHAMENTO'), $partePagina['topoInformativo']) ?>
+            <table border="1" style="margin-top: 5px;border: 1px solid #000">
+                <thead>
+                    <tr>
+                        <th class="txt-center txt-small" style="width: 10%">CPF</th>
+                        <th class="txt-left txt-small">Funcionário</th>
+                        <th class="txt-left txt-small">Procedimento</th>
+                        <th class="txt-center txt-small" style="width: 9%">Data</th>
+                        <th class="txt-center txt-small" style="width: 10%">Valor(R$)</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    <?php foreach ($this->detalhamentos as $detalhe): ?>
+                        <tr>
+                            <td class="txt-center txt-small"><?php echo $detalhe['funcionario_cpf'] ?></td>    
+                            <td class="txt-small"><?php echo $detalhe['funcionario_nome'] ?></td>    
+                            <td class="txt-small"><?php echo $detalhe['procedimento_nome'] ?></td>     
+                            <td class="txt-center txt-small"><?php echo Util::dataBR($detalhe['data_execucao']) ?></td>     
+                            <td class="txt-center txt-small"><?php echo Util::moeda($detalhe['valor']) ?></td>     
+                        </tr>
+                    <?php endforeach ?>
+                </tbody>
+
+            </table>
+
+        </div>
+
+
+
+    <?php endif ?>
+
+    <?php
+    $partePagina['tabelaDetalhamento'] = ob_get_clean();
+    ob_start();
+
+
+    require_once 'MPDF/mpdf.php';
+    $localScripts = '../application/views/scripts/documento-operacional/';
+    require_once "{$localScripts}include/funcoes.php";
+
+    $htmlRodape = obterHtmlDoRodapeEmPdf();
+
+    $p = new mPDF('utf-8', 'A4', 0, '', 5, 5, 26, 30, 5, 5);
+    $p->SetHTMLFooter($htmlRodape);
+    $p->SetHTMLHeader($partePagina['cabecalho']);
+    $p->setAutoTopMargin = false;
+    $p->setAutoBottomMargin = false;
+    $p->allow_charset_conversion = false;
+    $p->WriteHTML($partePagina['css']);
+    $p->WriteHTML($partePagina['topoInformativo']);
+    $p->WriteHTML($partePagina['tabelaItensFaturados']);
+    $p->WriteHTML($partePagina['tabelaImpostos']);
+    $p->WriteHTML($partePagina['tabelaJurosMultas']);
+    $p->WriteHTML($partePagina['tabelaDescontos']);
+    $p->WriteHTML($partePagina['tabelaFechamento']);
+    $p->WriteHTML($partePagina['tabelaDetalhamento']);
+    $p->WriteHTML('</body><html>');
+    $p->Output();
+    

@@ -1,0 +1,98 @@
+<div class="row-fluid">
+    <div class="well well-small"><i class="icon-filter"></i><strong>&nbsp;Convocação de Periódico</strong></div>
+</div>
+
+<form action="" method="post" target="_blank">
+
+    <div class="row-fluid">
+
+        <div class="span2">
+            <label>Data de Início</label>
+            <input type="text" class="span mask-data" name="data1" value="<?php echo date('01/m/Y') ?>"/>
+        </div>
+
+        <div class="span2">
+            <label>Data de Fim</label>
+            <input type="text" class="span mask-data" name="data2" value="<?php echo date('t/m/Y') ?>"/>
+        </div>
+
+        <div class="span4">
+            <label>Empresa</label>
+            <select name="empresa" id="empresa" class="span">
+                <option value="0">---</option>
+                <?php foreach ($this->empresas as $item): ?>
+                    <option value="<?php echo $item['empresa_id'] ?>"><?php echo $item['empresa_razao'] . ' | ' . $item['empresa_fantasia'] ?></option>
+                <?php endforeach ?>
+            </select>
+        </div>
+
+        <div class="span4">
+            <label>Contrato</label>
+            <select name="contrato" id="contrato" class="span">
+                <option value="0">---</option>
+            </select>
+        </div>
+
+    </div>
+
+    <div class="row-fluid">
+
+        <div class="span5">
+            <label>Setor</label>
+            <select name="setor" id="setor" class="span">
+                <option value="0">---</option>
+            </select>
+        </div>
+
+        <div class="span5">
+            <label>Funcionário</label>
+            <select name="funcionario" id="funcionario" class="span">
+                <option value="0">---</option>
+            </select>
+        </div>
+
+        <div class="span2">
+            <label>&nbsp;</label>
+            <button type="submit" class="span btn"><span class="icon-ok"></span>&nbsp;Processar</button>
+        </div>
+
+    </div>
+
+</form>
+
+<script type="text/javascript" src="/js/AjaxComResultadoJson.js"></script>
+
+<script>
+    $('#empresa').change(function () {
+        var empresa = this.value;
+        /*
+         $.post('/ajax/json/servico/listar-contrato-pela-empresa', {id: empresa}, function (p) {
+         adicionarOptions('contrato', p, 'contrato_id', 'contrato_numero', true);         
+         $.post('/ajax/json/servico/obter-setores-pela-empresa', {empresa: empresa}, function (q) {
+         adicionarOptions('setor', q, 'setor_id', 'alocacao', true);
+         }, 'json');         
+         }, 'json');*/
+
+
+        ResgatarColecaoDeContratosPeloIdEmpresa(
+                empresa,
+                function (Rst) {
+                    if (Rst.Resultado) {
+                        adicionarOptions('contrato', Rst.Resultado, 'contrato_id', 'contrato_numero_custom', true);
+                        $.post('/ajax/json/servico/obter-setores-pela-empresa', {empresa: empresa}, function (q) {
+                            adicionarOptions('setor', q, 'setor_id', 'alocacao', true);
+                        }, 'json');
+                    }
+                });
+    });
+
+    $('#contrato').change(function () {
+        $.post('/ajax/json/servico/obter-funcionarios-pela-empresa-e-contrato', {
+            empresa: $('#empresa').val(),
+            contrato: $('#contrato').val(),
+        }, function (p) {
+            adicionarOptions('funcionario', p, 'funcionario_id', 'pessoa_nome', true);
+        }, 'json');
+    });
+
+</script>

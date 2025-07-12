@@ -1,0 +1,231 @@
+<?php
+$paginas = array();
+$htmlCabecalho = '';
+$os = $this->colecaoItemResultado['OrdemServico'];
+$empresa = $this->colecaoItemResultado['EmpresaContratante'];
+$contrato = $this->colecaoItemResultado['Contrato'];
+$produtosContratados = $this->colecaoItemResultado['ColecaoProdutoContratado'];
+$produtosContratadosDescricao = $this->colecaoItemResultado['ColecaoDescricaoProduto'];
+$unidade = $this->colecaoItemResultado['UnidadeComercial'];
+$cidade = !isset($unidade) ? 'Cidade' : $unidade['endereco_cidade'];
+// colocar data por extenso
+//$os['os_data_hora_criacao'];
+$data_hora = explode(" ", Util::dataBR($os['os_data_hora_criacao']));
+$data = Util::dataBR($data_hora[0]);
+$data_extenso = '';
+$meses = array('', 'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro');
+$d = $m = $a = null;
+list($d, $m, $a) = explode('/', $data);
+if (strlen($m) > 0 && isset($meses[(int) $m])) {
+    $data_extenso = $d . ' de ' . $meses[(int) $m] . ' de ' . $a;
+}
+?>
+
+<!-- HTML DO CABEÇALHO -->
+<?php ob_start(); ?>
+<table border="0" style="border-collapse: collapse;width: 100%;border-top:1px solid black;border-bottom: 1px solid black; padding: 0px;font-family: Arial; font-size: 12px;">
+    <tr>
+        <td style="width: 20%">
+            <img src="img/logo hiest hd - Oficial.png" height="40" width="121"/>
+        </td>
+        <td style="width: 60%;vertical-align: middle;text-align: center;font-size: 24px;">
+            <strong>Proposta / Ordem de Serviço</strong>
+        </td>
+        <td style="width: 20%;vertical-align: middle;text-align: center;font-size: 18px;">
+            <strong>OS:<?php echo Util::preencherComZero($os['os_id'], 5) ?></strong>
+        </td>
+    </tr>
+</table>
+
+<table border="0" style="border-collapse: collapse;top:0px;margin-top: 0px;width: 100%;border:0px;border-bottom: 1px solid black; padding: 0px;font-family: Arial; font-size: 12px;">
+    <tr>
+        <td style="width: 34%" colspan="2"><strong>EMPRESA:</strong></td>
+        <!-- <td style="width: 33%"></td> -->
+        <td style="width: 33%"><strong>DATA:</strong></td>
+    </tr>
+    <tr>
+        <td colspan="2"><?php echo $empresa['empresa_razao'] ?></td>        
+        <td><?php echo date('d/m/Y', strtotime($os['os_data_hora_criacao'])) ?></td>
+    </tr>
+    <tr>
+        <td><strong>NOME DO CONTATO:</strong></td>
+        <td style="width: 33%"><strong>E-MAIL DO CONTATO:</strong></td>
+        <td><strong>TELEFONE DO CONTATO:</strong></td>
+    </tr>
+    <tr>
+        <td><?php echo $contrato['contrato_responsavel_nome'] ?></td>
+        <td><?php echo $contrato['contrato_responsavel_email'] ?></td>
+        <td><?php echo Util::telefone($contrato['contrato_responsavel_telefone']) ?></td>
+    </tr>
+</table>
+<?php $htmlCabecalho = ob_get_clean(); ?>
+<!-- FIM HTML DO CABEÇALHO -->
+
+<?php foreach ($this->colecaoItemResultado['ColecaoProdutoContratado'] as $itemCategorizado): ?>
+    <?php ob_start(); ?>
+    <!-- HTML: TEXTO INICIO -->
+    <link rel="stylesheet" href="/css/pdf-css.css" type="text/css" />
+    <p style="font-size: 14px;text-align: justify"><strong>Ordem de Serviço</strong></p>
+    <p>Programas Legais desenvolvidos conforme as normas estabelecidas pelo Ministério do Trabalho e Emprego(Portaria n° 3214/78). Por meio da identificação e prevenção dos riscos ocupacionais é possível realizar um planejamento estratégico eficaz e adotar ações de controle em cada etapa dos processos, visando sempre a manutenção da integridade física e da saúde do trabalhador.</p>
+    <!-- FIM HTML: TEXTO INICIO -->
+
+    <!-- HTML: TABELA DE PRODUTOS -->
+
+    <table border="0" cellpadding="0" cellspacing="0" style="width: 100%;font-size: 11px;border-collapse: collapse;border-bottom: 1px solid black;border-top: 1px solid black;">
+        <thead>
+            <tr>
+                <th style="text-align: left;border-bottom: 1px solid black;border-right: 1px solid black;background-color: #f5f5f5">DESCRIÇÃO DETALHADA DO SERVIÇO</th>
+                <th style="text-align: left;border-bottom: 1px solid black;border-right: 1px solid black;background-color: #f5f5f5">LOCAL ONDE SERÃO REALIZADOS OS SERVIÇOS</th>
+                <th style="text-align: left;border-bottom: 1px solid black;border-right: 1px solid black;background-color: #f5f5f5;text-align: center">QTDE ITENS</th>
+                <th style="text-align: left;border-bottom: 1px solid black;border-right: 1px solid black;background-color: #f5f5f5;text-align: center">VALOR UNITÁRIO</th>
+                <th style="text-align: left;border-bottom: 1px solid black;border-right: 1px solid black;background-color: #f5f5f5;text-align: center">DESC</th>
+                <th style="text-align: left;border-bottom: 1px solid black;border-right: 1px solid black;background-color: #f5f5f5;text-align: center">VALOR TOTAL</th>
+                <th style="text-align: left;border-bottom: 1px solid black;border-right: 1px solid black;background-color: #f5f5f5;text-align: center">N° DE PARCELAS</th>
+                <th style="text-align: left;border-bottom: 1px solid black;border-right: 1px solid black;background-color: #f5f5f5;text-align: center">VALOR DAS PARCELAS</th>
+                <th style="text-align: left;border-bottom: 1px solid black;border-right: 1px solid black;background-color: #f5f5f5">INFORMAÇÕES DO VENCIMENTO</th>
+                <th style="text-align: left;border-bottom: 1px solid black;background-color: #f5f5f5">INFORMAÇÕES PARA ENTREGA DO SERVIÇO</th>
+            </tr>
+        </thead>
+        <tbody>
+            <?php $somatorioParcela = $somatorioTotal = $somatorioDesconto = 0; ?>
+            <?php foreach ($itemCategorizado as $item): ?>
+                <?php
+                $valorFinal = (float) $item['produto_contratado_quantidade'] * (float) $item['produto_contratado_valor_venda'];
+                $desconto = ($valorFinal * (float) $item['produto_contratado_desconto']) / 100;
+                $valorFinal -= $desconto;
+                $somatorioDesconto += $desconto;
+                $valorParcela = (float) $valorFinal / (float) $item['quantidade_parcela'];
+                $somatorioParcela += $valorParcela;
+                $somatorioTotal += $valorFinal;
+                $eExame = (bool) ($item['categoriadoproduto_codigo_fixo'] == '0002')
+                ?>
+                <tr>
+                    <td style="border-bottom: 1px solid black;border-right: 1px solid black"><?php echo $item['produto_nome'] ?></td>
+                    <td style="border-bottom: 1px solid black;border-right: 1px solid black"><?php echo ($item['categoriadoproduto_codigo_fixo'] == '0002') ? null : $item['localentrega_identificacao'] ?></td>
+                    <td style="border-bottom: 1px solid black;border-right: 1px solid black;text-align: center"><?php echo ($eExame) ? '' : $item['produto_contratado_quantidade'] ?></td>
+                    <td style="border-bottom: 1px solid black;border-right: 1px solid black;text-align: center"><?php echo ($this->mostrarValores) ? number_format($item['produto_contratado_valor_venda'], 2) : '-' ?></td>
+                    <td style="border-bottom: 1px solid black;border-right: 1px solid black;text-align: center"><?php echo ($this->mostrarValores) ? number_format($desconto, 2) : '-' ?></td>
+                    <td style="border-bottom: 1px solid black;border-right: 1px solid black;text-align: center"><?php echo ($this->mostrarValores && $eExame == false) ? number_format($valorFinal, 2) : '-' ?></td>
+                    <td style="border-bottom: 1px solid black;border-right: 1px solid black;text-align: center"><?php echo ($eExame) ? '' : $item['quantidade_parcela'] ?></td>
+                    <td style="border-bottom: 1px solid black;border-right: 1px solid black;text-align: center"><?php echo ($this->mostrarValores && $eExame == false) ? number_format($valorParcela, 2) : '-' ?></td>
+                    <td style="border-bottom: 1px solid black;border-right: 1px solid black"><?php echo $item['produto_contratado_observacao_vencimento'] ?></td>
+                    <td style="border-bottom: 1px solid black"><?php echo (strlen($item['produto_contratado_observacao_entrega']) == 0 && $eExame) ? '* conforme demanda' : $item['produto_contratado_observacao_entrega'] ?></td>
+                </tr>
+            <?php endforeach ?>                                   
+        </tbody>
+        <?php
+        $somatorioParcela = number_format($somatorioParcela, 2);
+        $somatorioTotal = number_format($somatorioTotal, 2);
+        ?>
+        <?php if (in_array($item['categoriadoproduto_codigo_fixo'], array('0002', '0004'))): ?>
+            <?php $somatorioParcela = $somatorioTotal = '-'; ?>
+        <?php endif ?>
+        <tfoot>
+            <tr>
+                <td style="border-bottom: 1px solid black;border-right: 1px solid black">&nbsp;</td>
+                <td style="border-bottom: 1px solid black;border-right: 1px solid black">&nbsp;</td>
+                <td style="border-bottom: 1px solid black;border-right: 1px solid black">&nbsp;</td>
+                <td style="border-bottom: 1px solid black;border-right: 1px solid black;text-align: center"></td>
+                <td style="border-bottom: 1px solid black;border-right: 1px solid black;text-align: center"><strong><?php echo ($this->mostrarValores) ? number_format($somatorioDesconto,2) : '-' ?></strong></td>
+                <td style="border-bottom: 1px solid black;border-right: 1px solid black;text-align: center"><strong><?php echo ($this->mostrarValores) ? $somatorioTotal : '-' ?></strong></td>
+                <td style="border-bottom: 1px solid black;border-right: 1px solid black;text-align: center"></td>
+                <td style="border-bottom: 1px solid black;border-right: 1px solid black;text-align: center"><strong><?php echo ($this->mostrarValores) ? $somatorioParcela : '-' ?></strong></td>
+                <td style="border-bottom: 1px solid black;border-right: 1px solid black">&nbsp;</td>
+                <td style="border-bottom: 1px solid black;">&nbsp;</td>
+            </tr>
+        </tfoot>
+    </table>
+
+    <!-- FIM HTML: TABELA DE PRODUTOS -->
+
+    <!-- HTML: CONCORDÂNCIA COM OS TERMOS -->
+
+    <p>Concordo com os termos e condições estabelecidos, bem como, autorizo a execução dos serviços acima listados, conforme condições comerciais informadas</p>
+    <br/>
+    <table border="0" style="width: 100%;border-collapse: collapse">
+        <tbody>
+            <tr>
+                <!--<td style="width: 50%"><?php echo $cidade, ', ', $data_extenso ?></td>-->
+                <td style="width: 50%">_______________________________,__________ de ____________________________ de ______________ </td>
+                <td style="width: 50%; border-bottom: 1px solid black;border-collapse: collapse"></td>
+            </tr>
+            <tr>
+                <td style="width: 50%;text-align: center">LOCAL E DATA DA APROVAÇÃO</td>
+                <td style="width: 50%; text-align: center">RESPONSÁVEL PELA EMPRESA</td>
+            </tr>
+        </tbody>
+    </table>
+    <?php
+    $paginas[] = ob_get_clean();
+    ?>
+<?php endforeach ?>
+
+<!-- FIM HTML: CONCORDÂNCIA COM OS TERMOS -->
+<?php ob_start(); ?>
+
+<!-- HTML: TERMOS CONDIÇÕES E OBSERVAÇÕES -->
+<table border="0" style="width: 100%;border-collapse: collapse">
+    <tbody>
+        <tr>
+            <td style="width: 50%; border-bottom: 1px solid black;border-top:1px solid black;border-collapse:collapse;text-align: center;font-size: 16px;"><strong>TERMOS CONDIÇÕES E OBSERVAÇÕES</strong></td>
+        </tr>
+    </tbody>
+</table>
+<p style="text-align: justify"><?php echo $os['os_observacao'] ?></p>
+<p>&nbsp;</p>
+<!-- FIM HTML: TERMOS CONDIÇÕES E OBSERVAÇÕES -->
+
+<!-- HTML: TERMOS CONDIÇÕES E OBSERVAÇÕES -->
+<table border="0" style="width: 100%;border-collapse: collapse">
+    <tbody>
+        <tr>
+            <td style="width: 50%; border-bottom: 1px solid black;border-top:1px solid black;border-collapse:collapse;text-align: center;font-size: 16px;"><strong>DESCRIÇÃO DOS PRODUTOS</strong></td>
+        </tr>
+    </tbody>
+</table>
+
+<?php $eExame = false ?>
+
+<?php foreach ($produtosContratadosDescricao as $produto): ?>
+    <?php if ($produto['categoriadoproduto_codigo_fixo'] == '0002'): ?>
+        <?php $eExame = true ?>
+        <?php continue; ?>
+    <?php else: ?>
+        <p style="font-size: 14px;"><strong><?php echo $produto['produto_nome'] ?></strong></p>
+        <p style="text-align: justify"><?php echo $produto['produto_descricao'] ?></p>
+    <?php endif ?>
+<?php endforeach ?>
+
+<?php if ($eExame): ?>
+    <p style="font-size: 14px;"><strong>EXAMES COMPLEMENTARES</strong></p>
+    <p>Realização de exames médicos ocupacionais, contemplando, de acordo com o PCMSO ou a critério médico, avaliação clínica do trabalhador (anamnese ocupacional e exame físico e mental) e exames complementares. Exames realizados conforme legislação vigente, com equipamentos modernos e por profissionais capacitados, garantindo a integridade das informações e, respectivamente, a segurança da empresa.</p>
+    <p>Disponibilizado para a empresa acompanhamento via internet dos atendimentos através do “Portal do Cliente”, sistema integrado com o utilizado internamente na Hiest, com atualização simultânea das informações.</p>
+    <p>OBS: Os valores citados referem-se à realização dos exames na sede da Hiest. Para exames externos ou em outras regiões, favor consultar-nos.</p>
+<?php endif ?>        
+
+<!-- FIM HTML: TERMOS CONDIÇÕES E OBSERVAÇÕES -->
+
+
+<?php
+$paginas[] = ob_get_clean();
+
+$enderecoDaUnidade = (array) json_decode($_SESSION['usuario']['unidadeativa']['unidade_descricao']);
+require_once 'MPDF/mpdf.php';
+$localScripts = '../application/views/scripts/documento-operacional/';
+require_once "{$localScripts}include/funcoes.php";
+$htmlRodape = obterHtmlDoRodapeEmPdf();
+
+$p = new mPDF('utf-8', 'A4-L', 0, '', 4, 4, 37, 30, 5, 8);
+$p->SetHTMLHeader($htmlCabecalho);
+$p->SetHTMLFooter($htmlRodape);
+$p->setAutoTopMargin = false;
+$p->setAutoBottomMargin = false;
+$p->ignore_invalid_utf8 = true;
+
+foreach ($paginas as $pg => $pagina) {
+    if ($pg > 0) {
+        $p->AddPage();
+    }
+    $p->WriteHTML($pagina);
+}
+$p->Output();

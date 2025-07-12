@@ -1,0 +1,282 @@
+<?php
+$CmsConteudo = new Application_Model_CmsConteudo();
+$CmsConteudo->update(array('cms_conteudo_status' => 2),
+                     array('cms_conteudo_valido_ate < ?' => date('Y/m/d')));
+$banners = $CmsConteudo->obterRelacaoBanners();
+#util::dump($banners); 
+foreach ($banners as $key => $value) {
+
+    $limite = 25;
+    $url = $value['src'];
+
+    $curl = curl_init();
+    curl_setopt($curl, CURLOPT_URL, $url);        // Inicia uma nova sessão do cURL
+    curl_setopt($curl, CURLOPT_TIMEOUT, $limite); // Define um tempo limite da requisição
+    curl_setopt($curl, CURLOPT_NOBODY, true);     // Define que iremos realizar uma requisição "HEAD"
+    curl_setopt($curl, CURLOPT_RETURNTRANSFER, false); // Não exibir a saída no navegador
+    curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false); // Não verificar o certificado do site
+
+    curl_exec($curl);  // Executa a sessão do cURL
+    $status = curl_getinfo($curl, CURLINFO_HTTP_CODE) == 200; // Se a resposta for OK, a URL está ativa
+    curl_close($curl); // Fecha a sessão do cURL
+    #if ($key == 0) {
+        if ($status) {
+            #echo "O link fornecido está disponível! ". $value['src'];exit();
+            $CmsConteudo->update(array('cms_conteudo_status_url' => 0),
+                                 array('cms_conteudo_id = ?' => $value['id']));
+        } else {
+            #echo "O link fornecido está quebrado. ". $value['src'];exit();
+            $CmsConteudo->update(array('cms_conteudo_status_url' => 1),
+                                 array('cms_conteudo_id = ?' => $value['id']));
+            unset($banners[$key]);
+        }
+    #}
+
+}
+sort($banners);
+
+if (empty($banners)) {
+    $banners = array(
+        array('src' => "/img/banner03.png", 'txt' => ""),
+        array('src' => "/img/banner02.png", 'txt' => ""),
+        array('src' => "/img/banner04.png", 'txt' => ""),
+        array('src' => "/img/banner01.png", 'txt' => ""),
+    );
+}
+#util::dump($banners); 
+?>
+<style>
+
+.modal {
+  display: none; /* Esconde o modal por padrão */
+  position: fixed; /* Posiciona o modal de forma fixa */
+  z-index: 1; /* Garante que o modal esteja acima de outros elementos */
+  left: 0;
+  top: 0;
+  width: 100%; /* Ocupa a tela inteira */
+  height: 100%; /* Ocupa a tela inteira */
+  overflow: auto; /* Permite rolagem se o conteúdo for maior que a tela */
+  background-color: rgba(0, 0, 0, 0.4); /* Cor de fundo semitransparente */
+}
+
+.modal-content {
+  background-color: #fefefe;
+  margin: 15% auto; /* Centraliza o conteúdo na tela */
+  /* Remova o padding: 20px */
+  border: 1px solid #888;
+  width: 800px; /* Largura da imagem */
+  text-align: center; /* Centraliza o botão */
+}
+
+.close {
+  color: #aaa;
+  float: right;
+  font-size: 28px;
+  font-weight: bold;
+}
+
+.close:hover,
+.close:focus {
+  color: black;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.imagem-modal {
+  width: 600px; /* Tamanho da imagem */
+  height: 600px; /* Tamanho da imagem */
+  display: block;
+  margin: 0 auto; /* Centraliza a imagem */
+}
+
+#botaoOK {
+  background-color: #4CAF50; /* Cor azul da imagem */
+  color: white; /* Cor branca da letra */
+  padding: 15px 32px; /* Tamanho do padding */
+  text-align: center; /* Alinha o texto ao centro */
+  text-decoration: none; /* Remove a decoração de texto */
+  display: inline-block; /* Exibe o botão como um bloco em linha */
+  font-size: 16px; /* Tamanho da fonte */
+  border: none; /* Remove a borda */
+  cursor: pointer; /* Define o cursor como ponteiro */
+  border-radius: 50px; /* Botão redondo */
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16); /* Efeito de sombra */
+  transition: background-color 0.3s ease; /* Efeito de transição */
+}
+
+#botaoOK:hover {
+  background-color: #45a049; /* Cor azul mais escura ao passar o mouse */
+}
+
+</style>
+
+<div class="row">
+
+    <div class="col-md-12">
+
+            <div class="panel panel-default">
+                <div class="panel-heading"></div>
+                <div class="panel-body">
+
+                    <div class="row">
+
+                        <div class="col-md-4">
+                            <div class="panel panel-success card">
+                                <div class="panel-heading"><i class="fa fa-success"></i>Funcionários Ativos</div>
+                                <div class="panel-body" align="center">
+                                    <h3><?php echo $this->funcAtivos ?></h3>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <div class="panel panel-warning card">
+                                <div class="panel-heading"><i class="fa fa-warning"></i>Periódicos a vencer (30 dias)</div>
+                                <div class="panel-body" align="center">
+                                    <h3><?php echo $this->perAvencer ?></h3>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <div class="panel panel-danger card">
+                                <div class="panel-heading"><i class="fa fa-warning"></i>Periódicos vencidos</div>
+                                <div class="panel-body" align="center">
+                                    <h3><?php echo $this->perVencido ?></h3>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                </div>
+            </div>
+    </div>
+
+</div>
+
+<div id="carousel-example-generic" class="carousel slide" data-ride="carousel">
+    <!-- Indicators     
+    <ol class="carousel-indicators">
+        <?php foreach ($banners as $i => $banner) : ?>        
+            <li data-target="#carousel-example-generic" data-slide-to="<?php echo $i ?>" class="<?php echo $i == 0 ? 'active' : '' ?>"></li>
+        <?php endforeach; ?>
+    </ol>
+    -->
+
+    <!-- Wrapper for slides -->
+    <div class="carousel-inner" role="listbox">
+        <?php foreach ($banners as $i => $banner) : ?>
+            <div class="item <?php echo $i == 0 ? 'active' : '' ?>">
+                <img src="<?php echo $banner['src'] ?>" alt="...">
+                <br><br><br><br>
+                <div class="carousel-caption"><a target="_blank" href="<?php echo @$banner['link'] ?>"><?php echo @$banner['txt'] ?></a></div>
+            </div>
+        <?php endforeach; ?>
+    </div>
+
+    <!-- Controls -->
+    <a class="left carousel-control" href="#carousel-example-generic" role="button" data-slide="prev">
+        <span class="glyphicon glyphicon-chevron-left" aria-hidden="true"></span>
+        <span class="sr-only">Proximo</span>
+    </a>
+    <a class="right carousel-control" href="#carousel-example-generic" role="button" data-slide="next">
+        <span class="glyphicon glyphicon-chevron-right" aria-hidden="true"></span>
+        <span class="sr-only">Anterior.</span>
+    </a>
+
+</div>
+
+<div class="modal" id="informativo">
+  <div class="modal-content">
+    <img src="/img/mudancaendereco.jpg" alt="Atenção" class="imagem-modal">
+    <button id="botaoOK">OK</button>
+  </div>
+</div>
+
+
+<script>
+    $(document).ready(function() {
+        
+        <?php if (count(@$_SESSION['inadimplecia']) > 0) : ?>
+            faturas();
+        <?php else : ?>
+            <?php if (count($this->qtd) > 0 AND $this->qtd > 0) : ?>
+                checkaloc();
+            <?php endif ; ?>
+        <?php endif ; ?>       
+
+    })
+
+    // Get the modal elements
+    const modal = document.getElementById("informativo");
+    const imagemModal = document.querySelector(".imagem-modal");
+    const botaoFechar = document.querySelector(".close");
+    const botaoOK = document.getElementById("botaoOK");
+
+    // Function to open the modal
+    function abrirModal() {
+    modal.style.display = "block";
+    }
+
+    // Function to close the modal
+    function fecharModal() {
+    modal.style.display = "none";
+    }
+
+    // Add click event listener to the close button
+    botaoFechar.addEventListener("click", fecharModal);
+
+    // Add click event listener to the OK button
+    botaoOK.addEventListener("click", fecharModal);
+
+    // Show the modal when the page loads (optional)
+    // Check the current date and open the modal if necessary
+    const dataAtual = new Date();
+    const diaAtual = dataAtual.getDate();
+    const mesAtual = dataAtual.getMonth() + 1; // Month starts at 0 in JavaScript
+    const anoAtual = dataAtual.getFullYear();
+
+    const dataLimite = new Date(2024, 6, 29); // July is month 6
+    const dataEmMilisegundos = dataAtual.getTime();
+    const dataLimiteEmMilisegundos = dataLimite.getTime();
+
+    if (dataEmMilisegundos <= dataLimiteEmMilisegundos) {
+    abrirModal();
+    }
+
+    function checkaloc(){
+         swal({
+              html: true,
+              title: "Atenção",
+              type: 'warning',              
+              text: `Foram identificados `+ <?php echo $this->qtd ?> +` trabalhadores sem o devido número da matrícula e/ou alocação do cargo / função, impedindo o envio das informações ao eSocial. Gentileza proceder a respectiva atualização na aba “Funcionários”.`,                  
+              confirmButtonText: "OK", 
+              closeOnConfirm: true,
+              showLoaderOnConfirm: false
+              },
+              function(){
+                
+            });
+    }    
+
+    function faturas(){
+         swal({
+              html: true,
+              title: "Atenção",
+              type: 'warning',              
+              //text: `Foram identificados `+ <?php echo count($this->faturastatus) ?> +` pendências financeiras. Gentileza manter contato com nosso departamento financeiro através do telefone (27) 3064-7359 e/ou E-mail: contasareceber.uvc@hiest.com.br.`,
+              text: `Gentileza manter contato com nosso departamento financeiro através do telefone (31) 2555-3131 e/ou E-mail: financeiro@htmed.com.br.`,                   
+              confirmButtonText: "OK", 
+              closeOnConfirm: true,
+              showLoaderOnConfirm: false
+              },
+              function(){
+                
+            });
+    }
+</script>
+
+<?php echo $this->render('termos/termo.phtml') ?>
+
+<?php echo $this->render('termos/termoesocialsst.phtml') ?>

@@ -1,0 +1,7 @@
+<script>window.top.util.returnSweetAlert(<?php echo json_encode($this->feedback); ?>)</script>
+<?php if (isset($this->comandoJavascript) && strlen($this->comandoJavascript) > 0): ?>
+    <script type="text/javascript">
+        <?php echo $this->comandoJavascript ?>
+    </script>
+<?php endif; ?>
+<?php exit; ?>

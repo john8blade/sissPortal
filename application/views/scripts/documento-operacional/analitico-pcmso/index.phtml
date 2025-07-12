@@ -1,0 +1,32 @@
+<div class="panel panel-primary">
+
+    <div class="panel-heading"><i class="fa fa-history"></i>Relatório Analítico do PCMSO</div>
+
+    <div class="panel-body">
+
+        <form action="" method="post" target="_blank">
+        
+            <div class="row">
+
+                <div class="col-md-2">
+                    <label>Ano</label>
+                    <select class="form-control" name="ano" id="ano">
+                        <option value=""> Selecione </option>
+                        <?php foreach ($this->listanos as $ano) : ?>
+                            <option value="<?php echo $ano['ano']; ?>"><?php echo $ano['ano'] ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+
+                <div class="col-md-2">
+                    <label>&nbsp;</label>
+                    <button type="submit" class="form-control btn btn-primary"><i class="icon-ok"></i>&nbsp;Processar</button>
+                </div>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>

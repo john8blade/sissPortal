@@ -1,0 +1,130 @@
+<?php ob_start() ?>
+
+<table class="largo sem-bordas header">
+    <tbody>
+        <tr>
+            <td><img src="img/logo-relatorio.png"/></td>
+            <td align="center" valign="middle"><h1>ROMANEIO DE FORNECEDOR</h1><h4>PERÍODO: <?php echo $_GET['data1'] . ' a ' . $_GET['data2'] ?></h4></td>
+            <td align="right" valign="top">{PAGENO}/{nbpg}</td>
+        </tr>
+    </tbody>
+</table>
+
+<?php $header = ob_get_clean() ?>
+
+<?php ob_start() ?>
+
+<style type="text/css">
+    * { margin: 0; padding: 0; position: relative; }
+    body, table { font: normal 10px Arial; }
+    h2 { font-size: 14px; }
+    table { border-collapse: collapse; }
+    table tr th, table tr td { padding: 2px; white-space: nowrap; vertical-align: top; }
+    table tr th { border-top: 1px solid black; border-bottom: 1px solid black; text-align: left; }
+    table tr td { border-bottom: 1px solid lightgrey; }
+    table.sem-bordas tr th, table.sem-bordas tr td { border: none; }
+    .sem-bordas { border: none; }
+    .largo { width: 100%; }
+    .justo { width: 1px; }
+    .moeda { text-align: right; }
+    .label { font-weight: bold; text-align: right; }
+</style>
+
+<table class="largo">
+    <tbody>
+        <tr>
+            <td class="label justo">FORNECEDOR:</td>
+            <td class="valor"><?php echo $this->resumido[0]['empresa_razao'] ?></td>
+        </tr>
+        <tr>
+            <td class="label justo">CNPJ:</td>
+            <td class="valor"><?php echo Util::cnpj($this->resumido[0]['empresa_cnpj']) ?></td>
+        </tr>
+    </tbody>
+</table>
+
+<br/>
+
+<h2>RESUMO</h2>
+
+<table class="largo">
+    <thead>
+        <tr>
+            <th>PRODUTO</th>
+            <th class="justo">#</th>
+            <th class="justo">UNITÁRIO</th>
+            <th class="justo"></th>
+            <th align="center">QUANTIDADE</th>
+            <th class="justo">#</th>
+            <th class="justo">TOTAL</th>
+        </tr>
+    </thead>
+    <tbody>
+        <?php $totalGeral = 0 ?>
+        <?php foreach ($this->resumido as $item): ?>
+            <?php $valor = $item['precificacao_valor_compra'] ?>
+            <?php $totalParcial = $valor * $item['qtd'] ?>
+            <?php $totalGeral += $totalParcial ?>
+            <tr>
+                <td><?php echo $item['produto_nome'] ?></td>
+                <td>R$</td>
+                <td align="right"><?php echo Util::moeda($valor) ?></td>
+                <td>&nbsp;</td>
+                <td align="center"><?php echo Util::preencherComZero($item['qtd'], 2) ?></td>
+                <td>R$</td>
+                <td align="right"><?php echo Util::moeda($totalParcial) ?></td>
+            </tr>
+        <?php endforeach ?>
+        <tr>
+            <td colspan="6">&nbsp;</td>
+        </tr>
+        <tr>
+            <td colspan="5" class="label">TOTAL GERAL</td>
+            <td class="label">R$</td>
+            <td class="label" align="right"><?php echo Util::moeda($totalGeral) ?></td>
+        </tr>
+    </tbody>
+</table>
+
+<br/>
+
+<h2>DETALHAMENTO</h2>
+
+<table class="largo">
+    <thead>
+        <tr>
+            <th>NOME</th>
+            <th>PROCEDIMENTO</th>
+            <th class="justo" align="center">DATA</th>
+            <th class="justo">&nbsp;</th>
+            <th class="justo">#</th>
+            <th class="justo">VALOR</th>
+        </tr>
+    </thead>
+    <tbody>
+        <?php foreach ($this->detalhado as $item): ?>
+            <tr>
+                <td><?php echo $item['pessoa_nome'] ?></td>
+                <td><?php echo $item['produto_nome'] ?></td>
+                <td><?php echo Util::dataBR($item['produto_agenda_data_executado']) ?></td>
+                <td></td>
+                <td>R$</td>
+                <td align="right"><?php echo Util::moeda($item['precificacao_valor_compra']) ?></td>
+            </tr>
+        <?php endforeach ?>
+    </tbody>
+</table>
+
+<?php
+$html = ob_get_clean();
+
+$localScripts = '../application/views/scripts/documento-operacional/';
+require_once "{$localScripts}include/funcoes.php";
+$footer = obterHtmlDoRodapeEmPdf();
+
+include 'MPDF/mpdf.php';
+$mpdf = new mPDF('', 'A4', 0, '', 15, 15, 35, 30, 9, 9, 'P');
+$mpdf->SetHTMLHeader($header);
+$mpdf->SetHTMLFooter($footer);
+$mpdf->WriteHTML($html);
+$mpdf->Output();

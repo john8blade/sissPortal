@@ -1,0 +1,16 @@
+<?php $documentos = $this->listaDocumentos; ?>
+
+<div class="row-fluid">
+
+    <div class="span12 well well-small" style="background-color: #fff;">
+        <p><span class="icon-list"></span><strong>&nbsp;DOCUMENTOS OPERACIONAIS</strong></p>
+        <div class="row-fluid">
+            <ul style="margin-left: 0px;">
+                <?php foreach ($documentos['operacionais'] as $itemLink) : ?>
+                    <li style="list-style: none;"><i class="icon-chevron-right"></i>&nbsp;<a href="<?php echo $itemLink['href'] ?>" target="<?php echo $itemLink['target'] ?>"><?php echo $itemLink['texto'] ?></a></li>
+                <?php endforeach ?>
+            </ul>
+        </div>
+    </div>
+
+</div>

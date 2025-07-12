@@ -1,0 +1,101 @@
+
+<style type="text/css">
+#modal-termos {
+    /*width: 840px !important;*/
+    /*margin-left: 440px;*/
+}
+.modal.fade {
+    top: 100px;
+}
+.modal-body {
+    height: 50vh;
+    overflow-x: auto;
+}
+</style>
+
+<div class="modal fade" id="modal-termos" tabindex="-1" role="dialog" data-remote="false" aria-labelledby="modalUnidadesLabel" aria-hidden="true" data-backdrop="static">
+  <div class="modal-dialog modal-dialog-scrollable" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title">Informações do Sistema</h3>
+      </div>
+      <div class="modal-body" role="dialog" >
+        <div style="width: 100%; text-transform: none;">
+            <p align="center"><b><u>Política de Privacidade e Termo de Uso Aceitável</u></b></p>
+            <br><p align="justify">
+            1.  O presente Termo de Uso e Política de Privacidade possui como objetivo reafirmar e esclarecer os compromissos da HTMED, bem como fixar as condições de adesão e acesso aos serviços em relação ao seu cliente, fornecedor e/ou consulente ("Usuário").<br><br>
+            2.  Este Termo de Uso e Política de Privacidade regula as disposições gerais em relação ao uso dos serviços referentes aos sistemas da HTMED.<br><br>
+            3.  Os sistemas da HTMED empregam as melhores práticas de segurança e privacidade, visando garantir a confidencialidade das informações conforme previsto em lei.<br><br>
+            4.  É de responsabilidade do Usuário a adoção de medidas de segurança razoáveis nos dispositivos que utiliza para acessar qualquer serviço informatizado da HTMED.<br><br>
+            5.  Ao realizar o cadastro e concordar com o Termo de Uso e Política de Privacidade, o usuário possui ciência, concorda e autoriza com à coleta, tratamento e o armazenamento de seus dados e dos demais dados pessoais que fornecerem nos sistemas da HTMED, no momento de cadastro e ao decorrer do uso.<br><br>
+            6.  O Usuário garante que informará apenas dados corretos e que obteve de forma lícita ou mediante autorização, nos casos em que essa foi necessária.<br><br>
+            7.  Cada Usuário possui uma senha e um login que são exclusivos e intransferíveis. É de responsabilidade exclusiva do Usuário o zelo e sigilo sobre suas informações de login e senha.<br><br>
+            8.  O Usuário autoriza a utilização dos dados de e-mail, telefone (ligações e/ou mensagens de texto) e endereço para a comunicação dos sistemas da HTMED, como por exemplo, comunicados importantes.<br><br>
+            9.  É de total responsabilidade do Usuário a utilização das informações a que teve acesso em decorrência da utilização dos serviços dos sistemas da HTMED, assegurando sempre que serão utilizadas de forma devida e com respaldo em lei. Em caso de desrespeito ao previsto nesta cláusula, o Usuário responderá individualmente por eventuais utilizações indevidas.<br><br>
+            10. É vedada ao usuário vazar informações privilegiadas por meio verbal, impresso, vídeo ou de qualquer outra forma que possa ferir a HTMED.<br><br>
+            11. O Usuário é exclusivamente responsável pela exatidão e veracidade dos dados que forneceu, isentando a HTMED em caso de erros ou danos que resultem destas informações errôneas.<br><br>
+            12. Os sistemas da HTMED não coletam informações para venda, fornecimento ou vazamento de dados, sendo os dado usados exclusivamente para fins na própria plataforma.<br><br>
+            13. Os sistemas da HTMED não possuem, em seus meios de comunicação, links que remetem a outras páginas na internet. Todas as informações devem estar disponíveis no próprio meio de comunicação ou seu site.<br><br>
+            14. Ao selecionar o item "Li e Aceito" o usuário concorda com todas as disposições presentes neste Termo de Uso e Política de Privacidade para a navegação nos sistemas da HTMED e utilização de seus produtos e serviços.<br><br></p>
+        </div>
+        <div class="alert alert-warning" >
+            <label class="checkbox" style="margin-bottom:0 !important; margin-left: 20px;text-transform: none;"><input type="checkbox" id="aceite" onclick="liberar(this);" /><b> Li e aceito.</b></label>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-success" aria-hidden="true" id="aceitar" onclick="aceitar();" disabled><i class="fa fa-check"></i> Aceitar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+
+    const timestamp = 1633263281540;
+    // 03/10/2021
+
+    <?php if (!Util::usuarioAceitouTermos()): ?>
+        $("#modal-termos").modal({
+            backdrop: 'static',
+            keyboard: false
+        });
+    <?php else: ?>
+        if (new Date().getTime() <= timestamp)
+            alerta();
+    <?php endif?>
+
+    function liberar(m) {
+        if (m.checked) {
+            $("#aceitar").prop('disabled', false);
+        } else {
+            $("#aceitar").prop('disabled', true);
+        }
+    }
+
+    function aceitar() {
+        $("#aceitar").html('Aguarde...');
+        $("#aceitar").prop('disabled', true);
+        $.get('/ajax/json/servico/aceitar-termos-de-utilizacao-do-sistema', function(resposta) {
+            
+            if (resposta == 0) {   
+                $("#aceitar").prop('disabled', false);
+                $("#aceitar").html('Aceitar');       
+            } else {
+                $("#modal-termos").modal("hide");
+                document.getElementById('modal-termos').classList.add('hide');
+                window.location.reload(true);
+            }
+        });
+    }
+
+    function alerta() {
+        swal({
+            title: 'Atenção',
+            text: 'Para melhor atendê-los os exames ocupacionais estão sendo'
+            + ' realizados em novo endereço com todas as especialidades inclusive raio'
+            + ' X.  Na Av Abílio Machado, 440, prédio da Solidares',
+            types: 'info'
+        });
+    }
+
+</script>

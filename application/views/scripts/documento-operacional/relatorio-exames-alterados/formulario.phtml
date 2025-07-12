@@ -1,0 +1,123 @@
+<div class="well well-small"><i class="icon-plus-sign"></i>&nbsp;<strong>Relatório de Exames Alterados</strong></div>
+
+<div><?php echo $this->erros ?></div>
+
+<div class="well well-small div-transparente">
+
+    <form target="_blank" action="/documento-operacional/relatorio-exames-alterados" method="post">
+
+        <div class="row-fluid">
+
+            <div class="span1" id="unidades">
+                <label>Unidades:</label>
+                <?php foreach (Util::consultaDireta("SELECT * FROM unidade WHERE unidade.unidade_status = 0") as $unidade) : ?>
+                    <label class="checkbox"><input type="checkbox" checked="checked" name="unidades[]" value="<?php echo $unidade['unidade_id'] ?>"  /><?php echo $unidade['unidade_sigla'] ?></label>
+                <?php endforeach; ?>
+            </div>
+
+            <div class="span2" id="tiposdeexame">
+                <label>Tipos de exame:</label>
+                <?php foreach (Util::consultaDireta("SELECT * FROM tipoexame WHERE tipoexame.tipoexame_status = 0") as $item) : ?>
+                    <label class="checkbox"><input type="checkbox" checked="checked" name="tiposdeexame[]" value="<?php echo $item['tipoexame_id'] ?>"  /><?php echo $item['tipoexame_nome'] ?></label>
+                <?php endforeach; ?>
+            </div>
+
+            <div class="span2">
+                <label>Período</label>
+                <div class="row-fluid">
+                    <div class="span5">
+                        <input type="text" class="span mask-data" name="data1" value="<?php echo date('01/01/2010') ?>"/>
+                    </div>
+                    <div class="span2">
+                        <input type="text" class="span" value="à" disabled="disabled" style="text-align: center;"/>
+                    </div>
+                    <div class="span5">
+                        <input type="text" class="span mask-data" name="data2" value="<?php echo date('d/m/Y') ?>"/>
+                    </div>
+                </div>
+            </div>
+
+            <div class="span1">
+                <label>Especialista</label>
+                <select class="span" name="especialista" id="especialista">
+                    <option value="0">---</option>
+                    <?php foreach (Util::consultaDireta("SELECT * FROM pessoa_especialidade JOIN pessoa ON pessoa.pessoa_id = pessoa_especialidade.fk_pessoa_id WHERE pessoa.pessoa_status = 0 ORDER BY pessoa.pessoa_nome ASC") as $item): ?>
+                        <option value="<?php echo $item['pessoa_id'] ?>"><?php echo $item['pessoa_nome'] ?></option>
+                    <?php endforeach ?>
+                </select>
+            </div>
+            <?php $unidade = $_SESSION['usuario']['unidadeativa']['unidade_id']; ?>
+            <div class="span1">
+                <label>Empresa</label>
+                <select class="span" name="empresa" id="empresa">
+                    <option value="0">---</option>
+                    <?php foreach (Util::consultaDireta("SELECT * FROM empresa WHERE empresa.empresa_status = 0 and empresa.empresa_tipo = 'CLIENTE' AND empresa.fk_unidade_id = {$unidade} ORDER BY empresa.empresa_fantasia ASC") as $item): ?>
+                        <option value="<?php echo $item['empresa_id'] ?>"><?php echo $item['empresa_fantasia'] . ' (' . Util::preencherComZero($item['empresa_id'], 5) . ')' ?></option>
+                    <?php endforeach ?>
+                </select>
+            </div>
+
+            <div class="span1" id="contratos">
+                <label>Contrato</label>
+                <select class="span" name="contrato" id="contrato">
+                    <option value="0">---</option>
+                    <?php foreach (Util::consultaDireta("SELECT * FROM contrato WHERE contrato.contrato_status = 0") as $item): ?>
+                        <option value="<?php echo $item['contrato_id'] ?>"><?php echo $item['contrato_numero'] ?></option>
+                    <?php endforeach ?>
+                </select>
+            </div>
+
+            <div class="span1">
+                <label>Paciente</label>
+                <select class="span" name="paciente" id="paciente">
+                    <option value="0">---</option>
+                    <?php foreach (Util::consultaDireta("SELECT * FROM pessoa WHERE pessoa.pessoa_status = 0 ORDER BY pessoa.pessoa_nome ASC") as $item): ?>
+                        <option value="<?php echo $item['pessoa_id'] ?>"><?php echo $item['pessoa_nome'] ?></option>
+                    <?php endforeach ?>
+                </select>
+            </div>
+
+            <div class="span1">
+                <label>Modo</label>
+                <select class="span" name="modo" id="modo">
+                    <option value="0">VISUALIZAR</option>
+                    <option value="1">PLANILHA</option>
+                    <option value="2">REL. ANUAL</option>
+                </select>
+            </div>
+
+            <div class="span1">
+                <label>&nbsp;</label>
+                <button class="span btn btn-success" type="submit">Enviar</button>
+            </div>
+
+        </div>
+
+    </form>
+
+</div>
+
+<script type="text/javascript" src="/js/AjaxComResultadoJson.js"></script>
+
+<script>
+    $("#empresa").change(function () {
+        if (parseInt(this.value) > 0) {
+            $("#unidades").css('display', 'none');
+            $("#contratos").css('display', 'block');
+            /*
+             $.post('/ajax/json/servico/obter-contratos-pela-empresa', {empresa: this.value}, function (r) {
+             adicionarOptions("contrato", r, "contrato_id", "contrato_numero", true);
+             }, 'json');
+             */
+            ResgatarColecaoDeContratosPeloIdEmpresa(
+                    this.value,
+                    function (Json) {
+                        adicionarOptions("contrato", Json.Resultado, "contrato_id", "contrato_numero_custom", true);
+                    }
+            );
+        } else {
+            $("#unidades").css('display', 'block');
+            $("#contratos").css('display', 'none');
+        }
+    });
+</script>

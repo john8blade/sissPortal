@@ -1,0 +1,88 @@
+<?php
+require_once 'MPDF/mpdf.php';
+$localScripts = '../application/views/scripts/documento-operacional/';
+require_once "{$localScripts}include/funcoes.php";
+
+$htmlRodape = obterHtmlDoRodapeEmPdf();
+$htmlCabecalho = file_get_contents($localScripts . 'tabela-produto/' . 'cabecalho.html');
+$htmlCabecalho = str_replace('<[atributoTipoExame]/>', $tipoExame, $htmlCabecalho);
+
+$p = new mPDF('utf-8', 'A4', 0, '', 10, 10, 35, 30, 8, 8);
+$p->SetHTMLHeader($htmlCabecalho);
+$p->SetHTMLFooter($htmlRodape);
+$p->setAutoTopMargin = false;
+$p->setAutoBottomMargin = false;
+
+ob_start();
+?>
+<style>
+    table{border-collapse: collapse; font: normal 11px Arial;width: 100%;}
+    table#tabela tr td { font: normal 11px Arial; border: 1px solid #000; }
+    table#tabela tr td.etiqueta { font-weight: bold; padding: 4px; }
+    table#tabela tr td.titulo { text-align: center; font-weight: bold; background: #ccc; }
+    table#tabela tr td.separador { padding: 10px; border: none; }
+    table#tabela tr td.centro { text-align: center; }
+
+</style>
+
+<table>
+    <tr>
+        <td><?php echo isset($this->colecaoInformacoesUnidade['local']) ? $this->colecaoInformacoesUnidade['local'] : ' sem local ', ', ', date('d'); ?> de <?php echo util::nomeDoMes(date('m')); ?> de <?php echo date('Y'); ?></td>
+    </tr> 
+    <?php if (!empty($this->atributos['empresa'])): ?>
+        <tr>
+            <td><?php echo $this->atributos['empresa']['empresa_razao'] ?></td>
+        </tr>
+    <?php endif; ?>
+</table>
+<br>
+
+<!--O 1º foreach lista todas as categorias com todos os produtos, TUDO JUNTO.
+O 2º foreach lista os produtos específicos para cada categoria.
+-->
+<?php $i = 0 ?>
+<?php
+if (is_null($this->cat)) {
+    echo 'Nenhuma Categoria Foi Selecionada!';
+} else {
+    ?>
+
+    <?php foreach ($this->cat as $categoria) : ?>  
+        <?#php var_dump($categoria['produtos']); die;?>
+        <div>   
+            <table id="tabela" style="border-collapse: collapse; width: 100%;">
+                <tr>
+                    <td colspan="9" class="etiqueta" style="border-left: none; border-right: none; font-weight: none;"><b>Categoria: </b><?php echo $categoria['categoriadoproduto_nome']; ?></td>
+                </tr> 
+                <tr>
+                    <td colspan="7" class="separador"></td>
+                </tr>
+            </table>
+            <table>
+                <?php for ($i = 0; $i < count($categoria['produtos']); $i++) : ?>
+                    <?php $produto = $categoria['produtos'][$i]; ?>
+                    <tr>
+                        <td width="41%" style="font-size: 9px;"><?php echo $produto['produto_nome'] ?></td>
+                        <td width="9%" style="font-size: 9px;">R$ <?php echo number_format($produto['valor'], 2) ?></td>
+                        <?php if (isset($categoria['produtos'][$i + 1])) : ?>
+                            <?php $produto = $categoria['produtos'][$i + 1]; ?>
+                            <td width="41%" style="font-size: 9px;"><?php echo $produto['produto_nome'] ?></td>
+                            <td width="9%" style="font-size: 9px;">R$ <?php echo number_format($produto['valor'], 2) ?></td>
+                            <?php $i++; ?>
+                        <?php endif; ?>
+                    </tr>
+                <?php endfor; ?>
+            </table><br> 
+
+        </div>
+    <?php endforeach; ?>  
+
+<?php } ?>
+
+<?php
+$htmlCorpo = ob_get_clean();
+$htmlCorpo . '</body></html>';
+////die($htmlCorpo);
+$p->WriteHTML($htmlCorpo);
+$p->Output();
+

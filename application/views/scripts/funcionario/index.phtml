@@ -1,0 +1,319 @@
+
+<style type="text/css">
+
+.pagination table {
+    /*width: 100%;*/
+}
+.pagination table tr td {
+}
+.pagination table tr td a {
+    -moz-border-bottom-colors: none;
+    -moz-border-left-colors: none;
+    -moz-border-right-colors: none;
+    -moz-border-top-colors: none;
+    background: none repeat scroll 0 0 #FFFFFF;
+    border-color: #DDDDDD #DDDDDD #DDDDDD -moz-use-text-color;
+    border-image: none;
+    border-style: solid solid solid none;
+    border-width: 1px 1px 1px medium;
+    display: block;
+    padding: 4px 10px;
+    text-align: center;
+    text-decoration: none;
+}
+.pagination table tr td a.item-inicial {
+    border: 1px solid #DDDDDD;
+    border-radius: 4px 0 0 4px;
+}
+.pagination table tr td a.item-final {
+    border: 1px solid #DDDDDD;
+    border-radius: 0 4px 4px 0;
+}
+.pagination table tr td a.inativo {
+    background: none repeat scroll 0 0 #EEEEEE;
+    color: #AAAAAA;
+    cursor: default;
+}
+.pagination table tr td a.ativo, .pagination table tr td a.ativo:hover {
+    background: none repeat scroll 0 0 #0099FF;
+    border: 1px solid #006699;
+    color: #FFFFFF;
+}
+.pagination table tr td a:hover {
+    background: none repeat scroll 0 0 #EEEEEE;
+}
+</style>
+
+<?php $this->render('configuracao-paginador.php'); ?>
+
+<div class="panel panel-primary">
+
+    <div class="panel-heading"><i class="fa fa-users"></i>Meus Funcionários<a href="/funcionario/adicionar" class="btn btn-xs btn-success pull-right"><i class="fa fa-plus"></i>Adicionar</a></div>
+
+    <div class="panel-body table-responsive">
+
+        <table class="table table-condensed table-hover">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th class="text-center">CPF</th>
+                    <th>Nome</th>
+                    <th>Cargo</th>
+                    <th class="text-center">Admissão</th>
+                    <th class="text-center">Situação</th>
+                    <th class="text-center">Periódico</th>
+                </tr>
+                <tr class="tr-filtro">
+                    <th><a href="/funcionario" class="btn btn-xs btn-danger" data-toggle="tooltip" title="Limpar filtros"><i class="fa fa-remove no-margin"></i></a></th>
+                    <th><input class="filtro text-center" id="filtro-cpf" value="<?php echo $this->filtros['filtrocpf'] ?>" placeholder="Filtro CPF"></th>
+                    <th><input class="filtro" id="filtro-nome" value="<?php echo $this->filtros['filtronome'] ?>" placeholder="Filtro Nome"></th>
+                    <th><input class="filtro" id="filtro-cargo" value="<?php echo $this->filtros['filtrocargo'] ?>" placeholder="Filtro Cargo"></th>
+                    <th></th>
+                    <th>
+                        <select class="filtro" id="filtro-status">
+                            <option value="">TODOS</option>
+                            <option <?php echo $this->filtros['filtrostatus'] == "ATIVO" ? 'selected' : '' ?> value="ATIVO">ATIVO</option>
+                            <option <?php echo $this->filtros['filtrostatus'] == "INATIVO" ? 'selected' : '' ?> value="INATIVO">INATIVO</option>
+                        </select>
+                    </th>
+                    <th>
+                        <select class="filtro" id="filtro-periodico">
+                            <option value="">TODOS</option>
+                            <option <?php echo $this->filtros['filtroperiodico'] == "A vencer" ? 'selected' : '' ?> value="A vencer"><a class="btn btn-xs btn-warning">Atenção</a></option>
+                            <option <?php echo $this->filtros['filtroperiodico'] == "Vencido" ? 'selected' : '' ?> value="Vencido"><a class="btn btn-xs btn-danger">Urgente</a></option>
+                        </select>
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+
+                <?php foreach ($this->itensPaginados as $k => $item): ?>
+                    <?php  
+                        $StatusAloc = false;
+                        if ( $item['func_status'] == 'ATIVO' AND (!$item['fk_ppra_item_id'] > 0 OR !$item['fk_item_pcmso_id'] > 0) ) {
+                            $StatusAloc = true;
+                        }
+
+                        $cor = '';
+                        $infoPeriodico = '';
+                        if ($item['func_status'] == 'ATIVO') {
+                            switch ($item['periodico_status']) {
+                                case 'A realizar':
+                                    $cor = 'bgcolor="#49DF7B"';
+                                    $infoPeriodico = $item['dt_proximo_exame'];
+                                    break;
+                                case 'A vencer':
+                                    $cor = 'bgcolor="#F8FF40"';
+                                    $infoPeriodico = $item['dt_proximo_exame'];
+                                    break;
+                                case 'Vencido':
+                                    $cor = 'bgcolor="#FF4B2F"';
+                                    $infoPeriodico = $item['dt_proximo_exame'];
+                                    break;                            
+                                default:
+                                    $cor = 'bgcolor="#FFFFFF"';
+                                    $infoPeriodico = '---';
+                                    break;
+                            }
+                        }else{
+                            $cor = 'bgcolor="#FFFFFF"';
+                            $infoPeriodico = '---';
+                        }                       
+
+                    ?>
+                    <tr id="tr-<?php echo $k; ?>" <?= $StatusAloc == true ? 'style="background-color: #FFDAB9;" rel="tooltip" title="Alocação do funcionário precisa ser atualizada."' : ''; ?>>
+                        <td class="fit">
+                            <?php if ((int) $item['fk_empresa_id'] > 0) : ?>
+                                <a data-toggle="tooltip" title="Prontuário Eletrônico" class="btn btn-xs btn-default" href="<?php echo "/acervo-digital/index/funcionario_id/{$item['funcionario_id']}/empresa_id/{$item['fk_empresa_id']}/contrato_id/{$item['fk_contrato_id']}" ?>"><i class="fa fa-folder no-margin"></i></a>
+                            <?php endif; ?>
+                            <a data-toggle="tooltip" title="Editar" class="btn btn-xs btn-default" href="/funcionario/alterar/id/<?php echo $item['funcionario_id']; ?>/"><i class="fa fa-pencil no-margin"></i></a>
+                        </td>
+                        <td class="text-center"><?php echo preg_replace('/([0-9]{3})([0-9]{3})([0-9]{3})([0-9]{2})/', "$1.$2.$3-$4", $item['pessoa_cpf']); ?></td>
+                        <td><a href="#" onclick="ListarPeloIdProduto(<?php echo $item['funcionario_id'] ?>)"><?php echo $item['pessoa_nome']; ?></a></td>
+                        <td><?php echo $item['cargo_nome']; ?></td>
+                        <td class="text-center"><?php echo $item['funcionario_data_admissao'] != '00/00/0000' ? $item['funcionario_data_admissao'] : ''; ?></td>
+                        <td class="text-center"><?php echo $item['func_status']; ?></td>
+                        <td class="text-center" <?php echo $cor ?> ><?php echo $infoPeriodico; ?></td>
+                    </tr>
+                <?php endforeach ?>
+
+            </tbody>
+        </table>
+
+        <?php #echo $this->render('criar-paginador.phtml'); ?>
+        <?php if (isset($this->itensPaginados) && $this->itensPaginados instanceof Zend_Paginator): ?>
+
+
+        <?php $paginator = $this->itensPaginados->getPages() ?>
+
+        <?php if ($paginator->pageCount): ?>
+            <div class="pagination">
+                <table>
+                    <tr>
+                        <?php if (isset($paginator->previous)): ?>
+                            <td><a class="item-inicial" onclick="ParametrizarExecutarUrlConsulta('<?php echo $paginator->previous ?>')" href="javascript:;">«</a></td>
+                        <?php else: ?>
+                            <td><a class="item-inicial inativo" href="javascript:void(0);">«</a></td>
+                        <?php endif; ?>
+
+                        <?php foreach ($paginator->pagesInRange as $page): ?>
+                            <?php if ($page != $paginator->current): ?>
+                                <td><a onclick="ParametrizarExecutarUrlConsulta('<?php echo $page ?>')" href="javascript:;"><?php echo $page ?></a></td>
+                            <?php else: ?>
+                                <td><a class="ativo" href="javascript:void(0);"><?php echo $page ?></a></td>
+                            <?php endif; ?>
+                        <?php endforeach; ?>
+
+                        <?php if (isset($paginator->next)): ?>
+                            <td><a class="item-final" onclick="ParametrizarExecutarUrlConsulta('<?php echo $paginator->next ?>')" href="javascript:;">»</a></td>
+                        <?php else: ?>
+                            <td><a class="item-final inativo" href="javascript:void(0);">»</a></td>
+                        <?php endif ?>
+
+                    </tr>
+                </table>
+            </div>
+        <?php endif; ?>
+        <?php endif; ?>
+
+    </div>
+
+</div>
+
+
+
+
+    <!--
+        <script type="text/javascript">
+
+            $(function () {
+                $(".filtro").on("change", function () {
+                    filtrar('/funcionario');
+                });
+                //$('.filtro').change(() => ParametrizarExecutarUrlConsulta());
+            });
+
+            function abrirJanelaAso(agendaId, inicioUrl) {
+                if (inicioUrl == "develop") {
+                    if (agendaId) {
+                        var configuracao = "width=auto,height=auto,menubar=0,status=0,fullscreen=1,location=0,titlebar=0";
+                        var url = "developsiss.hiestgroup.com.br/documento/imprimir-aso/agendaid/" + agendaId;
+                        window.open(url, "Aso", configuracao);
+                    }
+                } else {
+                    if (agendaId) {
+                        var configuracao = "width=auto,height=auto,menubar=0,status=0,fullscreen=1,location=0,titlebar=0";
+                        var url = "siss.hiestgroup.com.br/documento/imprimir-aso/agendaid/" + agendaId;
+                        window.open(url, "Aso", configuracao);
+                    }
+                }
+            }
+
+            function ListarPeloIdProduto(funcionario_id) {
+                var idsfuncionarios = new Array();
+                var pro = funcionario_id;
+                if (pro !== '') {
+                    var url = '/ajax/html/servico/ajax-obter-historico-funcionario/';
+                    var achou = idsfuncionarios.indexOf(pro);
+                    if (achou === -1) {
+                        idsfuncionarios.push(pro);
+                    } else {
+                        return;
+                    }
+                    var parametros = {ids: idsfuncionarios.toString(), formatoRetorno: 'html'};
+                    var processarRetorno = function (retorno) {
+                        if (retorno) {
+                            $("#modal-title").html(retorno.nome + ' [' + retorno.cpf + ']');
+                            $("#modal-inner").html(retorno.html);
+                            $('#modal').modal('show');
+                        }
+                    };
+                    $.ajax({
+                        url: url,
+                        data: parametros,
+                        dataType: "json",
+                        success: function (data) {
+                            processarRetorno(data);
+                        }
+                    });
+                }
+            }
+
+        </script>
+    -->
+
+<script type="text/javascript">
+
+    ConstrutorUrlConsulta.PrefixoUrl = '/funcionario/index/?';
+
+    function ParametrizarExecutarUrlConsulta(pagina) {
+        $(function () {
+            var Params = {
+                filtrocpf: $('#filtro-cpf').val(),
+                filtronome: $('#filtro-nome').val(),                
+                filtrocargo: $('#filtro-cargo').val(),
+                filtrostatus: $('#filtro-status').val(),
+                filtroperiodico: $('#filtro-periodico').val(),
+                page: (pagina) ? pagina : '1'
+            };
+            ConstrutorUrlConsulta.MapearParametro(Params);
+            ConstrutorUrlConsulta.ExecutarChamadaUrl();
+        });
+    }
+
+    $(function () {
+        $('#filtro-cpf, #filtro-nome, #filtro-cargo, #filtro-status, #filtro-periodico').blur(function () {
+            ParametrizarExecutarUrlConsulta('1');
+        });
+        $('#filtar-item-grid').click(function () {
+            ParametrizarExecutarUrlConsulta('1');
+        });
+    });
+
+    function abrirJanelaAso(agendaId, inicioUrl) {
+        if (inicioUrl == "develop") {
+            if (agendaId) {
+                var configuracao = "width=auto,height=auto,menubar=0,status=0,fullscreen=1,location=0,titlebar=0";
+                var url = "developsiss.hiestgroup.com.br/documento/imprimir-aso/agendaid/" + agendaId;
+                window.open(url, "Aso", configuracao);
+            }
+        } else {
+            if (agendaId) {
+                var configuracao = "width=auto,height=auto,menubar=0,status=0,fullscreen=1,location=0,titlebar=0";
+                var url = "siss.hiestgroup.com.br/documento/imprimir-aso/agendaid/" + agendaId;
+                window.open(url, "Aso", configuracao);
+            }
+        }
+    }
+
+    function ListarPeloIdProduto(funcionario_id) {
+        var idsfuncionarios = new Array();
+        var pro = funcionario_id;
+        if (pro !== '') {
+            var url = '/ajax/html/servico/ajax-obter-historico-funcionario/';
+            var achou = idsfuncionarios.indexOf(pro);
+            if (achou === -1) {
+                idsfuncionarios.push(pro);
+            } else {
+                return;
+            }
+            var parametros = {ids: idsfuncionarios.toString(), formatoRetorno: 'html'};
+            var processarRetorno = function (retorno) {
+                if (retorno) {
+                    $("#modal-title").html(retorno.nome + ' [' + retorno.cpf + ']');
+                    $("#modal-inner").html(retorno.html);
+                    $('#modal').modal('show');
+                }
+            };
+            $.ajax({
+                url: url,
+                data: parametros,
+                dataType: "json",
+                success: function (data) {
+                    processarRetorno(data);
+                }
+            });
+        }
+    }
+
+</script>

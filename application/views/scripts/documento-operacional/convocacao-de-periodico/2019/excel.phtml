@@ -1,0 +1,366 @@
+<?php
+if ($this->modo == 1):
+    header("Expires: Mon, 26 Jul 1997 05:00:00 GMT");
+    header("Last-Modified: " . gmdate("D,d M YH:i:s") . " GMT");
+    header("Cache-Control: no-cache, must-revalidate");
+    header("Pragma: no-cache");
+    header("Content-type: application/x-msexcel");
+    header("Content-Disposition: attachment; filename=\"portal" . str_replace("/", "-", $this->url()) . "-" . date("d_m_Y - H_i") . ".xls\"");
+    header("Content-Description: PHP Generated Data");
+    ob_start();
+endif;
+
+#$situacao = $this->situacao;
+$empresa = $this->empresa;
+$lista = $this->resultado;
+$filtro = $this->filtro;
+$tipo = $this->tipo;
+$OldIDPessoa = NULL;
+$OldIDProduto = NULL;
+$IDPessoaAnterior = 0;
+$IDProdutoAnterior = 0;
+$TotalRegistros = 0;
+if ($tipo == 2 || $tipo == 0) {
+    $colspan = 10;
+}else{
+    $colspan = 9;
+}
+
+?>
+<style>
+<?php include 'css/documento.css' ?>
+</style>
+
+<table border="1" class="largo sem-margem">
+    <tbody>
+
+        <tr>
+            <td class="titulo" size="28" colspan="<?php echo $colspan ?>">
+                <font size="6">
+                    <b>
+                        <?php if ($this->modo == 1): ?>
+                            <?php echo htmlentities('Convocação de Periódicos'); ?>                        
+                        <?php else: ?>
+                            <div style="text-align: center; vertical-align: middle;">Convocação de Periódicos</div>
+                        <?php endif; ?>
+                    <b>
+                </font>
+            </td>
+        </tr>
+
+        <tr><td colspan="<?php echo $colspan ?>">&nbsp;</td></tr>
+
+        <?php $i = 0 ?>
+        <?php foreach ($filtro as $label => $valor): ?>
+            <tr>
+                <?php if ($this->modo == 1): ?>
+                    <td class="conteudo" colspan="<?php echo $colspan ?>"><b><?php echo htmlentities(strtoupper($label)) . htmlentities($valor) ?></b></td>
+                <?php else: ?>
+                    <td class="etiqueta" colspan="<?php echo $colspan ?>"><?php echo htmlentities(strtoupper($label)) . htmlentities($valor) ?></td>
+                <?php endif; ?>
+            </tr>
+        <?php endforeach; ?>        
+        <tr>
+           <td class="etiqueta" colspan="<?php echo $colspan ?>"><b><div style="text-align: right; vertical-align: middle;">Obs: "( ANUAL* )" é exame adicional. </div></b></td>            
+        </tr>
+
+        <tr><td colspan="<?php echo $colspan ?>">&nbsp;</td></tr>
+
+        <?php if ($this->modo == 1): ?>
+            <tr align="center">               
+                <th><?php echo htmlentities('OBRA') ?></th>
+                <th><?php echo htmlentities('CONTRATO') ?></th>
+                <th><?php echo htmlentities('CPF') ?></th>
+                <th><?php echo htmlentities('FUNCIONÁRIO') ?></th>                
+                <th><?php echo htmlentities('FUNÇÃO') ?></th>
+                <th><?php echo htmlentities('TIPO DE EXAME') ?></th>
+                <?php if($tipo == 2 || $tipo == 0) :  ?>
+                    <th><?php echo htmlentities('EXAMES') ?></th>
+                <?php endif; ?>
+                <th><?php echo htmlentities('ÚLTIMO EXAME') ?></th>
+                <th><?php echo htmlentities('PRÓXIMO EXAME') ?></th>
+                <th><?php echo htmlentities('QTD DIAS P/VENCTO') ?></th>
+            </tr>                         
+        <?php else: ?>
+            <tr>                
+                <th><div style="text-align: center; vertical-align: middle;">OBRA</div></th>
+                <th><div style="text-align: center; vertical-align: middle;">CONTRATO</div></th>                
+                <th><div style="text-align: center; vertical-align: middle;">CPF</div></th>
+                <th><div style="text-align: center; vertical-align: middle;">FUNCIONÁRIO</div></th>
+                <th><div style="text-align: center; vertical-align: middle;">FUNÇÃO</div></th>
+                <th><div style="text-align: center; vertical-align: middle;">TIPO DE EXAME</div></th>
+                <?php if($tipo == 2 || $tipo == 0) :  ?>
+                    <th><div style="text-align: center; vertical-align: middle;">EXAMES</div></th>
+                <?php endif; ?>
+                <th><div style="text-align: center; vertical-align: middle;">ÚLTIMO EXAME</div></th>
+                <th><div style="text-align: center; vertical-align: middle;">PRÓXIMO EXAME</div></th>
+                <th><div style="text-align: center; vertical-align: middle;">QTD DIAS P/VENCTO</div></th>
+            </tr>            
+        <?php endif; ?>
+
+        <?php foreach ($lista as $item) : ?>
+                <?php
+                    $data1 = $today = date("Y-m-d");
+                    switch ($tipo) {
+                        case 0:
+                            $data2 = @$item['proximoexame'];
+                            break;
+                    }                    
+                    // converte as datas para o formato timestamp
+                    $d1 = strtotime($data1); 
+                    $d2 = strtotime($data2);
+                    // verifica a diferença em segundos entre as duas datas e divide pelo número de segundos que um dia possui
+                    $Dias = ($d2 - $d1) /86400;
+                    // caso a data 2 seja menor que a data 1
+                    if($Dias < 0)
+                    $Dias = $Dias * -1;
+
+                    if (strtotime($data2) < strtotime($data1)) {
+                        $Dias = "-".$Dias;
+                    }
+                    #echo "Entre as duas datas informadas, existem $dataFinal dias.";
+                ?>
+            <?php if ($this->modo == 1): ?>
+                <!--IMPRESSÂO MODO EXCEL-->            
+                <?php
+
+                    $data1 = $today = date("Y-m-d");
+                    switch ($tipo) {
+                        case 0:
+                            #$item['agenda_data_clinico'];
+                            $data2 = @$item['proximoexame'];
+                            break;
+                    }                    
+                    // converte as datas para o formato timestamp
+                    $d1 = strtotime($data1); 
+                    $d2 = strtotime($data2);
+                    // verifica a diferença em segundos entre as duas datas e divide pelo número de segundos que um dia possui
+                    $Diasx = ($d2 - $d1) /86400;
+                    // caso a data 2 seja menor que a data 1
+                    if($Diasx < 0)
+                    $Diasx = $Diasx * -1;
+
+                    if (strtotime($data2) < strtotime($data1)) {
+                        $Diasx = "-".$Diasx;
+                    }
+                    #echo "Entre as duas datas informadas, existem $dataFinal dias.";
+                ?>                
+                <?php if (($IDPessoaAnterior == 0 AND $IDProdutoAnterior == 0) OR ($IDPessoaAnterior == $item['pessoa_id'] AND $IDProdutoAnterior != $item['produto_id'])) : ?>
+                    <?php $IDPessoaAnterior = $item['pessoa_id']; $IDProdutoAnterior = $item['produto_id']; #$TotalRegistros++; ?>
+                    <tr>
+                        <?php  if ($OldIDPessoa == NULL OR $OldIDPessoa != $item['pessoa_id']) :  $OldIDPessoa = $item['pessoa_id']; ?>
+                            <?php $TotalRegistros++; ?>
+                            <td><div style="text-align: left; vertical-align: middle;"><?php echo htmlentities($item['empresa_fantasia']) ?></div></td>
+                            <td align="center"><div style="text-align: center; vertical-align: middle;"><?php echo $item['contrato_numero'] ?></div></td>
+                            <td align="center"><div style="text-align: center; vertical-align: middle;"><?php echo util::cpf($item['pessoa_cpf']) ?></div></td>
+                            <td><div style="text-align: left; vertical-align: middle;"><?php echo htmlentities($item['pessoa_nome']) ?></div></td>
+                            <td><div style="text-align: left; vertical-align: middle;"><?php echo htmlentities($item['funcao_nome']) ?></div></td>
+                        <?php else: ?>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                        <?php endif; ?>                      
+                        <td><div style="text-align: left; vertical-align: middle;"><?php echo $item['tipoexame_nome'] ?></div></td>
+                        <td><div style="text-align: left; vertical-align: middle;"><?php echo $item['produto_periodo'] ?></div></td>
+                        <td align="center"><div style="text-align: center; vertical-align: middle;"><?php echo util::dataBR($item['produto_agenda_data_programada']); ?></div></td>
+                        <td align="center">
+                            <div style="text-align: center; vertical-align: middle;">
+                            <?php 
+                                if ($item['tipoexame_id'] == 1 AND $item['produto_id'] == 11 AND $item['item_pcmso_possui_audio_pos'] == 1) {
+                                    $data = new DateTime($item['produto_agenda_data_programada']);
+                                    $data->modify('+6 month');
+                                    echo $data->format('d/m/Y');                                
+                                }else{
+                                    echo util::dataBR($item['proximoexame']);
+                                }                             
+                            ?>                        
+                            </div>
+                        </td>
+                        <td align="center"><div style="text-align: center; vertical-align: middle;"><?php echo intval($Diasx) ?></div></td>
+                    </tr>
+                <?php elseif ($IDPessoaAnterior != $item['pessoa_id'] AND $IDProdutoAnterior != $item['produto_id']) : ?>
+                        <?php $IDPessoaAnterior = $item['pessoa_id']; $IDProdutoAnterior = $item['produto_id']; #$TotalRegistros++; ?>
+                    <tr>
+                        <?php  if ($OldIDPessoa == NULL OR $OldIDPessoa != $item['pessoa_id']) :  $OldIDPessoa = $item['pessoa_id']; ?>
+                            <?php $TotalRegistros++; ?>
+                            <td><div style="text-align: left; vertical-align: middle;"><?php echo htmlentities($item['empresa_fantasia']) ?></div></td>
+                            <td align="center"><div style="text-align: center; vertical-align: middle;"><?php echo $item['contrato_numero'] ?></div></td>
+                            <td align="center"><div style="text-align: center; vertical-align: middle;"><?php echo util::cpf($item['pessoa_cpf']) ?></div></td>
+                            <td><div style="text-align: left; vertical-align: middle;"><?php echo htmlentities($item['pessoa_nome']) ?></div></td>
+                            <td><div style="text-align: left; vertical-align: middle;"><?php echo htmlentities($item['funcao_nome']) ?></div></td>
+                        <?php else: ?>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                        <?php endif; ?>                      
+                        <td><div style="text-align: left; vertical-align: middle;"><?php echo $item['tipoexame_nome'] ?></div></td>
+                        <td><div style="text-align: left; vertical-align: middle;"><?php echo $item['produto_periodo'] ?></div></td>
+                        <td align="center"><div style="text-align: center; vertical-align: middle;"><?php echo util::dataBR($item['produto_agenda_data_programada']); ?></div></td>
+                        <td align="center">
+                            <div style="text-align: center; vertical-align: middle;">
+                            <?php 
+                                if ($item['tipoexame_id'] == 1 AND $item['produto_id'] == 11 AND $item['item_pcmso_possui_audio_pos'] == 1) {
+                                    $data = new DateTime($item['produto_agenda_data_programada']);
+                                    $data->modify('+6 month');
+                                    echo $data->format('d/m/Y');
+                                }else{
+                                    echo util::dataBR($item['proximoexame']);
+                                }                             
+                            ?>                        
+                            </div>
+                        </td>
+                        <td align="center"><div style="text-align: center; vertical-align: middle;"><?php echo intval($Diasx) ?></div></td>
+                    </tr>
+                <?php elseif ($IDPessoaAnterior != $item['pessoa_id'] AND $IDProdutoAnterior == $item['produto_id']) : ?>
+                        <?php $IDPessoaAnterior = $item['pessoa_id']; $IDProdutoAnterior = $item['produto_id']; #$TotalRegistros++; ?>
+                    <tr>
+                        <?php  if ($OldIDPessoa == NULL OR $OldIDPessoa != $item['pessoa_id']) :  $OldIDPessoa = $item['pessoa_id']; ?>
+                            <?php $TotalRegistros++; ?>
+                            <td><div style="text-align: left; vertical-align: middle;"><?php echo htmlentities($item['empresa_fantasia']) ?></div></td>
+                            <td align="center"><div style="text-align: center; vertical-align: middle;"><?php echo $item['contrato_numero'] ?></div></td>
+                            <td align="center"><div style="text-align: center; vertical-align: middle;"><?php echo util::cpf($item['pessoa_cpf']) ?></div></td>
+                            <td><div style="text-align: left; vertical-align: middle;"><?php echo htmlentities($item['pessoa_nome']) ?></div></td>
+                            <td><div style="text-align: left; vertical-align: middle;"><?php echo htmlentities($item['funcao_nome']) ?></div></td>
+                        <?php else: ?>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                        <?php endif; ?>                      
+                        <td><div style="text-align: left; vertical-align: middle;"><?php echo $item['tipoexame_nome'] ?></div></td>
+                        <td><div style="text-align: left; vertical-align: middle;"><?php echo $item['produto_periodo'] ?></div></td>
+                        <td align="center"><div style="text-align: center; vertical-align: middle;"><?php echo util::dataBR($item['produto_agenda_data_programada']); ?></div></td>
+                        <td align="center">
+                            <div style="text-align: center; vertical-align: middle;">
+                            <?php 
+                                if ($item['tipoexame_id'] == 1 AND $item['produto_id'] == 11 AND $item['item_pcmso_possui_audio_pos'] == 1) {
+                                    $data = new DateTime($item['produto_agenda_data_programada']);
+                                    $data->modify('+6 month');
+                                    echo $data->format('d/m/Y');
+                                }else{
+                                    echo util::dataBR($item['proximoexame']);
+                                }                             
+                            ?>                        
+                            </div>
+                        </td>
+                        <td align="center"><div style="text-align: center; vertical-align: middle;"><?php echo intval($Diasx) ?></div></td>
+                    </tr>
+                <?php endif; ?>
+            <?php else: ?>
+                <!--IMPRESSÂO MODO VISUALIZAR-->
+                <?php
+
+                            $data1 = $today = date("Y-m-d");
+                            switch ($tipo) {
+                                case 0:
+                                    #$item['agenda_data_clinico'];
+                                    $data2 = @$item['proximoexame'];
+                                    break;
+                            }                    
+                            // converte as datas para o formato timestamp
+                            $d1 = strtotime($data1); 
+                            $d2 = strtotime($data2);
+                            // verifica a diferença em segundos entre as duas datas e divide pelo número de segundos que um dia possui
+                            $Diasx = ($d2 - $d1) /86400;
+                            // caso a data 2 seja menor que a data 1
+                            if($Diasx < 0)
+                            $Diasx = $Diasx * -1;
+
+                            if (strtotime($data2) < strtotime($data1)) {
+                                $Diasx = "-".$Diasx;
+                            }
+                            #echo "Entre as duas datas informadas, existem $dataFinal dias.";
+                ?>
+                <?php if (($IDPessoaAnterior == 0 AND $IDProdutoAnterior == 0) OR ($IDPessoaAnterior == $item['pessoa_id'] AND $IDProdutoAnterior != $item['produto_id'])) : ?>
+                    <?php $IDPessoaAnterior = $item['pessoa_id']; $IDProdutoAnterior = $item['produto_id']; #$TotalRegistros++; ?>
+                <tr>
+                    <?php  if ($OldIDPessoa == NULL OR $OldIDPessoa != $item['pessoa_id']) :  $OldIDPessoa = $item['pessoa_id']; ?>
+                        <?php $TotalRegistros++; ?>
+                        <td><?php echo $item['empresa_fantasia'] ?></td>
+                        <td><div style="text-align: center; vertical-align: middle;"><?php echo $item['contrato_numero'] ?></div></td>
+                        <td align="center"><div style="text-align: center; vertical-align: middle;"><?php echo util::cpf($item['pessoa_cpf']) ?></div></td>
+                        <td><?php echo $item['pessoa_nome'] ?></td>
+                        <td><?php echo $item['funcao_nome'] ?></td>
+                    <?php else: ?>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                    <?php endif; ?>                      
+                    <td><div style="text-align: left; vertical-align: middle;"><?php echo $item['tipoexame_nome'] ?></div></td>
+                    <td><div style="text-align: left; vertical-align: middle;"><?php echo $item['produto_periodo'] ?></div></td>
+                    <td align="center"><div style="text-align: center; vertical-align: middle;"><?php echo util::dataBR($item['produto_agenda_data_programada']); ?></div></td>
+                    <td align="center">
+                        <div style="text-align: center; vertical-align: middle;">
+                        <?php 
+                            if ($item['tipoexame_id'] == 1 AND $item['produto_id'] == 11 AND $item['item_pcmso_possui_audio_pos'] == 1) {
+                                $data = new DateTime($item['produto_agenda_data_programada']);
+                                $data->modify('+6 month');
+                                echo $data->format('d/m/Y');                                
+                            }else{
+                                echo util::dataBR($item['proximoexame']);
+                            }                             
+                        ?>                        
+                        </div>
+                    </td>
+                    <td align="center"><div style="text-align: center; vertical-align: middle;"><?php echo intval($Diasx) ?></div></td>
+                </tr>
+                <?php elseif ($IDPessoaAnterior != $item['pessoa_id'] AND $IDProdutoAnterior != $item['produto_id']) : ?>
+                        <?php $IDPessoaAnterior = $item['pessoa_id']; $IDProdutoAnterior = $item['produto_id']; #$TotalRegistros++; ?>                 
+                <tr>
+                    <?php  if ($OldIDPessoa == NULL OR $OldIDPessoa != $item['pessoa_id']) :  $OldIDPessoa = $item['pessoa_id']; ?>
+                        <?php $TotalRegistros++; ?>
+                        <td><?php echo $item['empresa_fantasia'] ?></td>
+                        <td><div style="text-align: center; vertical-align: middle;"><?php echo $item['contrato_numero'] ?></div></td>
+                        <td align="center"><div style="text-align: center; vertical-align: middle;"><?php echo util::cpf($item['pessoa_cpf']) ?></div></td>
+                        <td><?php echo $item['pessoa_nome'] ?></td>
+                        <td><?php echo $item['funcao_nome'] ?></td>
+                    <?php else: ?>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                    <?php endif; ?>
+                      
+                    <td><div style="text-align: left; vertical-align: middle;"><?php echo $item['tipoexame_nome'] ?></div></td>
+                    <td><div style="text-align: left; vertical-align: middle;"><?php echo $item['produto_periodo'] ?></div></td>
+                    <td align="center"><div style="text-align: center; vertical-align: middle;"><?php echo util::dataBR($item['produto_agenda_data_programada']); ?></div></td>
+                    <td align="center">
+                        <div style="text-align: center; vertical-align: middle;">
+                        <?php 
+                            if ($item['tipoexame_id'] == 1 AND $item['produto_id'] == 11 AND $item['item_pcmso_possui_audio_pos'] == 1) {
+                                $data = new DateTime($item['produto_agenda_data_programada']);
+                                $data->modify('+6 month');
+                                echo $data->format('d/m/Y');                                
+                            }else{
+                                echo util::dataBR($item['proximoexame']);
+                            }                             
+                        ?>                        
+                        </div>
+                    </td>
+                    <td align="center"><div style="text-align: center; vertical-align: middle;"><?php echo intval($Diasx) ?></div></td>                    
+                </tr>
+                <?php endif; ?>                           
+            <?php endif; ?>
+        <?php endforeach; ?>
+    </tbody>
+<tr>
+    <?php if ($this->modo == 1): ?>
+        <td class="conteudo" colspan="<?php echo $colspan ?>"><b><div style="text-align: right; vertical-align: middle;"><?php echo htmlentities(strtoupper('CONVOCADOS: ')) . htmlentities($TotalRegistros) ?></div></b></td>
+    <?php else: ?>
+        <td class="etiqueta" colspan="<?php echo $colspan ?>"><b><div style="text-align: right; vertical-align: middle;"><?php echo htmlentities(strtoupper('CONVOCADOS: ')) . htmlentities($TotalRegistros) ?></div></b></td>
+    <?php endif; ?>
+</tr>
+</table>
+
+<?php
+if ($this->modo == 1):
+    echo utf8_decode(ob_get_clean());
+endif;

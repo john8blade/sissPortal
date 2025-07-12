@@ -1,0 +1,75 @@
+<?php $like = (isset($_GET["like"]) && !empty($_GET["like"])) ? $_GET["like"] : ''; ?>
+
+<script type="text/javascript">
+    $(function () {
+        $(".filtro").on("change", function () {
+            filtrar('/agenda');
+        });
+    });
+</script>
+
+<div class="panel panel-primary">
+
+    <div class="panel-heading"><i class="fa fa-calendar"></i>Minha Agenda<a href="/agenda/adicionar" class="btn btn-xs btn-success pull-right"><i class="fa fa-plus"></i>Adicionar</a></div>
+
+    <div class="panel-body table-responsive">
+
+        <?php $this->render('configuracao-paginador.php'); ?>
+
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Nome</th>
+                    <th>Cargo</th>
+                    <th class="text-center">CPF</th>
+                    <th class="text-center">D.Exame</th>
+                    <th class="text-center">Horário</th>
+                    <th class="text-center">D.Clínico</th>
+                </tr>
+                <tr class="tr-filtro">
+                    <th><a href="/agenda" class="btn btn-xs btn-danger" data-toggle="tooltip" title="Limpar filtros"><i class="fa fa-remove no-margin"></i></a></th>
+                    <th><input class="filtro" type="text" value="<?php echo $this->parametrosPesquisa['filtro-pessoa'] ?>" id="filtro-pessoa" placeholder="Filtro..."></th>
+                    <th><!--<input class="filtro" type="text" value="<?php echo $this->parametrosPesquisa['filtro-cargo'] ?>" id="filtro-cargo" placeholder="Filtro...">--></th>
+                    <th class="text-center"><!--<input class="filtro mask-cpf" type="text" value="<?php echo $this->parametrosPesquisa['filtro-cpf'] ?>" id="filtro-cpf" placeholder="Filtro...">--></th>
+                    <th class="text-center"><!--<input class="filtro mask-data" type="text" value="<?php echo $this->parametrosPesquisa['filtro-data-exame'] ?>" id="filtro-data-exame" placeholder="Filtro...">--></th>
+                    <th class="text-center"><!--<input class="filtro mask-data" type="text" value="<?php echo $this->parametrosPesquisa['filtro-data-clinico'] ?>" id="filtro-data-clinico" placeholder="Filtro...">--></th>
+                    <th class="text-center"></th>
+                </tr>
+            </thead>
+            <tbody >
+                <?php if ($this->itensPaginados != NULL) : ?>
+                    <?php foreach ($this->itensPaginados as $k => $item): ?>
+                        <tr  id="tr-<?php echo $k; ?>">
+                            <td class="fit" style="padding: 0px">
+                                <?php if ((int) $item['agenda_id'] > 0): ?>
+                                    <a class="btn btn-xs btn-default" target="_blank" rel="tooltip" title="Imprimir Guia" href="http://<?php echo strstr($_SERVER['HTTP_HOST'], 'portalubh') ? 'portalubh' : 'portal.htmed.com.br' ?>/documento-operacional/imprimir-guia-atendimento/agenda_id/<?php echo $item['agenda_id'] ?>"><i class="fa fa-print no-margin"></i></a>
+                                <?php else : ?>
+                                    <a class="btn btn-xs btn-default" rel="tooltip" title="Imprimir Guia" href=""><i class="fa fa-print no-margin"></i></a>
+                                <?php endif ?>
+                                <!-- DIE DEVIL: <a class="btn btn-xs btn-default" target="_blank" rel="tooltip" title="Imprimir Questionário" href="http://<?php echo strstr($_SERVER['HTTP_HOST'], 'desenv') ? 'desenvsiss' : 'siss' ?>.hiestgroup.com.br/ordem-atendimento/imprimir-questionario/codigo/PTL-<?php echo $item['agenda_id'] ?>"><i class="fa fa-print no-margin"></i></a> -->
+                                <?php $cores = ""; ?>
+                                <?php if (strtotime($item['agenda_data_exame']) < strtotime(date('Y-m-d'))) { ?>
+                                    <?php $cores = " background-color: #EEE9E9"; ?>
+                                <?php } else { ?>
+                                                                                                                            <!--<a rel="tooltip" title="Alterar" href="/agenda/alterar/id/<?php echo $item['agenda_id']; ?>/"><i class="fa fa-edit"></i></a>-->
+                                    <!--                                                                                        
+                                    <a class="btn btn-xs btn-default" rel="tooltip" title="Excluir" href="javascript:void(0);" onclick="Util.confirma('Deseja excluir o registro?', '/ajax/excluir/registro/agenda/id/<?php echo $item['agenda_id'] ?>/', this)"><i class="fa fa-remove no-margin"></i></a>-->
+                                <?php } ?>
+                            </td>
+                            <td style="<?php echo $cores ?>"><?php echo str_replace($like, "<strong>$like</strong>", $item['pessoa_nome']) ?></td>
+                            <td style="<?php echo $cores ?>"><?php echo $item['alocacao']['cargo_nome'] ?></td>
+                            <td class="text-center" style="<?php echo $cores ?>"><?php echo preg_replace('/([0-9]{3})([0-9]{3})([0-9]{3})([0-9]{2})/', "$1.$2.$3-$4", $item['pessoa_cpf']) ?></td>
+                            <td class="text-center" style="padding:  0px; <?php echo $cores ?>"><?php echo Util::dataBR($item['agenda_data_exame']) ?></td>
+                            <td class="text-center" style="padding:  0px; <?php echo $cores ?>"><?php echo Util::horarioGlobalCompleto($item) ?></td>
+                            <td class="text-center" style="<?php echo $cores ?>"><?php echo Util::dataBR(str_replace('0000-00-00', null, $item['agenda_data_clinico'])) ?></td>
+                        </tr>
+                    <?php endforeach ?>
+                <?php endif ?>
+            </tbody>
+        </table>
+
+        <?php echo $this->render('criar-paginador.phtml'); ?>
+    </div>
+
+</div>

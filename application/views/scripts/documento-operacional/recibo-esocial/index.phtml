@@ -1,0 +1,107 @@
+<?php
+    error_reporting(0);
+    error_reporting(E_ERROR | E_PARSE);
+    // require_once "../application/views/scripts/documento-operacional/include/funcoes.php";
+   
+    $localScripts = '../application/views/scripts/documento-operacional/';
+    require_once "{$localScripts}include/funcoes.php";
+    $cabecalho = file_get_contents($localScripts . 'recibo-esocial/' . 'cabecalho.phtml');
+    include 'MPDF/mpdf.php';
+
+    $mpdf = new mPDF('utf-8', 'A4', 0, '', 25, 15, 40, 5, 9, 9);
+    $mpdf->SetImportUse();
+    $mpdf->SetHTMLHeader($cabecalho);
+    $mpdf->setAutoTopMargin = false;
+    $mpdf->setAutoBottomMargin = false;
+
+    $dados = $this->dados;
+    $dados_json = json_encode($dados);
+    $break = explode(' ', $dados[0]['esocial_envio_tecnospeed_datahora']);
+    $data  = array_shift($break);
+    $hora  = array_shift($break);
+
+    $horacomData = Util::dataBR($data) . ' ás ' . $hora;
+
+
+$css = <<<HTML
+<style type="text/css">
+    body, table { font: 10px Arial; width: 100%; border-collapse: collapse; }
+    table tr td { padding: 2px 2px 2px 8px; border: 1px solid lightgray; vertical-align: top; }
+    table tr th { padding: 2px 2px 2px 8px; border: 1px solid lightgray; vertical-align: top; }
+    p { margin: 20px 0; }
+    h2 { margin: 10px 0; }
+    table.sem-bordas tr td { border: none; }
+    .sem-bordas { border: none; }
+    .margem {  }
+    .cabecalho { font-family: Arial; font-size: 22px; }
+    .label { text-align: right; font-weight: bold; width: 1%; white-space: nowrap; }
+    .valor {  }
+    .justo { width: 1px; white-space: nowrap; }
+    .normal { font-weight: normal; }
+    .observacoes { height: 50px; }
+    .separador { height: 20px; }
+    .aling {
+        text-align: center;
+    }
+</style>
+HTML;
+$mpdf->WriteHTML($css);
+
+$pagina = <<<HTML
+
+    <table>
+    <tbody>
+        <tr>
+            <td class="label">EMPRESA:</td>
+            <!-- <td class="valor"><strong><?= $dados[0]['empresa_fantasia'] ?></td></strong> -->
+            <td class="valor"><strong>{$dados[0]['empresa_fantasia']}</td></strong>
+        </tr>
+        <tr>
+            <td class="label">CONTRATO:</td>
+            <td class="valor"><strong>{$dados[0]['contrato_numero']}</td></strong>
+        </tr>
+        <tr>
+            <td class="label">EVENTO:</td>
+            <td class="valor"><strong>{$dados[0]['esocial_tipoevento_nome']}</strong></td>
+        </tr>
+        <tr>
+            <td class="label">Enviado em:</td>
+            <td class="valor"><strong> {$horacomData} </strong></td>
+        </tr>
+        <tr>
+            <td class="label">Registro de envio:</td>
+            <td class="valor"><strong>{$dados[0]['esocial_envio_tecnospeed_disparo_id']}</strong></td>
+        </tr>
+    </tbody>
+</table>
+
+<h2 style="margin-top: 35px;" class="aling">REGISTRO DE ENVIO</h2>
+HTML;
+$mpdf->WriteHTML($pagina);
+
+$pagina = <<<HTML
+<table style="width: 100%; margin: auto; margin-top: 30px;">
+    <thead>
+        <tr>
+            <th class="">CPF</th>
+            <th class="">NOME</th>
+        </tr>
+    </thead>
+HTML;
+foreach ($dados as $item) {
+    $pagina .= '<tr>';
+    $pagina .= '<td>' . Util::cpf($item['pessoa_cpf']) . '</td>';
+    $pagina .= '<td>' . $item['pessoa_nome'] . '</td>';
+    $pagina .= '</tr>';
+}
+
+$pagina .= '</tbody>';
+$pagina .= '</table>';
+
+$mpdf->WriteHTML($pagina);
+
+
+if ($i < $total) {
+    $mpdf->AddPage();
+}
+$mpdf->Output();

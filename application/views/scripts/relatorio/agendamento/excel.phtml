@@ -1,0 +1,162 @@
+<?php
+header("Expires: Mon, 26 Jul 1997 05:00:00 GMT");
+header("Last-Modified: " . gmdate("D,d M YH:i:s") . " GMT");
+header("Cache-Control: no-cache, must-revalidate");
+header("Pragma: no-cache");
+header("Content-type: application/x-msexcel");
+header("Content-Disposition: attachment; filename=\"relatorio-agendados" . date("YmdHis") . ".xls\"");
+header("Content-Description: PHP Generated Data");
+$dominio = $_SERVER['HTTP_HOST'];
+$cor = "#E8E8E8";
+$data = date('d/m/Y');
+$hora = date("H:i:s");
+ob_start();
+?>
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+        <title>Relatório</title>
+        <style type="text/css">
+            body {margin: 0px;padding: 0px;font-family: Arial; font-size: 12px;}
+            td#linha {height: 81px; vertical-align: middle; display: table-cell}
+            /*td {white-space: nowrap;}*/
+            td {height: 20px;}
+        </style>
+    </head>
+    <body>
+
+        <table border="1" cellpadding="0" cellspacing="0">
+
+            <tr style="border-bottom: none;" colspan="7">
+                <td style="border-bottom: none;"></td>
+            </tr>
+
+            <tr>
+                <td align="left" style="border-top: none;">
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                    <img style="margin: center;" src="http://<?php echo $dominio ?>/img/logo-relatorio.png"/>
+                </td>
+
+                <td id="linha" colspan="6">
+                    <h3 style="font-size: 14px;">RELATÓRIO DE AGENDAMENTO</h3>
+                </td>
+
+            </tr>
+
+            <tr style="font-size: 12px;">
+                <td align="right" colspan="2"><b>EMITIDO POR:</b></td>
+                <td align="left" colspan="3" ><?php echo $_SESSION['empresa']['empresa_razao'] ?> </td>
+                <td align="right"><b>DATA/HORA:</b></td>
+                <td align="left"><?php echo ("$data às $hora"); ?></td>
+            </tr>
+
+            <tr style="font-size: 12px;">
+                <td align="right" colspan="2"><b>FILTROS UTILIZADOS:</b></td>
+                <td align="left" colspan="5"><?php echo $this->filtrosUtilizados ?></td>
+            </tr>
+
+            <tr style="font-size: 12px;">
+                <th align="left" bgcolor="<?php echo $cor ?>">ITEM</th>
+                <th align="left" bgcolor="<?php echo $cor ?>">FUNCIONÁRIO</th>
+                <th align="left" bgcolor="<?php echo $cor ?>">TIPO DE EXAME</th>
+                <th align="left" bgcolor="<?php echo $cor ?>">D.EXAME</th>
+                <th align="left" bgcolor="<?php echo $cor ?>">HORÁRIO</th>
+                <th align="left" bgcolor="<?php echo $cor ?>">D.CLÍNICO</th>
+                <th align="left" bgcolor="<?php echo $cor ?>">EXAMES AGENDADOS</th>
+            </tr>
+
+            <!-- Bloco para preenchimento dos dados da planilha excel -->
+            <?php
+            $contadores = array(
+                'tipo' => array(),
+                'exame' => array()
+            );
+            ?>
+
+            <?php foreach ($this->agendas as $i => $item) { ?>
+
+                <?php $contadores['tipo'][$item['tipoexame_nome']] = isset($contadores['tipo'][$item['tipoexame_nome']]) ? ($contadores['tipo'][$item['tipoexame_nome']] + 1) : 1 ?>
+
+                <?php $i = $i + 1 ?>
+
+                <tr style="font-size: 12px;">
+                    <td align="right"><?php echo $i ?></td>
+                    <td align="left"><?php echo $item['pessoa_nome'] ?></td>
+                    <td align="left"><?php echo $item['tipoexame_nome'] ?></td>
+                    <td align="left"><?php echo str_replace('00/00/0000', '', $item['agenda_data_exame']) ?></td>
+                    <td align="left"><?php echo Util::horarioGlobalCompleto($item) ?></td>
+                    <td align="left"><?php echo str_replace('00/00/0000', '', $item['agenda_data_clinico']) ?></td>
+                    <td align="left">
+
+                        <?php foreach ($item['produtos'] as $j => $produto): ?>
+
+                            <?php $contadores['exame'][$produto['produto_nome']] = isset($contadores['exame'][$produto['produto_nome']]) ? ($contadores['exame'][$produto['produto_nome']] + 1) : 1 ?>
+
+                            <?php echo $produto['produto_nome'] . (isset($item['produtos'][$j + 1]) ? ', ' : '') ?>
+
+                        <?php endforeach ?>
+
+                    </td>
+                </tr>
+
+            <?php } ?>
+            <!-- FIM do Bloco para preenchimento dos dados da planilha excel -->
+
+            <tr>
+                <th colspan="7" bgcolor="<?php echo $cor ?>">RESULTADO TOTALIZADOR</th>
+            </tr>
+
+            <tr>
+                <th colspan="7">&nbsp;</th>
+            </tr>
+
+            <tr style="font-size: 12px;">
+                <td align="left" colspan="3">Total de Agendas</td>
+                <td align="left"><?php echo count($this->agendas) ?></td>
+            </tr>
+
+            <tr>
+                <th colspan="7">&nbsp;</th>
+            </tr>
+
+            <?php foreach ($contadores['tipo'] as $a => $b) : ?>
+
+                <tr style="font-size: 12px;">
+                    <td align="left" colspan="3">Total de <?php echo $a ?></td>
+                    <td align="left"><?php echo $b ?></td>
+                </tr>
+
+            <?php endforeach; ?>
+
+            <tr>
+                <th colspan="7">&nbsp;</th>
+            </tr>
+
+            <?php foreach ($contadores['exame'] as $a => $b) : ?>
+
+                <tr style="font-size: 12px;">
+                    <td align="left" colspan="3">Total de <?php echo $a ?></td>
+                    <td align="left"><?php echo $b ?></td>
+                </tr>
+
+            <?php endforeach; ?>
+
+            <tr>
+                <th colspan="7">&nbsp;</th>
+            </tr>
+
+            <?php
+            $totalExames = 0;
+            foreach ($contadores['exame'] as $a => $b) :
+                $totalExames += $b;
+            endforeach;
+            ?>
+
+            <tr style="font-size: 12px;">
+                <td align="left" colspan="3">Total de Exames</td>
+                <td align="left"><?php echo $totalExames ?></td>
+            </tr>
+
+        </table>
+    </body>
+</html>

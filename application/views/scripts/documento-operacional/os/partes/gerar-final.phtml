@@ -1,0 +1,114 @@
+<?php
+require_once 'MPDF/mpdf.php';
+$localScripts = '../application/views/scripts/documento-operacional/';
+require_once "{$localScripts}include/funcoes.php";
+
+$htmlRodape = obterHtmlDoRodapeEmPdf();
+$htmlCabecalho = file_get_contents($localScripts . 'guia-exames/' . 'cabecalho.html');
+
+$p = new mPDF('utf-8', 'A4', 0, '', 10, 10, 35, 30, 8, 8);
+$p->SetHTMLHeader($htmlCabecalho);
+$p->SetHTMLFooter($htmlRodape);
+$p->setAutoTopMargin = false;
+$p->setAutoBottomMargin = false;
+ob_start();
+$quantidadeAgenda = count($this->atendimento);
+
+$quantidadeZeros = 3;
+//this->atendimento['ordem_atendimento_ordem_chamada'];
+$ordemAtendimento = (int) $this->atendimento['ordem_atendimento_ordem_chamada'];
+if ($ordemAtendimento >= 10 && $ordemAtendimento < 100) {
+    $quantidadeZeros = 2;
+} else if ($ordemAtendimento > 100) {
+    $quantidadeZeros = 0;
+}
+
+$sufixoCodigoAtendimento = substr($this->atendimento['ordem_atendimento_codigo'], 0, 3)
+?>
+<style>
+    table#tabela tr td { font: normal 12px Arial; border: 0px solid #ccc; }
+    table{border-collapse: collapse; font: normal 11px Arial;width: 100%;}
+    table#tabela tr td.etiqueta { font-weight: bold; padding: 4px; }
+    table#tabela tr td.titulo { text-align: center; font-weight: bold; background: #ddd; }
+    table#tabela tr td.separador { padding: 10px; border: none; }
+    table#tabela tr td.centro { text-align: center; }
+</style>
+<!-- style="page-break-after:always" -->
+<?php if ($quantidadeAgenda > 0): ?>
+
+    <div>
+        <table id="tabela" border="0" style="border-collapse: collapse; width: 100%;">
+            <tr>
+                <td colspan="7" style="border: 1px solid #000000; font-size: 12px; text-align: center;"><b>HIEST ASSESSORIA LTDA</b></td>
+            </tr>
+            <tr>
+                <td colspan="7" class="etiqueta" style="border: 1px solid #000000; border-bottom: none; border-left: none; border-right: none;">&nbsp;</td>
+            </tr>  
+        </table>
+
+        <table id="tabela" border="0" style="border-collapse: collapse; width: 100%;">   
+
+            <tr>
+                <td colspan="1" class="etiqueta" style="border-top: none; border-bottom: none; border-right: none; text-align: right;">CÓDIGO:</td>
+                <td colspan="5" style="border-bottom: none; border-left: none; border-top: none;">&nbsp;<?php echo str_pad($this->atendimento['ordem_atendimento_ordem_chamada'], $quantidadeZeros, "0", STR_PAD_LEFT), $sufixoCodigoAtendimento ?></td>
+                <td colspan="1" class="etiqueta" style="border-top: none; border-bottom: none; border-right: none; text-align: right;">HORÁRIO: </td>
+                <td colspan="4" style="border-bottom: none; border-left: none; border-top: none;">&nbsp;<?php echo substr($this->atendimento['intervalo_atendimento_nome'], 0, 2), 'hrs' ?></td>
+            </tr>
+
+            <tr>
+                <td colspan="1" class="etiqueta" style="border-top: none; border-bottom: none; border-right: none; text-align: right;">EMPRESA:</td>
+                <td colspan="5" style="border-bottom: none; border-left: none; border-top: none;">&nbsp;<?php echo $this->atendimento['ordem_atendimento_empresa'] ?></td>
+                <td colspan="1" class="etiqueta" style="border-top: none; border-bottom: none; border-right: none; text-align: right;">CONTRATO: </td>
+                <td colspan="4" style="border-bottom: none; border-left: none; border-top: none;">&nbsp;<?php echo $this->atendimento['ordem_atendimento_contrato'] ?></td>
+            </tr>
+
+            <tr>
+                <td class="etiqueta" style=" width: 100px; border-right: none; text-align: right; border-bottom: none;">CPF: </td>
+                <td colspan="2" style="border-left: none; border-right: none; border-bottom: none;">&nbsp;<?php echo Util::cpf($this->atendimento['ordem_atendimento_cpf']) ?></td>
+                <td class="etiqueta" style=" width: 100px; border-right: none; text-align: right; border-bottom: none;">IDENTIDADE: </td>
+                <td colspan="2" style="border-left: none; border-right: none; border-bottom: none;">&nbsp;<?php echo $this->atendimento['ordem_atendimento_identidade'] ?></td>
+                <td class="etiqueta" style=" width: 100px; border-right: none; text-align: right; border-bottom: none;">NASC.: </td>
+                <td colspan="5" style="border-left: none; border-right: none; border-bottom: none;">&nbsp;<?php echo Util::dataBR($this->atendimento['ordem_atendimento_data_nascimento']) ?></td>
+            </tr>
+
+            <tr>
+                <td colspan="1" class="etiqueta" style="border-top: none; border-bottom: none; border-right: none; text-align: right;">NOME: </td>
+                <td colspan="5" style="border-bottom: none; border-left: none; border-top: none;">&nbsp;<?php echo $this->atendimento['ordem_atendimento_funcionario'] ?></td>
+                <td colspan="1" class="etiqueta" style="border-top: none; border-bottom: none; border-right: none; text-align: right;">FUNÇÃO: </td>
+                <td colspan="4" style="border-bottom: none; border-left: none; border-top: none;">&nbsp;<?php echo $this->atendimento['ordem_atendimento_funcao'] ?></td>
+            </tr>
+
+            <tr>
+                <td class="etiqueta" style=" width: 100px; border-right: none; text-align: right; border-bottom: none;">TIPO EXAME: </td>
+                <td colspan="5" style="border-left: none; border-right: none; border-bottom: none;">&nbsp;<?php echo $this->atendimento['ordem_atendimento_tipo_exame'] ?></td>
+                <td class="etiqueta" style="border-top: none; border-right: none; text-align: right;">D.AGENDADA: </td>
+                <td colspan="4" style="border-left: none; border-top: none;">&nbsp;<?php echo Util::dataBR($this->atendimento['ordem_atendimento_data_exame']) ?></td>
+            </tr>
+
+            <tr>
+                <td colspan="11" class="separador"></td>
+            </tr>
+
+        </table>
+
+        <table id="tabela" border="0" style="border-collapse: collapse; width: 100%;">
+            <tr>
+                <td colspan="7" class="etiqueta" style="border: none; font-size: 10px; text-align: center; font-weight: none;"><i>Conforme o Programa de Controle de Saúde Ocupacional estamos solicitando os seguintes exames complementares, necessários para esta função:</i></td>
+            </tr>
+        </table>    
+
+
+        <div style="width:100%;margin: 0px;padding: 0px;overflow: auto">
+            <?php foreach ($this->atendimento['item_ordem_atendimento'] as $itemProduto): ?>
+                <div style="float: left;border: 1px solid #000;margin:0px;height: 100px;width: 24.5%;font-size: 10px;font-weight: bold;text-align: center"><?php echo $itemProduto['item_ordem_atendimento_exame'] ?></div>
+            <?php endforeach ?>
+        </div>
+
+    </div>
+<?php endif ?>
+
+<?php
+$htmlCorpo = ob_get_clean();
+$htmlCorpo . '</body></html>';
+$p->WriteHTML($htmlCorpo);
+$p->Output();

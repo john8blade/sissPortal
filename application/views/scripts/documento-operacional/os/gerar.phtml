@@ -1,0 +1,250 @@
+<?php
+$enderecoDaUnidade = (array) json_decode($_SESSION['usuario']['unidadeativa']['unidade_descricao']);
+
+require_once 'MPDF/mpdf.php';
+$localScripts = '../application/views/scripts/documento-operacional/';
+require_once "{$localScripts}include/funcoes.php";
+$htmlRodape = obterHtmlDoRodapeEmPdf();
+$htmlCabecalho = file_get_contents($localScripts . 'os/' . 'cabecalho.html');
+
+$p = new mPDF('utf-8', 'A4', 0, '', 10, 10, 35, 30, 8, 8);
+$p->SetHTMLHeader($htmlCabecalho);
+$p->SetHTMLFooter($htmlRodape);
+$p->setAutoTopMargin = false;
+$p->setAutoBottomMargin = false;
+$p->ignore_invalid_utf8 = true;
+ob_start();
+?>
+
+<style>
+    table#tabela tr td { font: normal 12px Arial; border: 0px solid #ddd; }
+    table#tabela tr td.etiqueta { font-weight: bold; padding: 4px; }
+    table#tabela tr td.titulo { text-align: center; background: #ddd; }
+    table#tabela tr td.separador { padding: 10px; border: none; }
+    table#tabela tr td.centro { text-align: center; }
+    input{width: auto;font: normal 12px Arial;}
+</style>
+<?php #echo var_dump($this->atributos['contatoEmpresaFinan']); ?>
+
+<table  id="tabela" style="border-collapse: collapse; width: 100%;">
+    <tr>
+        <td colspan="4" class="titulo" style="text-align: left"><h3>DADOS DA OS</h3></td>
+    </tr>
+    <tr>
+        <td colspan="4" class="separador"></td>
+    </tr>
+    <tr>
+        <td>Nº do Contrato<br/><input type="text" value="<?php echo $this->atributos['os']['contrato_numero'] ?>" style="width: 25%"/></td>
+        <td>Data Início<br/><input type="text" value="<?php echo Util::dataBR($this->atributos['dtVigencia']['vigencia_data_inicio']); ?>" style="width: 25%"></td>
+        <td>Data Fim<br/><input type="text" value="<?php echo Util::dataBR($this->atributos['dtVigencia']['vigencia_data_inicio']); ?>" style="width: 25%"></td>
+        <td>Nº de Funcionários<br/><input type="text"  value="<?php echo 01 ?>"  style="width: 25%"></td> 
+    </tr>
+    <tr>
+        <td colspan="4" class="separador"></td>
+    </tr>
+</table>
+<table  id="tabela" style="border-collapse: collapse; width: 100%;">
+    <tr>
+        <td colspan="5" class="titulo" style="text-align: left"><h3>ENDEREÇO PARA FATURAMENTO / NOTA FISCAL</h3></td>
+    </tr>
+    <tr>
+        <td colspan="5" class="separador"></td>
+    </tr>
+    <tr>
+        <td>Razão Social: <br/><input type="text" value="<?php echo $this->atributos['empResponsabilidade']['empresa_razao']; ?>" style="width: 50%"/></td>
+        <td>CNAE: <br/><input type="text" value="<?php echo $this->atributos['empResponsabilidade']['empresa_cnae']; ?>" style="width: 10%"></td>
+        <td>Telefone: <br/><input type="text" value="<?php echo $this->atributos['contrato']['contrato_responsavel_telefone'] ?>" style="width: 12%"></td>
+        <td>Celular: <br/><input type="text"  value=""  style="width: 12%"></td> 
+        <td>Fax: <br/><input type="text"  value=""  style="width: 16%"></td> 
+    </tr>
+</table>
+<table>
+    <tr>
+        <td>Rua / Av: <br/><input type="text" value="<?php echo $this->atributos['empResponsabilidade']['endereco_logradouro'] ?>" style="width: 42%"/></td>
+        <td>Bairro: <br/><input type="text" value="<?php echo $this->atributos['empResponsabilidade']['endereco_bairro'] ?>" style="width: 25%"></td>
+        <td>Cidade: <br/><input type="text" value="<?php echo $this->atributos['empResponsabilidade']['endereco_cidade'] ?>" style="width: 20%"></td>
+        <td>UF: <br/><input type="text"  value="<?php echo $this->atributos['empResponsabilidade']['endereco_uf'] ?>"  style="width: 3%"></td> 
+        <td>CEP: <br/><input type="text"  value="<?php echo $this->atributos['empResponsabilidade']['endereco_cep'] ?>"  style="width: 10%"></td> 
+    </tr>
+</table>
+<table>
+    <tr>
+        <td>País: <br/><input type="text" value="<?php echo $this->atributos['empResponsabilidade']['endereco_pais'] ?>" style="width: 10%"/></td>
+        <td>CNPJ: <br/><input type="text" value="<?php echo $this->atributos['empResponsabilidade']['empresa_cnpj'] ?>" style="width: 15%"></td>
+        <td>Insc. Estadual: <br/><input type="text" value="<?php echo $this->atributos['empResponsabilidade']['empresa_insc_estadual'] ?>" style="width: 16%"></td>
+        <td>Insc. Municipal: <br/><input type="text"  value="<?php echo $this->atributos['empResponsabilidade']['empresa_insc_municipal'] ?>"  style="width: 15%"></td> 
+        <td>Grau de Risco: <br/><input type="text"  value="<?php echo $this->atributos['empResponsabilidade']['empresa_grau_risco'] ?>"  style="width: 14%"></td> 
+        <td>E-mail: <br/><input type="text"  value="<?php echo $this->atributos['empResponsabilidade']['empresa_email'] ?>"  style="width: 30%"></td> 
+    </tr>
+</table>
+<table>
+    <tr>
+        <td>Contato Financeiro: <br/><input type="text" value="<?php echo $this->atributos['contatoEmpresaFinan']['contato_empresa_responsavel'] ?>" style="width: 50%"/></td>
+        <td>E-mail Financeiro: <br/><input type="text" value="<?php echo $this->atributos['contatoEmpresaFinan']['contato_empresa_email'] ?>" style="width: 50%"></td>
+    </tr>
+</table>
+<table  id="tabela" style="border-collapse: collapse; width: 100%;">
+    <tr>
+        <td colspan="4" class="separador"></td>
+    </tr>
+    <tr>
+        <td colspan="4" class="titulo" style="text-align: left"><h4>CONTATO NA CONTRATANTE PARA FORNECIMENTO DE INFORMAÇÕES  ADMINISTRATIVAS E ACOMPANHAMENTO DOS TRABALHOS</h4></td>
+    </tr>
+    <tr>
+        <td colspan="4" class="separador"></td>
+    </tr>
+    <tr>
+        <td>Nome<br/><input type="text" value="Monolinho Guildeer " style="width: 42%"/></td>
+        <td>Telefone<br/><input type="text" value="(27)99944-3132" style="width: 25%"></td>
+        <td>Email:<br/><input type="text" value="contato@email.com.br" style="width: 33%"></td>
+    </tr>
+    <tr>
+        <td>Representante HIEST<br/><input type="text" value="Monolinho Guildeer " style="width: 42%"/></td>
+        <td>Telefone<br/><input type="text" value="(27)99944-3132" style="width: 25%"></td>
+        <td>Email:<br/><input type="text" value="contato@email.com.br" style="width: 33%"></td>
+    </tr>
+    <tr>
+        <td colspan="4" class="separador"></td>
+    </tr>
+</table>
+<table  id="tabela" style="border-collapse: collapse; width: 100%;">
+    <tr>
+        <td colspan="3" class="separador"></td>
+    </tr>
+    <tr>
+        <td colspan="3" class="titulo" style="text-align: left">DADOS E ENDEREÇO PARA CORRESPONDÊNCIA E COBRANÇA</td>
+    </tr>
+    <tr>
+        <td colspan="3" class="separador"></td>
+    </tr>
+    <tr>
+        <td>Razão Social: <br/><input type="text" value="<?php echo $this->atributos['contatoCobranca']['empresa_razao'] ?>" style="width: 50%"/></td>
+        <td>Rua / Av: <br/><input type="text" value="<?php echo $this->atributos['contatoCobranca']['endereco_logradouro'] ?>" style="width: 42%"/></td>
+        <td>Bairro: <br/><input type="text" value="<?php echo $this->atributos['contatoCobranca']['endereco_bairro'] ?>" style="width: 25%"></td>
+    </tr>
+</table>
+<table  id="tabela" style="border-collapse: collapse; width: 100%;">
+    <tr>
+        <td>Cidade: <br/><input type="text" value="<?php echo $this->atributos['contatoCobranca']['endereco_cidade'] ?>" style="width: 30%"></td>
+        <td>UF: <br/><input type="text"  value="<?php echo $this->atributos['contatoCobranca']['endereco_uf'] ?>"  style="width: 5%"></td> 
+        <td>CEP: <br/><input type="text"  value="<?php echo $this->atributos['contatoCobranca']['endereco_cep'] ?>"  style="width: 10%"></td> 
+        <td>País: <br/><input type="text" value="<?php echo $this->atributos['contatoCobranca']['endereco_pais'] ?>" style="width: 10%"/></td>
+        <td>Telefone: <br/><input type="text" value="<?php echo $this->atributos['contatoCobranca']['contrato_responsavel_telefone'] ?>" style="width: 12%"></td>
+        <td>Celular: <br/><input type="text"  value="<?php ?>"  style="width: 12%"></td> 
+        <td>Fax: <br/><input type="text"  value="<?php ?>"  style="width: 16%"></td>
+    </tr>
+</table>
+<table  id="tabela" style="border-collapse: collapse; width: 100%;">
+    <tr>
+        <td>Email:<br/><input type="text" value="<?php echo $this->atributos['contatoCobranca']['contrato_responsavel_email'] ?>" style="width: 33%"></td>
+        <td>CNPJ: <br/><input type="text" value="<?php echo $this->atributos['contatoCobranca']['empresa_cnpj'] ?>" style="width: 15%"></td>
+        <td>Insc. Estadual: <br/><input type="text" value="<?php echo $this->atributos['contatoCobranca']['empresa_insc_estadual'] ?>" style="width: 16%"></td>
+        <td>Insc. Municipal: <br/><input type="text"  value="<?php echo $this->atributos['contatoCobranca']['empresa_insc_municipal'] ?>"  style="width: 15%"></td> 
+    </tr>
+</table>
+<table  id="tabela" style="border-collapse: collapse; width: 100%;">
+    <tr>
+        <td colspan="3" class="separador"></td>
+    </tr>
+    <tr>
+        <td colspan="3" class="titulo" style="text-align: left">INFORMAÇÕES SOBRE IMPOSTOS</td>
+    </tr>
+    <tr>
+        <td colspan="3" class="separador"></td>
+    </tr>
+    <tr>
+        <td>Optante pelo Simples: <br/><input type="text" value="Hiest assessoria LTDA" style="width: 35%"/></td>
+        <td>ISS Recolhido na Fonte: <br/><input type="text" value="Hiest assessoria LTDA" style="width: 35%"/></td>
+        <td>Destacar INSS na Nota Fiscal: <br/><input type="text" value="Rua Castelo de Sintra" style="width: 30%"/></td>
+    </tr>
+</table>
+<table  id="tabela" style="border-collapse: collapse; width: 100%;">
+    <tr>
+        <td colspan="7" class="separador"></td>
+    </tr>
+    <tr>
+        <td colspan="7" class="titulo" style="text-align: left">CONDIÇÕES DE FATURAMENTO</td>
+    </tr>
+    <tr>
+        <td colspan="7" class="separador"></td>
+    </tr>
+    <tr>
+        <td colspan="1" style="border: 1px solid">Local</td>
+        <td colspan="1" style="border: 1px solid">Tipo de Serv</td>
+        <td colspan="1" style="border: 1px solid">Valor Total</td>
+        <td colspan="1" style="border: 1px solid">Valor Mensal</td>
+        <td colspan="1" style="border: 1px solid">N° de Parc</td>
+        <td colspan="1" style="border: 1px solid; text-align: justify">Vencimento</td>
+        <td colspan="1" style="border: 1px solid; text-align: justify">Dt. Entrega</td>
+    </tr>
+            <tr>
+                <td style="border: 1px solid">HIEST ASSESSORIA LTDA</td>
+                <td style="border: 1px solid">PPRA- PROGRAMA DE PREVENÇÃO DE RISCOS</td>
+                <td style="border: 1px solid">R$ 770,37</td>
+                <td style="border: 1px solid">256,79</td>
+                <td style="border: 1px solid">3</td>
+                <td style="border: 1px solid">05/08/2014</td>
+                <td style="border: 1px solid">90 DIAS</td>
+            </tr>
+</table>
+<table>
+    <tr>
+        <td>
+            <?php if (""): ?>
+                Faturamento minimo de coordenação de PCMSO: R$ 159,74
+            <?php endif; ?>
+        </td>
+    </tr>
+</table>
+<br><br><br>
+<table  id="tabela" style="border-collapse: collapse; width: 100%;">
+    <tr>
+        <td colspan="7" class="separador"></td>
+    </tr>
+    <tr>
+        <td colspan="7" class="titulo" style="text-align: left">OBSERVAÇÕES DA OS</td>
+    </tr>
+    <tr>
+        <td colspan="7" class="separador"></td>
+    </tr>
+    <tr>
+        <td>
+            <p>- Nota Fiscal e boleto bancário referente ao serviço, será enviado via e-mail, portanto é importante manter sempre atualizado seu endereço eletrônico</p>
+            <p>- Sendo necessário o deslocamento e/ou permanência dos profissionais da HIEST ASSESSORIA fora do seu domicílio, as despesas decorrentes de estadia, transporte e alimentação serão custeadas pela contratante.</p>
+            <p>- Não contemplam nos valores da proposta solicitação de cópias de documentos, inclusão de funções, segunda via de ASO, formulário da RAC e certificados, os mesmos serão cobrados a parte, caso solicitados.</p>
+            <p>- Caso necessário alguma avaliação ambiental será considerado o preço da tabela Hiest e deverá ser solicitada por meio de O.S.</p>
+            <p>- Exames clínicos ocupacionais fazem parte do contrato de coordenação do PCMSO e exames complementares, caso necessário, serão cobrados a parte de acordo com tabela de preços da região que o exame será realizado.</p>
+            <p>- Despesas com entrega de documentos via Correios é de responsabilidade da Contratante. Qualquer necessidade de envio via Sedex, será necessário formalização via e-mail e a forma de envio será o Sedex a cobrar.</p>
+            <p>- Será informado, via e-mail, a disponibilização do(s) documento(s) concluído(s) para retirada. </p>
+            <p>- São de responsabilidade da contratante os aparelhos deixados na empresa para efetuar as avaliações.</p>
+            <p>- Nota Fiscal e boleto bancário referente ao serviço serão enviados via e-mail, portanto é importante manter sempre atualizado seu endereço eletrônico.</p>
+            <p>- Os treinamentos serão realizados em datas programadas, mediante informação dos participantes por parte da empresa CONTRATANTE. Uma vez reservada a vaga para o participante, não há possibilidade de cancelamento. Essas informações (local, nomes dos participantes e CPF dos mesmos), deverão ser enviadas para a CONTRATADA no mínimo 48 horas de antecedência ao acontecimento do curso.</p>
+            <p>- Os treinamentos que demandam andaimes, equipamentos ou espaço específico, deverão ser disponibilizados pela CONTRATANTE."</p>
+        </td>
+    </tr>
+</table>
+<table>
+    <tr>
+        <td>
+            Belo horizonte <?php echo date("d/m/Y"); ?>
+        </td>
+    </tr>    
+</table>
+<br><br><br><br><br>
+<table>
+    <tr>
+        <td style="width: 50%;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;____________________________________    </td>
+        <td style="width: 50%">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;____________________________________</td>
+    </tr>
+    <tr>
+        <td style="width: 50%"></td>
+        <td style="width: 50%"></td>
+    </tr>
+</table>
+
+
+<?php
+$htmlCorpo = ob_get_clean();
+$htmlCorpo . '</body></html>';
+$p->WriteHTML($htmlCorpo);
+$p->Output();

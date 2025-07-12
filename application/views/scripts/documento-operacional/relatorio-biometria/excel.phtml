@@ -1,0 +1,122 @@
+<?php
+if ($this->modo == 1):
+    header("Expires: Mon, 26 Jul 1997 05:00:00 GMT");
+    header("Last-Modified: " . gmdate("D,d M YH:i:s") . " GMT");
+    header("Cache-Control: no-cache, must-revalidate");
+    header("Pragma: no-cache");
+    header("Content-type: application/x-msexcel");
+    header("Content-Disposition: attachment; filename=\"siss" . str_replace("/", "-", $this->url()) . "-" . date("YmdHis") . ".xls\"");
+    header("Content-Description: PHP Generated Data");
+    ob_start();
+endif;
+$dados = $this->resultado['dados'];
+$lista = $this->resultado['lista'];
+$filtro = $this->filtro;
+$colspan = 8 + 3;
+?>
+<style>
+<?php include 'css/documento.css' ?>
+</style>
+
+<table border="1" class="largo sem-margem"  cellpadding="0" cellspacing="0" width="100%" height="100%" style="text-align: center;">
+    <tbody>
+
+        <tr>
+            <td class="logo"><img src="/img/logoHTMED.png" width="360" height="200"/></td>
+            <!--<td class="titulo" colspan="<?php echo $colspan - 1 ?>"><h1>RELAÇÃO DE AGENDADOS</h1></td>-->
+            <td class="titulo" size="29" colspan="<?php echo $colspan - 1 ?>">
+                <font size="6">
+                    <b>
+                        <?php if ($this->modo == 1): ?>
+                            RELATÓRIO DE BIOMETRIA                        
+                        <?php else: ?>
+                            <div style="text-align: center; vertical-align: middle;">RELATÓRIO DE BIOMETRIA</div>
+                        <?php endif; ?>
+                    <b>
+                </font>
+            </td>
+        </tr>
+
+        <tr><td colspan="<?php echo $colspan ?>">&nbsp;</td></tr>
+
+        <?php $i = 0 ?>
+        <?php foreach ($dados as $label => $valor): ?>
+            <tr>
+                <td class="etiqueta"><?php echo strtoupper($label) ?>:</td>
+                <td class="conteudo"><?php echo $valor ?></td>
+                <?php if (isset($filtro[$i])): ?>
+                    <td class="etiqueta"><?php echo $filtro[$i] ?>:</td>
+                    <td class="conteudo" colspan="8"><?php echo $filtro[$i + 1] ?></td>
+                   
+                    <!--
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    -->
+                <?php else: ?>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                <?php endif ?>
+                <!--<td></td>-->
+            </tr>
+        <?php endforeach; ?>
+
+        <tr><td colspan="<?php echo $colspan ?>">&nbsp;</td></tr>
+
+        <tr>
+            <th style="text-align: center;">CNPJ</th>
+            <th style="text-align: center;">EMPRESA</th>
+            <th style="text-align: center;">CPF</th>
+            <th style="text-align: center;">NOME</th>
+            <th style="text-align: center;">TIPO EXAME</th>
+            <th style="text-align: center;">DATA</th>
+            <th style="text-align: center;">PRESSÃO MAXIMA</th>
+            <th style="text-align: center;">PRESSÃO MINIMA</th>
+            <th style="text-align: center;">PESO</th>
+            <th style="text-align: center;">ALTURA</th>
+            <th style="text-align: center;">IMC</th>
+        </tr>
+
+        <?php foreach ($lista as $item) : ?>
+            <tr>
+                <?php if ($this->modo == 1): ?>
+                    <td align="center"><?php echo Util::cnpj($item['cnpj']) ?></td>                
+                    <td><?php echo $item['empresa'] ?></td>
+                    <td align="center"><?php echo Util::cpf($item['cpf']) ?></td>
+                    <td><?php echo $item['funcionario'] ?></td>
+                    <td><?php echo $item['tipo_exame'] ?></td>
+                    <td align="center"><?php echo util::dataBR($item['data_biometria']) ?></td>
+                    <td align="center"><?php echo $item['pressao_maxima'] ?></td>
+                    <td align="center"><?php echo $item['pressao_minima'] ?></td>
+                    <td align="center"><?php echo $item['peso'] ?></td>
+                    <td align="center"><?php echo $item['altura'] ?></td>
+                    <td align="center"><?php echo $item['IMC'] ?></td>                       
+                <?php else: ?>
+                    <td><div style="text-align: center; vertical-align: middle;"><?php echo Util::cnpj($item['cnpj']) ?></div></td>                
+                    <td><?php echo $item['empresa'] ?></td>
+                    <td><div style="text-align: center; vertical-align: middle;"><?php echo Util::cpf($item['cpf']) ?></div></td>
+                    <td><?php echo $item['funcionario'] ?></td>
+                    <td><?php echo $item['tipo_exame'] ?></td>
+                    <td><div style="text-align: center; vertical-align: middle;"><?php echo util::dataBR($item['data_biometria']) ?></div></td>
+                    <td><div style="text-align: center; vertical-align: middle;"><?php echo $item['pressao_maxima'] ?></div></td>
+                    <td><div style="text-align: center; vertical-align: middle;"><?php echo $item['pressao_minima'] ?></div></td>
+                    <td><div style="text-align: center; vertical-align: middle;"><?php echo $item['peso'] ?></div></td>
+                    <td><div style="text-align: center; vertical-align: middle;"><?php echo $item['altura'] ?></div></td>
+                    <td><div style="text-align: center; vertical-align: middle;"><?php echo $item['IMC'] ?></div></td>
+                <?php endif; ?>
+            </tr>
+        <?php endforeach; ?>
+
+    </tbody>
+</table>
+<?php
+if ($this->modo == 1):
+    echo utf8_decode(ob_get_clean());
+endif;

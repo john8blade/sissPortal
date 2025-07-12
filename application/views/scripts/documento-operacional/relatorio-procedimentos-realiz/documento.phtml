@@ -1,0 +1,87 @@
+<?php
+if ($this->modo == 1):
+    header("Expires: Mon, 26 Jul 1997 05:00:00 GMT");
+    header("Last-Modified: " . gmdate("D,d M YH:i:s") . " GMT");
+    header("Cache-Control: no-cache, must-revalidate");
+    header("Pragma: no-cache");
+    header("Content-type: application/x-msexcel");
+    header("Content-Disposition: attachment; filename=\"siss" . str_replace("/", "-", $this->url()) . "-" . date("YmdHis") . ".xls\"");
+    header("Content-Description: PHP Generated Data");
+    ob_start();
+endif;
+$dados = $this->resultado['dados'];
+$lista = $this->resultado['lista'];
+
+$colspan = 7;
+?>
+<style>
+<?php include 'css/documento.css' ?>
+</style>
+
+<?php if ($this->modo == 0): ?>
+    <a href="javascript:window.history.go(-1);void(0);" class="btn btn-success">Voltar</a><hr/>
+<?php endif; ?>
+
+<table border="1" class="largo sem-margem">
+    <tbody>
+
+        <tr>
+            <!--<td class="logo"><img src="http://desenvsiss.hiestgroup.com.br/img/logo-relatorio.png"/></td>-->
+            <td class="logo"><img src="/img/logo-relatorio.png"/></td>
+            <td class="titulo" colspan="<?php echo $colspan - 1 ?>"><h1>RELATÓRIO DE EXAMES ALTERADOS</h1></td>
+        </tr>
+
+        <tr><td colspan="<?php echo $colspan ?>">&nbsp;</td></tr>
+
+        <tr>
+            <th colspan="<?php echo $colspan ?>">DADOS</th>
+        </tr>
+
+        <?php foreach ($dados as $label => $valor): ?>
+            <tr>
+                <td class="etiqueta"><?php echo strtoupper($label) ?>:</td>
+                <td class="conteudo" colspan="<?php echo $colspan - 1 ?>"><?php echo $valor ?></td>
+            </tr>
+        <?php endforeach; ?>
+
+        <tr>
+            <th colspan="<?php echo $colspan ?>">FILTROS</th>
+        </tr>
+
+        <?php foreach ($this->filtro as $label => $valor): ?>
+            <tr>
+                <td class="etiqueta"><?php echo strtoupper($label) ?>:</td>
+                <td class="conteudo" colspan="<?php echo $colspan - 1 ?>"><?php echo $valor ?></td>
+            </tr>
+        <?php endforeach; ?>
+
+        <tr><td colspan="<?php echo $colspan ?>">&nbsp;</td></tr>
+
+        <tr>
+            <th colspan="1">DATA</th>
+            <th colspan="1">UNIDADE</th>
+            <th colspan="1">EMPRESA</th>
+            <th colspan="1">ESPECIALISTA</th>
+            <th colspan="1">PACIENTE</th>
+            <th colspan="1">EXAME</th>
+            <th colspan="1">OBSERVAÇÕES</th>
+        </tr>
+
+        <?php foreach ($lista as $item): ?>
+            <tr>
+                <td colspan="1" align="center"><?php echo $item['data'] ?></td>
+                <td colspan="1"><?php echo $item['unidade'] ?></td>
+                <td colspan="1"><?php echo $item['empresa'] ?></td>
+                <td colspan="1"><?php echo $item['especialista'] ?></td>
+                <td colspan="1"><?php echo $item['paciente'] ?></td>
+                <td colspan="1"><?php echo $item['exame'] ?></td>
+                <td colspan="1"><?php echo $item['detalhe'] ?></td>
+            </tr>
+        <?php endforeach; ?>
+
+    </tbody>
+</table>
+<?php
+if ($this->modo == 1):
+    echo utf8_decode(ob_get_clean());
+endif;

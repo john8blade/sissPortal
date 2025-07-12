@@ -1,0 +1,86 @@
+<?php
+header("Expires: Mon, 26 Jul 1997 05:00:00 GMT");
+header("Last-Modified: " . gmdate("D,d M YH:i:s") . " GMT");
+header("Cache-Control: no-cache, must-revalidate");
+header("Pragma: no-cache");
+header("Content-type: application/x-msexcel");
+header("Content-Disposition: attachment; filename=\"siss" . str_replace("/", "-", $this->url()) . "-" . date("YmdHis") . ".xls\"");
+header("Content-Description: PHP Generated Data");
+ob_start(); // Favor não remover isso
+
+
+$periodo = $tempoMedioEnvio = $indiceEnvio = $indiceAprovacao = null;
+
+if (isset($this->colecaoResultadosRelatorios['ResultadoEstatistico'])) {
+    $estatistico = $this->colecaoResultadosRelatorios['ResultadoEstatistico'];
+    $tempoMedioEnvio = $estatistico['tempoMedioEnvioProposta'];
+    $indiceEnvio = $estatistico['indiceEnvioProposta'];
+    $indiceAprovacao = $estatistico['indiceAprovacaoProposta'];
+    $periodo = $this->periodoRelatorio;
+}
+?>
+
+<style type="text/css">
+    body, table { font: 11px Arial; width: 100%; border-collapse: collapse; }
+</style>
+
+<?php $total_horas = $total_participantes = 0 ?>
+<table id="tabela-grid" border="1" style="width: 100%;">
+    <thead>
+
+        <tr>
+            <th colspan="12"><strong style="font-size: 18px;"><?php echo utf8_decode("Relatório de Propostas e Contratos") ?></strong></th>
+        </tr>
+        <tr>
+            <th colspan="3" style="text-align: left"><strong style="font-size: 12px;"><?php echo utf8_decode("Período") ?></strong></th>
+            <th colspan="3" style="text-align: left"><strong style="font-size: 12px;"><?php echo utf8_decode("1º - Tempo Médio de Envio de Propostas") ?></strong></th>
+            <th colspan="3" style="text-align: left"><strong style="font-size: 12px;"><?php echo utf8_decode("2º Índice de envio de Propostas") ?></strong></th>
+            <th colspan="3" style="text-align: left"><strong style="font-size: 12px;"><?php echo utf8_decode("3 º Índice de Aprovação") ?></strong></th>
+        </tr>
+
+        <tr>
+            <th colspan="3" style="text-align: left"><?php echo utf8_decode($periodo) ?></th>
+            <th colspan="3" style="text-align: left"><?php echo $tempoMedioEnvio ?></th>
+            <th colspan="3" style="text-align: left"><?php echo $indiceEnvio ?>%</th>
+            <th colspan="3" style="text-align: left"><?php echo $indiceAprovacao ?>%</th>
+        </tr>
+
+        <tr>
+            <th bgcolor="#dddddd" style="width: 450px"><strong>Empresa / Obra</strong></th>
+            <th bgcolor="#dddddd"><strong>Nome Contato Cliente</strong></th>
+            <th bgcolor="#dddddd"><strong>Telefone</strong></th>
+            <th bgcolor="#dddddd"><strong><?php echo utf8_decode('Serviços') ?></strong></th>
+            <th bgcolor="#dddddd"><strong><?php echo utf8_decode('N° Contrato') ?></strong></th>
+            <th bgcolor="#dddddd"><strong><?php echo utf8_decode('N° Proposta') ?></strong></th>
+            <th bgcolor="#dddddd"><strong>Representante Comercial</strong></th>
+            <th bgcolor="#dddddd"><strong><?php echo utf8_decode('Data de Solicitação da Proposta') ?></strong></th>
+            <th bgcolor="#dddddd"><strong>Data de Envio</strong></th>
+            <th bgcolor="#dddddd"><strong>Aprovado?</strong></th>
+            <th bgcolor="#dddddd"><strong><?php echo utf8_decode('Motivo') ?></strong></th>
+            <th bgcolor="#dddddd"><strong><?php echo utf8_decode('Data de Aprovação') ?></strong></th>
+        </tr>
+
+
+    </thead>
+
+    <tbody>
+        <?php $resultados = isset($this->colecaoResultadosRelatorios['ColecaoRegistrosBaseCalculo']) ? $this->colecaoResultadosRelatorios['ColecaoRegistrosBaseCalculo'] : array() ?>
+        <?php foreach ($resultados as $item): ?>
+            <tr>
+                <td><?php echo utf8_decode($item['empresa_razao']) ?></td>
+                <td><?php echo utf8_decode($item['contrato_responsavel_nome']) ?></td>
+                <td><?php echo utf8_decode($item['contrato_responsavel_telefone']) ?></td>
+                <td><?php echo utf8_decode($item['categorias_agrupadas']) ?></td>
+                <td><?php echo utf8_decode($item['contrato_numero']) ?></td>
+                <td><?php echo utf8_decode(str_pad($item['os_id'], 5, '0', STR_PAD_LEFT)) ?></td>
+                <td><?php echo utf8_decode($item['pessoa_nome']) ?></td>
+                <td><?php echo date('d/m/Y', strtotime($item['os_data_solicitacao'])) ?></td>
+                <td><?php echo date('d/m/Y', strtotime($item['os_data_envio'])) ?></td>
+                <td><?php echo utf8_decode(str_replace(array('0', '1', '2'), array('Nao', 'Sim', 'Aguardando'), $item['os_aprovada'])) ?></td>
+                <td><?php echo utf8_decode($item['complemento_situacao_os_descricao']) ?></td>
+                <td><?php echo (strlen($item['os_data_hora_aprovacao']) >= 10) ? date('d/m/Y', strtotime($item['os_data_hora_aprovacao'])) : null ?></td>
+            </tr>
+        <?php endforeach ?>
+    </tbody>
+
+</table>

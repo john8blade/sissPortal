@@ -1,0 +1,68 @@
+<?php
+header("Expires: Mon, 26 Jul 1997 05:00:00 GMT");
+header("Last-Modified: " . gmdate("D,d M YH:i:s") . " GMT");
+header("Cache-Control: no-cache, must-revalidate");
+header("Pragma: no-cache");
+header("Content-type: application/x-msexcel");
+header("Content-Disposition: attachment; filename=\"siss" . str_replace("/", "-", $this->url()) . "-" . date("YmdHis") . ".xls\"");
+header("Content-Description: PHP Generated Data");
+ob_start(); // Favor não remover isso
+?>
+
+<style type="text/css">
+    body, table { font: 11px Arial; width: 100%; border-collapse: collapse; }
+</style>
+
+<?php $total_horas = $total_participantes = 0 ?>
+<table id="tabela-grid" border="1" style="width: 100%;">
+    <thead>
+
+        <tr>
+            <th colspan="8"><strong style="font-size: 18px;"><?php echo utf8_decode("Relatório de Treinamentos Realizados") ?></strong></th>
+        </tr>
+        <tr>
+            <th colspan="8" style="text-align: left"><strong style="font-size: 12px;"><?php echo utf8_decode("Período: "), $this->paramPeriodoRelatorio ?></strong></th>
+        </tr>
+
+        <tr>
+            <th bgcolor="#dddddd"><strong>Data</strong></th>
+            <th bgcolor="#dddddd"><strong>Empresa / Obra</strong></th>
+            <th bgcolor="#dddddd"><strong>Treinamento</strong></th>
+            <th bgcolor="#dddddd"><strong><?php echo utf8_decode('Carga Horária') ?></strong></th>
+            <th bgcolor="#dddddd"><strong><?php echo utf8_decode('N°.Participantes') ?></strong></th>
+            <th bgcolor="#dddddd"><strong>Valor(R$)</strong></th>
+            <th bgcolor="#dddddd"><strong>Instrutor</strong></th>
+            <th bgcolor="#dddddd"><strong>Valor Instrutor(R$)</strong></th>
+        </tr>
+    </thead>
+    
+    <tbody>
+        <?php foreach ($this->colecaoResultadoRelatorio as $item): ?>
+            <tr>
+                <td  style="width: 100px"><?php echo date('d/m/Y', strtotime($item['treinamento_agenda_data_inicio'])) ?></td>
+                <td  style="width: 500px"><?php echo utf8_decode($item['empresa_razao']) ?></td>
+                <td  style="width: 500px"><?php echo utf8_decode($item['produto_nome']) ?></td>
+                <td  style="width: 100px;text-align: center"><?php echo $item['treinamento_agenda_carga_horaria'] ?></td>
+                <td  style="width: 100px;text-align: center"><?php echo $item['quantidade_participante'] ?></td>
+                <td  style="width: 100px;text-align: center">&nbsp;</td>
+                <td  style="width: 400px"><?php echo utf8_decode($item['pessoa_nome']) ?></td>
+                <td  style="width: 150px;text-align: center">&nbsp;</td>
+            </tr>
+            <?php $total_horas += (float) $item['treinamento_agenda_carga_horaria'] ?>
+            <?php $total_participantes += (float) $item['quantidade_participante'] ?>
+        <?php endforeach ?>
+    </tbody>
+    
+    <tfoot>
+        <tr>
+            <td bgcolor="#dddddd"></td>
+            <td bgcolor="#dddddd"></td>
+            <td bgcolor="#dddddd"></td>
+            <td bgcolor="#dddddd" style="text-align: center"><?php echo '<strong>', $total_horas, '</strong>' ?></td>
+            <td bgcolor="#dddddd" style="text-align: center"><?php echo '<strong>', $total_participantes, '</strong>' ?></td>
+            <td bgcolor="#dddddd"></td>
+            <td bgcolor="#dddddd"></td>
+            <td bgcolor="#dddddd"></td>
+        </tr>
+    </tfoot>
+</table>

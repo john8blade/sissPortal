@@ -1,0 +1,49 @@
+<style>
+<?php include 'css/documento.css' ?>
+</style>
+
+<table border="0" class="largo sem-margem">
+    <tbody>
+        <tr>
+            <td class="logo"></td>
+            <td class="titulo" colspan="4"><h1>RELATÓRIO DE AGENDADOS</h1></td>
+        </tr>
+    </tbody>
+</table>
+
+<table>
+    <tbody>
+        <?php foreach ($this->resultado['dados'] as $label => $valor): ?>
+            <tr>
+                <td class="label"><?php echo strtoupper($label) ?>:</td>
+                <td class="valor"><?php echo $valor ?></td>
+            </tr>
+        <?php endforeach; ?>
+    </tbody>
+</table>
+
+<table class="largo">
+    <thead>
+        <tr>
+            <th>DATA</th>
+            <th>EMPRESA</th>
+            <th>NOME</th>
+            <th>TIPO</th>
+            <th>ESPECIALISTA</th>
+            <th>PRESENÇA</th>
+        </tr>
+    </thead>
+    <tbody>
+        <?php foreach ($this->resultado['lista'] as $item): ?>
+            <?php Util::dump($item) ?>
+            <tr>
+                <td align="center"><?php echo $item['data'] ?></td>
+                <td><?php echo $item['razao_social'] ?></td>
+                <td><?php echo $item['nome'] ?></td>
+                <td><?php echo $item['tipo'] ?></td>
+                <td><?php echo $item['especialista'] ?></td>
+                <td><?php echo $item['presenca'] ?></td>
+            </tr>
+        <?php endforeach; ?>
+    </tbody>
+</table>

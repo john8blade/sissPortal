@@ -1,0 +1,35 @@
+<form action="/documento-operacional/imprimir-tabela" method="post" target="_blank">
+
+    <div class="well well-small"><i class="icon-th-large"></i>&nbsp;Categorias</div>
+
+    <input type="hidden" name="categoriadoproduto_id" value="">
+
+    <div class="row-fluid">
+        <div class="span12">
+            <select name="empresa_id">
+                <option value="0">---</option>
+                <?php foreach (Application_Model_Precificacao::obterFornecedores() as $item): ?>
+                    <option value="<?php echo $item['empresa_id'] ?>"><?php echo $item['empresa_fantasia'] . ' (' . $item['unidade_sigla'] . ')' ?></option>
+                <?php endforeach ?>
+            </select>
+        </div>
+    </div>
+
+    <div class="row-fluid">
+        <div class="span12">
+            <?php foreach ($this->categorias as $categorias) : ?>
+                <label class="checkbox" style="float:left;">
+                    <input type="checkbox" name="listaCategoria[<?php echo $categorias["categoriadoproduto_id"]; ?>]" value="<?php echo $categorias["categoriadoproduto_id"]; ?>"/>&nbsp;<?php echo $categorias["categoriadoproduto_nome"]; ?>&nbsp;&nbsp;&nbsp;
+                </label>
+            <?php endforeach; ?>               
+        </div>
+    </div>
+
+    <div class="row-fluid">
+        <div class="span6">
+            <label>&nbsp;</label>
+            <button name="gerar" type="submit" class="btn btn-success">Gerar</button>
+        </div>
+    </div>
+
+</form>

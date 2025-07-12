@@ -1,0 +1,71 @@
+<?php echo $this->erro2 ? ('<div class="alert alert-danger">' . $this->erro2 . '</div>') : ''; ?>
+<script type="text/javascript" src="https://www.google.com/jsapi"></script>
+
+<div class="panel panel-primary">
+
+    <div class="panel-heading"><i class="fa fa-check"></i>Relatório de Funcionários</div>
+
+    <div class="panel-body">
+
+        <form action="/relatorio/gerar" method="post" target="iframe-receptor">
+
+            <div class="row">
+
+                <div class="col-md-3">
+                    <div class="form-group">
+                        <label>Funcionário</label>
+                        <select class="form-control" id="funcionario" name="funcionario_id">
+                            <option value="0">-- Não Obrigatório --</option>
+                            <?php foreach ($this->funcionarios as $funcionario) : ?>
+                                <option value="<?php echo $funcionario['pessoa_id'] ?>"><?php echo $funcionario['pessoa_nome'] ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="col-md-2">
+                    <div class="form-group">
+                        <label>Setor</label>
+                        <input class="form-control" type="text" name="setor" value="" placeholder="-- Não Obrigatório --" />
+                    </div>
+                </div>
+
+                <div class="col-md-3">
+                    <div class="form-group">
+                        <label>Cargo</label>
+                        <select class="form-control" id="cargo" name="cargo_id">
+                            <option value="0">-- Não Obrigatório --</option>
+                            <?php foreach ($this->cargo as $cargo) : ?>
+                                <option value="<?php echo $cargo['cargo_id'] ?>"><?php echo $cargo['cargo_nome'] ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="col-md-3">
+                    <div class="form-group">
+                        <label>Função</label>
+                        <select class="form-control" id="funcao" name="funcao_id">
+                            <option value="0">-- Não Obrigatório --</option>
+                            <?php foreach ($this->funcao as $funcao) : ?>
+                                <option value="<?php echo $funcao['funcao_id'] ?>"><?php echo $funcao['funcao_nome'] ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="col-md-1">
+                    <div class="form-group">
+                        <label>&nbsp;</label>
+                        <button class="form-control btn btn-success" type="submit"><i class="icon-print"></i>&nbsp;Gerar</button>
+                    </div>
+                </div>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+

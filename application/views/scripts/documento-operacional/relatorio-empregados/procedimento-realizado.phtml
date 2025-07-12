@@ -1,0 +1,123 @@
+<?php ob_start() ?>
+
+<table class="largo sem-bordas header">
+    <tbody>
+        <tr>
+            <td><img src="img/logo-relatorio.png"/></td>
+            <td align="center" valign="middle"><h1>RELATÓRIO DE PROCEDIMENTOS REALIZADOS</h1><h4>PERÍODO: <?php echo Util::dataBR($this->dataV) . ' à ' . Util::dataBR($this->dataVi) ?></h4></td>
+            <td align="right" valign="top">{PAGENO}/{nbpg}</td>
+        </tr>
+    </tbody>
+</table>
+
+<?php $header = ob_get_clean() ?>
+
+<?php ob_start() ?>
+
+<style type="text/css">
+    * { margin: 0; padding: 0; position: relative; }
+    body, table { font: normal 10px Arial; }
+    h2 { font-size: 14px; }
+    table { border-collapse: collapse; }
+    table tr th, table tr td { padding: 2px; white-space: nowrap; vertical-align: top; }
+    table tr th { border-top: 1px solid black; border-bottom: 1px solid black; text-align: left; }
+    table tr td { border-bottom: 1px solid lightgrey; }
+    table.sem-bordas tr th, table.sem-bordas tr td { border: none; }
+    .sem-bordas { border: none; }
+    .largo { width: 100%; }
+    .justo { width: 1px; }
+    .moeda { text-align: right; }
+    .label { font-weight: bold; text-align: right; }
+</style>
+<h2>RESUMO</h2>
+
+<table class="largo">
+    <thead>
+        <tr>
+            <th style="width: 15%" align="center">QUANTIDADE</th>
+            <th style="width: 15%" class="justo">&nbsp;</th>
+            <th style="width: 15%" class="justo">&nbsp;</th>
+            <th class="justo">&nbsp;</th>
+            <th class="justo">&nbsp;</th>
+            <th>PRODUTO</th>
+            <th class="justo">&nbsp;</th>
+<!--            <th class="justo">#</th>
+            <th class="justo">TOTAL</th>-->
+        </tr>
+    </thead>
+    <tbody>
+        <?php $totalGeral = 0 ?>
+        <?php foreach ($this->resumido as $item): ?>
+            <?php $valor = $item['precificacao_valor_compra'] ?>
+            <?php $totalParcial = $valor * $item['qtd'] ?>
+            <?php $totalGeral += $totalParcial ?>
+            <tr>
+                <td align="center" style="width: 15%"><?php echo Util::preencherComZero($item['qtd'], 2) ?></td>
+    <!--                <td>R$</td>
+                <td align="right"><?php echo Util::moeda($valor) ?></td>-->
+                <td>&nbsp;</td>
+                <td>&nbsp;</td>
+                <td>&nbsp;</td>
+                <td>&nbsp;</td>
+                <td><?php echo $item['produto_nome'] ?></td>
+                <td>&nbsp;</td>
+
+
+                                        <!--                <td>R$</td>
+                                        <td align="right"><?php echo Util::moeda($totalParcial) ?></td>-->
+            </tr>
+        <?php endforeach; ?>
+    </tbody>
+</table>
+
+<br/>
+
+<h2>DETALHAMENTO</h2>
+
+<table class="largo">
+    <thead>
+        <tr>
+            <th>NOME</th>
+            <th>PROCEDIMENTO</th>
+            <th class="justo" align="center">DATA</th>
+            <th class="justo" align="center">PRESENTE?</th>
+            <th class="justo">&nbsp;</th>
+<!--            <th class="justo">#</th>
+            <th class="justo">VALOR</th>-->
+        </tr>
+    </thead> 
+    <tbody>
+        <?php foreach ($this->detalhado as $item): ?>
+            <?php
+            if ($item['agenda_presente_exame'] == 0) {
+                $presente = "NÃO";
+            } else {
+                $presente = "SIM";
+            }
+            ?>    
+            <tr>
+                <td><?php echo $item['pessoa_nome'] ?></td>
+                <td><?php echo $item['produto_nome'] ?></td>
+                <td><?php echo Util::dataBR($item['agenda_data_exame']) ?></td>
+                <td align="center"><?php echo $presente ?></td>
+                <td>&nbsp;</td>
+    <!--                <td>R$</td>
+                <td align="right"><?php echo Util::moeda($item['precificacao_valor_compra']) ?></td>-->
+            </tr>
+        <?php endforeach ?>
+    </tbody>
+</table>
+
+<?php
+$html = ob_get_clean();
+
+$localScripts = '../application/views/scripts/documento-operacional/';
+require_once "{$localScripts}include/funcoes.php";
+$footer = obterHtmlDoRodapeEmPdf();
+
+include 'MPDF/mpdf.php';
+$mpdf = new mPDF('', 'A4', 0, '', 15, 15, 35, 30, 9, 9, 'P');
+$mpdf->SetHTMLHeader($header);
+$mpdf->SetHTMLFooter($footer);
+$mpdf->WriteHTML($html);
+$mpdf->Output();

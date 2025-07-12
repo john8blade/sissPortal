@@ -1,0 +1,362 @@
+<?php
+$enderecoDaUnidade = (array) json_decode($_SESSION['usuario']['unidadeativa']['unidade_descricao']);
+
+require_once 'MPDF/mpdf.php';
+$localScripts = '../application/views/scripts/documento-operacional/';
+require_once "{$localScripts}include/funcoes.php";
+$htmlRodape = obterHtmlDoRodapeEmPdf();
+$htmlCabecalho = file_get_contents($localScripts . 'os/' . 'cabecalho.html');
+
+$p = new mPDF('utf-8', 'A4', 0, '', 10, 10, 35, 30, 8, 8);
+$p->SetHTMLHeader($htmlCabecalho);
+$p->SetHTMLFooter($htmlRodape);
+$p->setAutoTopMargin = false;
+$p->setAutoBottomMargin = false;
+ob_start();
+?>
+<style>
+    table#tabela tr td { font: normal 12px Arial; border: 1px solid #ddd; }
+    table#tabela tr td.etiqueta { font-weight: bold; padding: 4px; }
+    table#tabela tr td.titulo { text-align: center; font-weight: bold; background: #ddd; }
+    table#tabela tr td.separador { padding: 10px; border: none; }
+    table#tabela tr td.centro { text-align: center; }
+</style>
+<table id="tabela" style="border-collapse: collapse; width: 100%;">
+    <tr>
+        <td colspan="7" class="titulo">ORDEM DE SERVIÇO</td>
+    </tr>
+    <tr>
+        <td colspan="7" class="separador"></td>
+    </tr>
+    <tr>
+        <td colspan="4" class="etiqueta">N° da Ficha Cadastral / OS:</td>
+        <td colspan="3"><?php echo @$this->atributos['contrato']['contrato_numero']; ?></td>
+    </tr>
+    <tr>
+        <td class="etiqueta">Nº do Contrato:</td>
+        <td colspan="2"><?php echo @$this->atributos['contrato']['contrato_numero']; ?></td>
+        <td class="etiqueta">Data Início:</td>
+        <td><?php echo Util::dataBR($this->atributos['vigencia']['vigencia_data_inicio']); ?></td>
+        <td class="etiqueta">Data Fim:</td>
+        <td><?php echo Util::dataBR(@$this->atributos['vigencia']['vigencia_data_fim']); ?></td>
+    </tr>
+    <tr>
+        <td colspan="5" class="etiqueta">Endereço para Faturamento / Nota Fiscal</td>
+        <td class="etiqueta">Nº de Funcionários</td>
+        <td><?php echo (int) @$this->atributos['efetivo']; ?></td>
+    </tr>
+    <tr>
+        <td class="etiqueta">Razão Social:</td>
+        <td colspan="3"><?php echo @$this->atributos['faturamento']['empresa_razao']; ?></td>
+        <td class="etiqueta">Data:</td>
+        <td colspan="2"><?php echo date('d/m/Y'); ?></td>
+    </tr>
+    <tr>
+        <td class="etiqueta">Rua / Av:</td>
+        <td colspan="6"><?php echo @$this->atributos['faturamento']['endereco']['endereco_logradouro']; ?></td>
+    </tr>
+    <tr>
+        <td class="etiqueta">Bairro:</td>
+        <td colspan="2"><?php echo @$this->atributos['faturamento']['endereco']['endereco_bairro']; ?></td>
+        <td class="etiqueta">Cidade:</td>
+        <td><?php echo @$this->atributos['faturamento']['endereco']['endereco_cidade']; ?></td>
+        <td class="etiqueta">UF:</td>
+        <td><?php echo @$this->atributos['faturamento']['endereco']['endereco_uf']; ?></td>
+    </tr>
+    <tr>
+        <td class="etiqueta">CEP:</td>
+        <td><?php echo Util::cep(@$this->atributos['faturamento']['endereco']['endereco_cep']); ?></td>
+        <td class="etiqueta">Telefone:</td>
+        <td>
+            <?php foreach ($this->atributos['faturamento']['telefones'] as $tel) : ?>
+                <?php echo Util::tel($tel['telefone_ddd'] . $tel['telefone_numero']) . ' / '; ?>
+            <?php endforeach; ?>
+        </td>
+        <td class="etiqueta">FAX:</td>
+        <td colspan="2"><?php echo @$this->atributos['']; ?></td>
+    </tr>
+    <tr>
+        <td class="etiqueta">CNPJ:</td>
+        <td><?php echo Util::cnpj($this->atributos['faturamento']['empresa_cnpj']); ?></td>
+        <td class="etiqueta">Insc. Estadual:</td>
+        <td><?php echo @$this->atributos['faturamento']['empresa_insc_estadual']; ?></td>
+        <td class="etiqueta">Insc. Municipal:</td>
+        <td colspan="2"><?php echo @$this->atributos['faturamento']['empresa_insc_municipal']; ?></td>
+    </tr>
+    <tr>
+        <td class="etiqueta">CNAE:</td>
+        <td><?php echo @$this->atributos['faturamento']['empresa_cnae']; ?></td>
+        <td class="etiqueta">Grau de Risco:</td>
+        <td><?php echo @$this->atributos['faturamento']['empresa_grau_risco']; ?></td>
+        <td class="etiqueta">E-mail:</td>
+        <td colspan="2"><?php echo @$this->atributos['faturamento']['email_faturamento']; ?></td>
+    </tr>
+    <tr>
+        <td class="etiqueta">Contato Financeiro:</td>
+        <td colspan="3"><?php echo @$this->atributos['']; ?></td>
+        <td class="etiqueta">E-mail:</td>
+        <td colspan="2"><?php echo @$this->atributos['faturamento']['email_cobranca']; ?></td>
+    </tr>
+    <tr>
+        <td colspan="7" class="separador"></td>
+    </tr>
+    <tr>
+        <td colspan="7" class="titulo">Contato na contratante para fornecimento de informações administrativas e acompanhamento dos trabalhos</td>
+    </tr>
+    <tr>
+        <td class="etiqueta">Nome:</td>
+        <td colspan="2"><?php echo @$this->atributos['cobranca']['empresa_razao']; ?></td>
+        <td class="etiqueta">Telefone:</td>
+        <td>
+            <?php foreach ($this->atributos['cobranca']['telefones'] as $tel) : ?>
+                <?php echo Util::tel($tel['telefone_ddd'] . $tel['telefone_numero']) . ' / '; ?>
+            <?php endforeach; ?>
+        </td>
+        <td class="etiqueta">E-mail:</td>       
+        <td><?php echo @$this->atributos['faturamento']['email_responsavel']; ?></td>
+    </tr>
+    <tr>
+        <td class="etiqueta">Representante HIEST:</td>
+        <td colspan="2"><?php echo @$this->atributos['vendedor']['dados']['pessoa_nome']; ?></td>
+        <td class="etiqueta">Celular:</td>
+        <td>
+            <?php foreach ($this->atributos['vendedor']['telefones'] as $tel) : ?>
+                <?php echo Util::tel($tel['telefone_ddd'] . $tel['telefone_numero']) . ' / '; ?>
+            <?php endforeach; ?>
+        </td>
+        <td class="etiqueta">E-mail:</td>
+        <td><?php echo @$this->atributos['vendedor']['dados']['usuario_email']; ?></td>
+    </tr>
+    <tr>
+        <td colspan="7" class="separador"></td>
+    </tr>
+    <tr>
+        <td colspan="7" class="titulo">Dados e endereço para correnspondência e Cobrança</td>
+    </tr>
+    <tr>
+        <td class="etiqueta">Razão Social</td>
+        <td colspan="3"><?php echo @$this->atributos['cobranca']['empresa_razao']; ?></td>
+        <td class="etiqueta">Data:</td>
+        <td colspan="2"><?php echo date('d/m/Y'); ?></td>
+    </tr>
+    <tr>
+        <td class="etiqueta">Rua / Av:</td>
+        <td colspan="6"><?php echo @$this->atributos['cobranca']['endereco']['endereco_logradouro']; ?></td>
+    </tr>
+    <tr>
+        <td class="etiqueta">Bairro:</td>
+        <td colspan="2"><?php echo @$this->atributos['cobranca']['endereco']['endereco_bairro']; ?></td>
+        <td class="etiqueta">Cidade:</td>
+        <td><?php echo @$this->atributos['cobranca']['endereco']['endereco_cidade']; ?></td>
+        <td class="etiqueta">UF:</td>
+        <td><?php echo @$this->atributos['cobranca']['endereco']['endereco_uf']; ?></td>
+    </tr>
+    <tr>
+        <td class="etiqueta">CEP:</td>
+        <td><?php echo Util::cep(@$this->atributos['cobranca']['endereco']['endereco_cep']); ?></td>
+        <td class="etiqueta">Telefone:</td>
+        <td>
+            <?php foreach ($this->atributos['cobranca']['telefones'] as $tel) : ?>
+                <?php echo Util::tel($tel['telefone_ddd'] . $tel['telefone_numero']) . ' / '; ?>
+            <?php endforeach; ?>
+        </td>
+        <td class="etiqueta">FAX:</td>
+        <td colspan="2"><?php echo @$this->atributos['']; ?></td>
+    </tr>
+    <tr>
+        <td class="etiqueta">CNPJ:</td>
+        <td><?php echo Util::cnpj(@$this->atributos['cobranca']['empresa_cnpj']); ?></td>
+        <td class="etiqueta">Insc. Estadual:</td>
+        <td><?php echo @$this->atributos['cobranca']['empresa_insc_estadual']; ?></td>
+        <td class="etiqueta">Insc. Municipal:</td>
+        <td colspan="2"><?php echo @$this->atributos['cobranca']['empresa_insc_municipal']; ?></td>
+    </tr>
+    <tr>
+        <td colspan="7" class="separador"></td>
+    </tr>
+    <tr>
+        <td colspan="7" class="titulo">Locais onde o serviços serão executados</td>
+    </tr>
+    <?php foreach ($this->atributos['locaisEntrega'] as $item): ?>
+
+        <tr>
+            <td class="etiqueta">Contratante:</td>
+            <td colspan="3"><?php echo $item['localentrega_contratante']; ?></td>
+            <td class="etiqueta">Identificação:</td>
+            <td colspan="2"><?php echo $item['localentrega_identificacao'] ?></td>
+        </tr>
+
+        <tr>
+            <td class="etiqueta">Rua / Av.:</td>
+            <td colspan="6"><?php echo $item['endereco_logradouro']; ?></td>
+        </tr>
+        <tr>
+            <td class="etiqueta">Bairro:</td>
+            <td colspan="2"><?php echo $item['endereco_bairro']; ?></td>
+            <td class="etiqueta">Cidade:</td>
+            <td><?php echo $item['endereco_cidade']; ?></td>
+            <td class="etiqueta">UF:</td>
+            <td><?php echo $item['endereco_uf']; ?></td>
+        </tr>
+        <tr>
+            <td class="etiqueta">CEP:</td>
+            <td><?php echo Util::cep($item['endereco_cep']); ?></td>
+            <td class="etiqueta">Telefone:</td>
+            <td></td>
+            <td class="etiqueta">Cidade:</td>
+            <td colspan="2"><?php echo $item['endereco_cidade']; ?></td>
+        </tr>
+        <tr>
+            <td colspan="7" class="separador"></td>
+        </tr>
+    <?php endforeach ?>
+    <tr>
+        <td colspan="7" class="separador"></td>
+    </tr>
+    <tr>
+        <td colspan="7" class="separador"></td>
+    </tr>
+    <tr>
+        <td colspan="7" class="separador"></td>
+    </tr>
+    <tr>
+        <td colspan="7" class="separador"></td>
+    </tr>
+    <tr>
+        <td colspan="7" class="separador"></td>
+    </tr>
+    <tr>
+        <td colspan="7" class="separador"></td>
+    </tr>
+    <tr>
+        <td colspan="7" class="titulo">Informações sobre impostos</td>
+    </tr>
+    <tr>
+        <td></td>
+        <td class="etiqueta">Sim</td>
+        <td class="etiqueta">Não</td>
+        <td></td>
+        <td class="etiqueta">Sim</td>
+        <td class="etiqueta">Não</td>
+        <td></td>
+    </tr>
+    <tr>
+        <td class="etiqueta">Optante pelo simples?</td>
+        <td><?php echo (int) @$this->atributos['contrato']['contrato_optante_simples'] == 1 ? '&times;' : '' ?></td>
+        <td><?php echo (int) @$this->atributos['contrato']['contrato_optante_simples'] == 0 ? '&times;' : '' ?></td>
+        <td class="etiqueta">ISS recolhido na fonte?</td>
+        <td><?php echo (int) @$this->atributos['contrato']['contrato_iss_recolhido_fonte'] == 0 ? '&times;' : '' ?></td>
+        <td><?php echo (int) @$this->atributos['contrato']['contrato_iss_recolhido_fonte'] == 1 ? '&times;' : '' ?></td>
+        <td></td>
+    </tr>
+    <tr>
+        <td class="etiqueta">Destacar INSS na Nota Fiscal?</td>
+        <td><?php echo (int) @$this->atributos['contrato']['contrato_destacar_inss_nota'] == 0 ? '&times;' : '' ?></td>
+        <td><?php echo (int) @$this->atributos['contrato']['contrato_destacar_inss_nota'] == 1 ? '&times;' : '' ?></td>
+        <td colspan="4"></td>
+    </tr>
+    <tr>
+        <td colspan="7" class="separador"></td>
+    </tr>
+</table>
+<table id="tabela" style="border-collapse: collapse; width: 100%;">
+    <tr>
+        <td colspan="7" class="titulo">Condições de faturamento</td>
+    </tr>
+    <tr>
+        <td class="etiqueta">Local</td>
+        <td class="etiqueta">Tipo de Serviço</td>
+        <td class="etiqueta">Valor Total</td>
+        <td class="etiqueta">Valor Mensal</td>
+        <td class="etiqueta">Nº de Parcelas</td>
+        <td class="etiqueta">Vencimento</td>
+        <td class="etiqueta">Tempo Previsto para Entrega</td>
+    </tr>
+
+    <?php foreach ($this->atributos['produtos'] as $pro) : ?>
+
+        <!-- Coloca os números em ordem crescente de acordo com a quantidade de produto, exemplo: 1,2,3... -->
+        <?php $i = $pro[0] + 1; ?>
+        <?php $total = $total + $i; ?>
+        <!-- Fim -->
+
+        <tr>
+            <td><?php echo $pro['localentrega_identificacao'] ?></td>
+            <td><?php echo $pro['produto_nome'] ?></td>
+            <?php if (($pro['categoriadoproduto_codigo_fixo'] == '0004') && ($this->tipoOs == 'externa')) : ?>
+                <?php $tot = $pro['produto_contratado_valor_venda'] * $pro['produto_contratado_efetivo'] ?>
+                <?php $ListaTotal += $tot; ?>
+                <td><?php echo ''; #('R$' . number_format($pro['produto_contratado_valor_venda'] * $pro['produto_contratado_efetivo'], 2, ',', '.'))      ?></td>
+            <?php else: ?>
+                <?php $tot = $pro['produto_contratado_valor_venda']; ?>
+                <?php $ListaTotal += $tot; ?>
+                <td><?php echo ($this->tipoOs == 'externa') ? $pro['produto_contratado_valor_venda'] > 0 ? ('R$' . number_format($pro['produto_contratado_valor_venda'], 2, ',', '.')) : ''  : '-' ?></td>
+            <?php endif ?>
+            <?php $numParc = count($pro['parcelamento']) > 0 ? count($pro['parcelamento']) : 1; ?>
+            <?php $round = ($pro['categoriadoproduto_codigo_fixo'] == '0004') ? $tot : round($tot / $numParc, 2); ?>
+            <?php $fatMin = ($pro['categoriadoproduto_codigo_fixo'] == '0004') ? $pro['produto_contratado_faturamento_minimo'] : (isset($fatMin) && $fatMin > 0 ? $fatMin : 0); ?>
+            <?php $valorMensal = ($pro['categoriadoproduto_codigo_fixo'] == '0004') ? ($pro['produto_contratado_faturamento_minimo'] > $round ? $pro['produto_contratado_faturamento_minimo'] : $round) : $round; ?>
+            <td><?php echo 'R$ ' . Util::moeda($valorMensal) ?></td>
+            <td><?php echo ($pro['categoriadoproduto_codigo_fixo'] != '0004') ? $numParc : null; ?></td>
+            <td>
+                <?php foreach ($pro['parcelamento'] as $parc): ?>
+                    <?php if ((int) $parc['parcelamento_faturado'] == 0) : ?>
+                        <?php echo Util::dataBR($parc['parcelamento_data']) ?>
+                        <?php break ?>
+                    <?php endif ?>
+                <?php endforeach ?>
+            </td>
+            <td><?php null ?></td>
+        </tr>
+    <?php endforeach; ?>  
+
+    <?php $valorTotal = $ListaTotal; ?>
+
+    <tr>
+        <td class="etiqueta" colspan="7">Faturamento mínimo do PCMSO (Coordenação): R$ <?php echo Util::moeda($fatMin) ?></td>
+    </tr>
+    <tr>
+        <td colspan="7" class="etiqueta">Observações</td>
+    </tr>
+
+     <tr>
+         <td colspan="7" style="text-align: justify"><?php echo (isset($this->atributos['os']) && is_array($this->atributos['os']) && count($this->atributos['os']) > 0) ?  $this->atributos['os']['os_observacao'] : null;   ?></td>
+    </tr>
+    
+    <tr>
+        <td colspan="7" class="separador"></td>
+    </tr>
+    <tr>
+        <td colspan="7"><?php echo @$enderecoDaUnidade['local'] ?>, <?php echo date('d'); ?> de <?php echo util::nomeDoMes(date('m')); ?> de <?php echo date('Y'); ?></td>
+    </tr>
+    <tr>
+        <td colspan="7" class="separador"></td>
+    </tr>
+    <tr>
+        <td colspan="7">De acordo:</td>
+    </tr>
+    <tr>
+        <td colspan="7" class="separador"></td>
+    </tr>
+    <tr>
+        <td colspan="2"></td>
+        <td>Assinatura</td>
+        <td colspan="4"></td>
+    </tr>
+    <tr>
+        <td colspan="2"><?php echo isset($this->atributos['vendedor']['dados']['pessoa_nome']) ? $this->atributos['vendedor']['dados']['pessoa_nome'] : null; #echo($this->atributos['gerente']["pessoa_nome"]); ?></td>
+        <td>Nome:</td>
+        <td colspan="4"><?php echo $this->atributos['contrato']['contrato_responsavel_nome']; ?></td>
+    </tr>
+    <tr>
+        <td colspan="2">Hiest Assessoria Ltda.</td>
+        <td>Empresa:</td>
+        <td colspan="4"><?php echo $this->atributos['contratante']['empresa_razao']; ?></td>
+    </tr>
+</table>
+<?php
+
+$htmlCorpo = ob_get_clean();
+$htmlCorpo . '</body></html>';
+$p->WriteHTML($htmlCorpo);
+$p->Output();

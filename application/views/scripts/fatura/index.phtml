@@ -1,0 +1,120 @@
+<script type="text/javascript">
+
+    $(function () {
+        $(".filtro").on("change", function () {
+            filtrar('/fatura');
+        });
+    });
+
+    var enderecoAcessoFatura = "<?php echo $this->urlAcessoFatura ?>";
+
+    function abrirJanelaFatura(faturaId) {
+        if (faturaId) {
+            var configuracao = "width=auto,height=auto,menubar=0,status=0,fullscreen=1,location=0,titlebar=0";
+            var url = enderecoAcessoFatura + "/documento-operacional/imprimir-fatura/faturaid/" + faturaId + '/';
+            window.open(url, "Fatura", configuracao);
+        }
+    }
+
+    function abrirJanelaRomaneio(id) {
+        if (id) {
+            var configuracao = "width=auto,height=auto,menubar=0,status=0,fullscreen=1,location=0,titlebar=0";
+            var url = enderecoAcessoFatura + "/documento-operacional/imprimir-romaneio/id/" + id + '/';
+            window.open(url, "Romaneio", configuracao);
+        }
+    }
+
+    function modalAnexos(id) {
+        $.ajax({
+            type: "get",
+            dataType: "json",
+            url: "/ajax/json/servico/obter-colecao-anexo-fatura/fatura_id/" + id,
+            success: function (data, text) {
+                $("#modal").modal('show');
+                $("#modal-title").html("Anexos da Fatura");
+                if (data.Resultado.length) {
+                    var html = '<table class="table table-condensed">';
+                    html += '<tr><th class="fit"><i class="fa fa-bolt no-margin"></i></th><th>Descrição</th></tr>';
+                    for (var i in data.Resultado) {
+                        var item = data.Resultado[i];
+                        html += '<tr>';
+                        html += '<td><a data-toggle="tooltip" title="Baixar Anexo" class="btn btn-xs btn-default" href="/arquivo-upload/descarregar/id/' + item.fk_arquivo_upload_id + '"><i class="fa fa-file no-margin"></i></a></td>';
+                        html += '<td>' + item.anexo_fatura_descricao + '</td>';
+                        html += '</tr>';
+                    }
+                    html += '</table>';
+                    html += '<a href="' + LINK_BRADESCO + '" target="_blank">Para atualizar o boleto, clique aqui.</a>';
+                    $("#modal-inner").html(html);
+                } else {
+                    $("#modal-inner").html('<div class="alert alert-warning">Nenhum anexo disponível para esta fatura.</div>');
+                }
+            },
+            error: function (request, status, error) {
+                alert(request.responseText);
+            }
+        });
+    }
+
+</script>
+
+<?php $this->render('configuracao-paginador.php'); ?>
+
+<div class="panel panel-primary">
+
+    <div class="panel-heading">
+        <i class="fa fa-barcode"></i>Minhas Faturas
+    </div>
+
+    <div class="panel-body table-responsive">
+
+        <table border="0" class="table table-hover">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th class="text-center">Fatura</th>
+                    <th>Empresa</th>
+                    <th class="text-center">Período</th>
+                    <th class="text-center">Vencimento</th>
+                    <th class="text-center">Pago em</th>
+                    <th>Situação</th>
+                </tr>
+                <tr class="tr-filtro">
+                    <th><a href="/fatura" class="btn btn-xs btn-danger" data-toggle="tooltip" title="Limpar filtros"><i class="fa fa-remove no-margin"></i></a></th>
+                    <th class="text-center"></th>
+                    <th><input class="filtro" type="text" value="<?php echo $this->parametrosPesquisa['filtro-empresa'] ?>" id="filtro-empresa" placeholder="Filtro..."></th>
+                    <th class="text-center"><input class="filtro mask-data" type="text" value="<?php echo $this->parametrosPesquisa['filtro-data-periodo'] ?>" id="filtro-data-periodo" placeholder="Filtro..."></th>
+                    <th class="text-center"><input class="filtro mask-data" type="text" value="<?php echo $this->parametrosPesquisa['filtro-data-vencimento'] ?>" id="filtro-data-vencimento" placeholder="Filtro..."></th>
+                    <th class="text-center"><input class="filtro mask-data" type="text" value="<?php echo $this->parametrosPesquisa['filtro-data-pagamento'] ?>" id="filtro-data-pagamento" placeholder="Filtro..."></th>
+                    <th>
+                        <select class="filtro" id="filtro-status">
+                            <option value="0">---</option>
+                            <?php foreach ($this->statusFatura as $item) : ?>
+                                <option <?php echo ((int) $item['statusfatura_id'] == (int) $this->parametrosPesquisa['filtro-status']) ? ' selected="selected" ' : ''; ?> value="<?php echo $item['statusfatura_id'] ?>"><?php echo $item['statusfatura_nome'] ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php foreach ($this->itensPaginados as $item): ?>
+                    <tr style="<?php if ($item['statusfatura_nome'] == 'ATRASADO' OR $item['statusfatura_nome'] == 'INADIMPLENTE' OR $item['statusfatura_nome'] == 'PERDIMENTO') : ?>background-color: #FFCC99 <?php endif; ?>">
+                        <td class="fit">
+                            <a class="btn btn-xs btn-default" href="javascript:;" onclick="modalAnexos('<?php echo $item['fatura_id'] ?>')" rel="tooltip" title="Anexos"><i class="fa fa-file no-margin" ></i></a>
+                            <a target="_blank" class="btn btn-xs btn-default" href="/documento-operacional/imprimir-fatura/faturaid/<?php echo $item['fatura_id']; ?>/" rel="tooltip" title="Fatura"><i class="fa fa-print no-margin"></i></a>
+                        </td>
+                        <td class="text-center"><?php echo $item['fatura_id'] ?></td>
+                        <td><?php echo $item['empresa_razao'] ?></td>
+                        <td class="text-center"><?php echo Util::dataBR(substr($item['fatura_data_inicio_apuracao'], 0, 10)) . ' à ' . Util::dataBR(substr($item['fatura_data_fim_apuracao'], 0, 10)) ?></td>
+                        <td class="text-center"><?php echo Util::dataBR($item['fatura_data_vencimento']) ?></td>
+                        <td class="text-center"><?php echo Util::dataBR($item['fatura_data_pagamento']) ?></td>
+                        <td><?php echo $item['statusfatura_nome'] ?></td>
+                    </tr>
+                <?php endforeach ?>
+            </tbody>
+        </table>
+
+        <?php echo $this->render('criar-paginador.phtml'); ?>
+
+    </div>
+
+</div>

@@ -1,0 +1,225 @@
+
+<?php
+#util::dump($this->aprovados);
+
+error_reporting(E_ERROR | E_PARSE);
+if (count($this->aprovados) == 0) {
+    echo '<script>alert("NENHUM APROVADO NESTE TREINAMENTO");window.close();</script>';
+    exit;
+}
+
+require_once "../application/views/scripts/documento-operacional/include/funcoes.php";
+$rodape = "";// '<div class="div_fonte_menor">' . obterHtmlDoRodapeEmPdf() . '</div>';
+
+include 'MPDF/mpdf.php';
+
+$colspan = '4';
+
+$mpdf = new mPDF('utf-8', 'A4', 0, '', 25, 15, 40, 5, 9, 9);
+$mpdf->SetImportUse();
+$mpdf->SetDocTemplate('certificado.pdf', true);
+$mpdf->SetHTMLFooter($rodape);
+$mpdf->setAutoTopMargin = false;
+$mpdf->setAutoBottomMargin = false;
+
+$css = <<<HTML
+<style type="text/css">
+    body, table tr td { font-family: Arial; font-size: 14px; color: #003377; }
+    table { border-collapse: collapse; }
+    table tr td { padding: 4px; }
+    table tr td.justificado { text-align: justify; }
+    table tr td.titulo { font-size: 100%; font-weight: bold; text-align: center; border-top: 2px solid #003377; border-bottom: 2px solid #003377; }
+    table tr td#conteudo { height: 520px; vertical-align: top; }
+    table tr td.centro { text-align: center; }
+    table tr td.top { vertical-align: top; }
+    table tr td.meio { vertical-align: middle; }
+    table tr td.fonte_menor { font-size: 60%; }
+    table tr td.fonte_media { font-size: 70%; }
+    table tr td.fonte_maior { font-size: 85%; }
+    .div_fonte_menor table tr td { font-size: 100%; }
+    .entre_linhas { line-height: 5px !important; }
+</style>
+HTML;
+
+$mpdf->WriteHTML($css);
+
+$total = count($this->aprovados) - 1;
+foreach ($this->aprovados as $i => $item) {
+    $endereco = json_decode($item['unidade_descricao'], true);
+    $cidade = $endereco['local'];
+    $aluno = $item['pessoa_nome'];
+    $instrutor = $item['instrutor'];
+    $instrutor2 = $item['instrutor2'];
+    $resptecnico = $item['resptecnico'];
+    $treinamento = $item['produto_nome'];
+    $cpf = Util::cpf($item['pessoa_cpf']);
+    $conteudo = $item['produto_descricao'];
+    $modalidade = $item['treinamento_modalidade'];
+    /*
+    if ($modalidade == 0) {
+        //A distancia
+        $local = 'A Distância';
+    }elseif ($modalidade == 1) {
+        $local = $item['treinamento_modalidade'];
+    }else{
+        $local = $item['treinamento_modalidade_outro'];
+    }
+    */
+
+
+    //die($conteudo);
+    $hrs = NULL;
+    if (strlen($item['treinamento_agenda_carga_horaria']) == 1) {
+        $hrs = '0'.$item['treinamento_agenda_carga_horaria'].'h';
+    }else{
+        $hrs = $item['treinamento_agenda_carga_horaria'].'h';
+    }
+
+    $min = NULL;
+    if (strlen($item['treinamento_agenda_carga_horaria_min']) == 1) {
+        $min = '00min';
+    }else{
+        $min = $item['treinamento_agenda_carga_horaria_min'].'min';
+    }
+    
+    $carga = $hrs.$min;
+    $data2 = Util::dataBR($item['treinamento_agenda_data_fim']);
+    $data1 = Util::dataBR($item['treinamento_agenda_data_inicio']);    
+    if ($item['produto_validade'] == 0){
+        $validade = 'N/A';
+    }else{
+        $validade = Util::dataBR(Util::DateAddInterval($data2, "{$item['produto_validade']} DAY"));
+    }
+    list($dataAprovacao, $horaAprovacao) = explode(' ', $item['treinamento_agendado_data_aprovacao']);
+    list($ano, $mes, $dia) = explode('-', $dataAprovacao);
+    $mes = Util::nomeDoMes($mes);
+    //$periodo = (strtotime($data2) == strtotime($data1)) ? ('<strong>' . $data1 . '</strong>') : ('<strong>' . $data1 . '</strong> à <strong>' . $data2 . '</strong>');
+    $periodo = ($data1 == $data2) ? $data1 : ($data1 . ' à ' . $data2);
+    $horario = $item['treinamento_agenda_hora_inicio'] . ' às ' . $item['treinamento_agenda_hora_fim'];
+
+    $CargaHoraria = NULL;
+    if ($modalidade == 0) {
+        //A distancia
+        $local = 'A Distância';
+        $CargaHoraria = '<br><strong>Carga Horária:</strong> '.$carga;
+    }elseif ($modalidade == 1) {
+        $CargaHoraria = '<br><strong>Carga Horária:</strong> '.$carga . ' ('.$horario.')';
+        $local = $item['treinamento_local_nome'];
+    }else{
+        $local = 'Semipresencial';
+        $CargaHoraria = '<br><strong>Carga Horária:</strong> '.$carga;
+        $local = $item['treinamento_modalidade_outro'];
+    }
+    
+    $situacao = 'Capacitado e Autorizado à executar a atividade';
+    $instrutor_ass = '';
+    $instrutor_ass_assinatura_instrutor2 = '';
+    $instrutor_ass_assinatura_resptecnico = '';
+    if (!is_null($item['assinatura']))
+        $instrutor_ass = '<img src="data:image/png;base64,' . base64_encode($item['assinatura']) . '" style="height: 80px; margin-top: -40px; position: absolute; margin-bottom: -20px;"/>';
+    if (!is_null($item['assinatura_instrutor2']))
+        $instrutor_ass_assinatura_instrutor2 = '<img src="data:image/png;base64,' . base64_encode($item['assinatura_instrutor2']) . '" style="height: 80px; margin-top: -40px; position: absolute; margin-bottom: -20px;"/>';
+    if (!is_null($item['assinatura_resptecnico']))
+        $instrutor_ass_assinatura_resptecnico = '<img src="data:image/png;base64,' . base64_encode($item['assinatura_resptecnico']) . '" style="height: 80px; margin-top: -40px; position: absolute; margin-bottom: -20px;"/>';
+
+    if (is_null($item['instrutor2'])){
+        $segundoinstrutor_1 = '';
+        $segundoinstrutor_2 = '';
+        $segundoinstrutor_3 = '';
+        $segundoinstrutor_4 = '';
+    }else{
+        $segundoinstrutor_1 = $instrutor_ass_assinatura_instrutor2;
+        $segundoinstrutor_2 = '_____________________________';
+        $segundoinstrutor_3 = '<strong>Instrutor</strong>';
+        $segundoinstrutor_4 = $instrutor2 . '<br/>HTMED.<br/>CNPJ: 21.969.023/0001-89';
+    }
+
+    if (is_null($item['resptecnico'])){
+        $resptecnico_1 = '';
+        $resptecnico_2 = '';
+        $resptecnico_3 = '';
+        $resptecnico_4 = '';
+    }else{
+        $resptecnico_1 = $instrutor_ass_assinatura_resptecnico;
+        $resptecnico_2 = '_____________________________';
+        $resptecnico_3 = '<strong>Responsável Técnico</strong>';
+        $resptecnico_4 = $resptecnico . '<br/>HTMED.<br/>CNPJ: 21.969.023/0001-89';
+    }
+
+    $pagina = <<<HTML
+    <table width="100%">
+        <tbody>
+            <tr>
+                <td colspan="{$colspan}" class="justificado fonte_maior">
+                    Certificamos para os devidos fins que:
+                    <br><br><strong>{$aluno}</strong>
+                    <br><br><strong>CPF:</strong> {$cpf}
+                    <br><br>Foi aprovado no <strong>{$treinamento}</strong>
+                    <br><br><strong>Período:</strong> {$periodo}
+                    <br><strong>Validade:</strong> {$validade}
+                    {$CargaHoraria}
+                    <br><strong>Local:</strong> {$local}
+                    <br><strong>Situação:</strong> {$situacao}
+                </td>
+            </tr>
+            <tr>
+                <td colspan="{$colspan}">&nbsp;</td>
+            </tr>
+            <tr>
+                <td colspan="{$colspan}" class="titulo">CONTEÚDO PROGRAMÁTICO</td>
+            </tr>
+            <tr>
+                <td colspan="{$colspan}">&nbsp;</td>
+            </tr>
+            <tr>
+                <td colspan="{$colspan}" id="conteudo" class="justificado">{$conteudo}</td>
+            </tr>
+        </tbody>
+        <tfooter>
+            <tr>
+                <td colspan="{$colspan}" class="fonte_menor">{$cidade}, {$dia} de {$mes} de {$ano}.</td>
+            </tr>
+            <tr>
+                <!-- <td style="border: 1px solid red;" colspan="{$colspan}">&nbsp;</td> -->
+            </tr>
+            <tr>
+                <td class="centro fonte_menor"></td>
+            </tr>
+            <tr>
+                <td class="centro fonte_menor top"></td>
+                <td class="centro fonte_menor top">{$instrutor_ass}</td>
+                <td class="centro fonte_menor top">{$segundoinstrutor_1}</td>
+                <td class="centro fonte_menor top">{$resptecnico_1}</td>                 
+            </tr>
+
+            <tr>
+                <td class="centro fonte_menor top">_____________________________</td>
+                <td class="centro fonte_menor top">_____________________________________</td>
+                <td class="centro fonte_menor top">{$segundoinstrutor_2}</td>
+                <td class="centro fonte_menor top">{$resptecnico_2}</td> 
+            </tr>
+
+            <tr>
+                <td class="centro fonte_media top"><strong>Aluno</strong></td>
+                <td class="centro fonte_media top"><strong>Instrutor</strong></td>
+                <td class="centro fonte_media top">{$segundoinstrutor_3}</td>
+                <td class="centro fonte_menor top">{$resptecnico_3}</td>
+            </tr>
+
+            <tr>
+                <td class="centro fonte_menor top">{$aluno}</td>
+                <td class="centro fonte_menor top">{$instrutor}<br/>HTMED.<br/>CNPJ: 21.969.023/0001-89</td>
+                <td class="centro fonte_menor top">{$segundoinstrutor_4}</td>
+                <td class="centro fonte_menor top">{$resptecnico_4}</td>
+            </tr>
+
+        </tfooter>
+    </table>
+HTML;
+    $mpdf->WriteHTML($pagina);
+    if ($i < $total) {
+        $mpdf->AddPage();
+    }
+}
+
+$mpdf->Output();

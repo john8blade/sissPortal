@@ -1,0 +1,1185 @@
+<?php
+$unidade = json_decode($_SESSION["usuario"]["unidadeativa"]["unidade_descricao"], true);
+
+$fonte = "Arial";
+$sumario = array();
+
+$pcmso = $this->pcmso;
+$pcmso_id = $pcmso['pcmso_id'];
+
+$entrega = Zend_Db_Table::getDefaultAdapter()->fetchRow("SELECT * FROM empresa JOIN endereco ON endereco.endereco_id = empresa.fk_endereco_id WHERE empresa.empresa_id = ?", array($pcmso["fk_empresa_entrega"]));
+
+$riscoModel = new Application_Model_Risco();
+$exposicaoModel = new Application_Model_Exposicao();
+$tipoexameModel = new Application_Model_TipoExame();
+$periodoModel = new Application_Model_Periodo();
+$produtoModel = new Application_Model_Produto();
+
+$modelPpraItem = new Application_Model_ItemPpra();
+$itensPpraDoPcmso = $modelPpraItem->obterItensDoPpraPeloPcmso($pcmso_id);
+$totalMasculino = 0;
+$totalFeminino = 0;
+$totalGeral = 0;
+
+# POIU
+$funcaoSexo = array();
+foreach ($itensPpraDoPcmso as $item):
+
+    $masculinos = (int) $item['ppra_item_numero_trabalhadores_masculinos'];
+    $femininos = (int) $item['ppra_item_numero_trabalhadores_feminino'];
+    $soma = (int) ($item['ppra_item_numero_trabalhadores_masculinos'] + $item['ppra_item_numero_trabalhadores_feminino']);
+
+    $funcaoSexo[$item['setor_id']] = isset($funcaoSexo[$item['setor_id']]) ? $funcaoSexo[$item['setor_id']] : array();
+    $funcaoSexo[$item['setor_id']]["masculinos"] = isset($funcaoSexo[$item['setor_id']]["masculinos"]) ? $funcaoSexo[$item['setor_id']]["masculinos"] : 0;
+    $funcaoSexo[$item['setor_id']]["femininos"] = isset($funcaoSexo[$item['setor_id']]["femininos"]) ? $funcaoSexo[$item['setor_id']]["femininos"] : 0;
+    $funcaoSexo[$item['setor_id']]["total"] = isset($funcaoSexo[$item['setor_id']]["total"]) ? $funcaoSexo[$item['setor_id']]["total"] : 0;
+    $funcaoSexo[$item['setor_id']]["funcoes"][$item['funcao_id']]["horarios"] = isset($funcaoSexo[$item['setor_id']]["funcoes"][$item['funcao_id']]["horarios"]) ? $funcaoSexo[$item['setor_id']]["funcoes"][$item['funcao_id']]["horarios"] : '';
+
+    foreach ($item['horarios'] as $h):
+        #$funcaoSexo[$item['setor_id']]["funcoes"][$item['funcao_id']]["horarios"] .= (($h['ppra_item_horario_trabalho_dia_inicio'] == $h['ppra_item_horario_trabalho_dia_fim']) ? $h['ppra_item_horario_trabalho_dia_inicio'] : ($h['ppra_item_horario_trabalho_dia_inicio'] . ' à ' . $h['ppra_item_horario_trabalho_dia_fim']) ) . ' de ' . $h['ppra_item_horario_trabalho_inicio'] . ' às ' . $h['ppra_item_horario_trabalho_fim'] . '<br/>';
+        $funcaoSexo[$item['setor_id']]["funcoes"][$item['funcao_id']]["horarios"] .= $h['ppra_item_horario_trabalho_inicio'] . ' às ' . $h['ppra_item_horario_trabalho_fim'] . Util::horarioDeTrabalho($h['ppra_item_horario_trabalho_dia_inicio'], $h['ppra_item_horario_trabalho_dia_fim']) . '<br/>';
+    endforeach;
+
+    $funcaoSexo[$item['setor_id']]["masculinos"] += $masculinos;
+    $funcaoSexo[$item['setor_id']]["femininos"] += $femininos;
+    $funcaoSexo[$item['setor_id']]["total"] += $soma;
+
+    $funcaoSexo[$item['setor_id']]["funcoes"][$item['funcao_id']] = array(
+        "horarios" => $funcaoSexo[$item['setor_id']]["funcoes"][$item['funcao_id']]["horarios"],
+        "masculinos" => $masculinos,
+        "femininos" => $femininos,
+        "total" => $soma
+    );
+
+endforeach;
+# UIOP
+
+list($ano1, $mes1, $dia1) = explode('-', is_null($pcmso['pcmso_data_inicio']) ? $pcmso['pcmso_data_criacao'] : $pcmso['pcmso_data_inicio']);
+list($ano2, $mes2, $dia2) = explode('-', $pcmso['pcmso_data_validade']);
+
+$data1 = $dia1 . ' de ' . Util::nomeDoMes($mes1) . ' de ' . $ano1;
+$data2 = $dia2 . ' de ' . Util::nomeDoMes($mes2) . ' de ' . $ano2;
+
+include 'MPDF/mpdf.php';
+
+$header = <<<HEADER
+<table class="largo">
+    <tr><td>&nbsp;</td></tr>
+    <tr><td>&nbsp;</td></tr>
+    <tr><td>&nbsp;</td></tr>
+    <tr>
+        <td align="center">
+            <h2>PCMSO</h2>
+            <h4>PROGRAMA DE CONTROLE MÉDICO DE SAÚDE OCUPACIONAL</h4>
+        </td>
+        <td align="right" style="padding-top: 20px;">{PAGENO} . {nbpg}</td>
+    </tr>
+</table>
+HEADER;
+
+$footer = <<<FOOTER
+<table class="largo">
+    <tr>
+        <td></td>
+    </tr>
+</table>
+FOOTER;
+
+$mpdf = new mPDF('', 'A4', 0, '', 15, 15, 40, 20, 9, 9);
+$mpdf->SetImportUse();
+$mpdf->SetDocTemplate('template-2-preto-branco.pdf', true);
+$mpdf->SetHTMLHeader($header);
+$mpdf->SetHTMLFooter($footer);
+$mpdf->setAutoTopMargin = false;
+$mpdf->setAutoBottomMargin = false;
+
+ob_start();
+?>
+<style type="text/css">
+    * { margin: 0; padding: 0; position: relative; }
+    table { border-collapse: collapse; }
+    table tr td { vertical-align: top; }
+    body, table, pre { font: 12px <?php echo $fonte ?>; text-align: justify; }
+    h1, h2, h3 { text-align: center; }
+    h4 { text-align: justify; }
+    ul { line-height: 0.1; }
+
+    .largo { width: 100%; }
+    .alinha-meio { text-align: center; }
+    .alinha-direita { text-align: right; }
+    .alinha-cima { vertical-align: top; }
+    .afastado { margin: 20px 0; }
+    .negrito { font-weight: bold; }
+    .titulo { white-space: nowrap; text-align: center; vertical-align: middle; font-size: 250%; font-weight: bold; }        
+    .subtitulo { text-align: center; vertical-align: middle; font-size: 150%; font-weight: bold; }        
+    .titulo-1 { font-size: 120%; }
+    .middle tr td { vertical-align: middle; }
+
+    #logo { padding: 10px; width: 360px; font: bold 24px Arial; }
+    #local { font-weight: bold; color: red; font-size: 130%; text-align: center; vertical-align: middle; }
+
+    .mpdf_toc { font-size: 10px; line-height: 1.5; }
+    .mpdf_toc_a { padding-left: 20px; }
+</style>
+
+<?php
+$mpdf->TOCpagebreakByArray(array('toc_preHTML' => '<h1>SUMÁRIO</h1>'));
+$mpdf->PageNumSubstitutions[] = array('from' => 1, 'reset' => 0, 'type' => '1', 'suppress' => 'on');
+?>
+
+<table border="0" id="capa" class="largo">
+    <tr><td colspan="3" class="titulo">&nbsp;</td></tr>
+    <tr><td colspan="3" class="subtitulo">&nbsp;</td></tr>
+    <tr><td colspan="3" height="540" align="center" valign="middle"><h1><?php echo $pcmso['empresa_razao'] ?></h1></td></tr>
+    <tr><td width="180" height="160"></td><td id="logo">PCMSO <br/> <?php echo $pcmso['empresa_fantasia'] ?> <br/> <?php echo $ano1 == $ano2 ? $ano1 : ($ano1 . '-' . $ano2) ?></td><td></td></tr>
+    <tr><td colspan="3" height="100">&nbsp;</td></tr>
+    <tr><td colspan="3" class="titulo-1">Validade: <?php echo $data1 ?> à <?php echo $data2 ?></h4></td></tr>
+</table>
+
+<pagebreak type="NEXT-ODD" resetpagenum="3" pagenumstyle="1" suppress="off" />
+
+<tocentry content="1 - IDENTIFICAÇÃO DA EMPRESA" />
+<h4>1 – IDENTIFICAÇÃO DA EMPRESA</h4>
+
+<strong>DADOS GERAIS:</strong>
+
+<table class="largo afastado">
+    <tbody>
+        <tr>
+            <td colspan="2"><strong>Razão Social:</strong> <?php echo $pcmso['empresa_razao'] ?></td>
+        </tr>
+        <tr>
+            <td colspan="2"><strong>Endereço:</strong> <?php echo $pcmso['endereco_logradouro'] . ', ' . $pcmso['empresa_numero'] ?></td>
+        </tr>
+        <tr>
+            <td><strong>Bairro:</strong> <?php echo $pcmso['endereco_bairro'] ?></td>
+            <td><strong>Cidade:</strong> <?php echo $pcmso['endereco_cidade'] ?></td>
+        </tr>
+        <tr>
+            <td><strong>Estado:</strong> <?php echo $pcmso['endereco_uf'] ?></td>
+            <td><strong>CEP:</strong> <?php echo $pcmso['endereco_cep'] ?></td>
+        </tr>
+        <tr>
+            <td colspan="2"><strong>CNPJ:</strong> <?php echo $pcmso['empresa_cnpj'] ?></td>
+        </tr>
+        <tr>
+            <td><strong>CNAE:</strong> <?php echo $pcmso['empresa_cnae'] ?></td>
+        </tr>
+        <tr>
+            <td><strong>Funcionários Ativos:</strong> <?php echo $itensPpraDoPcmso[0]['ppra_quantidade_funcionarios_ativos'] ?></td>
+        </tr>
+    </tbody>
+</table>
+
+<pre>
+<strong>OBSERVAÇÕES</strong>
+    <?php echo $pcmso['pcmso_observacao'] ?>
+
+
+    <?php if (!empty($entrega)): ?>
+
+            <strong>LOCAL DE REALIZAÇÃO DOS SERVIÇOS:</strong>
+
+            <strong>Empresa:</strong> <?php echo $entrega["empresa_razao"] ?>
+
+            <strong>CNPJ:</strong> <?php echo Util::cnpj($entrega["empresa_cnpj"]) ?>
+
+            <strong>Endereço:</strong> <?php echo $entrega["endereco_logradouro"] . ', ' . $entrega["empresa_numero"] . ' - ' . $entrega["endereco_bairro"] . ' - ' . $entrega["endereco_cidade"] . ' - ' . $entrega["endereco_uf"] ?>
+
+            <strong>CEP:</strong> <?php echo Util::cep($entrega["endereco_cep"]); ?>
+
+            <strong>Grau de Risco:</strong> <?php echo $entrega['empresa_grau_risco'] ?>
+
+    <?php endif; ?>
+
+
+<strong>IDENTIFICAÇÃO MÉDICO COORDENADOR E EXAMINADORES:</strong>
+
+<strong>Médico Coordenador do PCMSO:</strong> <?php echo $pcmso['coordenacao_medico'] ?> 
+<strong>CRM:</strong> <?php echo $pcmso['coordenacao_crm'] ?> 
+<strong>Endereço:</strong> <?php echo $pcmso['coordenacao_endereco'] ?> 
+<strong>Telefone:</strong> <?php echo $pcmso['coordenacao_telefone'] ?> 
+
+<strong>Médicos Examinadores:</strong>
+
+</pre>
+
+<table class="largo" border="1">
+    <thead>
+        <tr>
+            <th>Profissão</th>
+            <th>Nome</th>
+            <th>CRM</th>
+        </tr>
+    </thead>
+    <tbody>
+        <?php $unidadeId = $_SESSION['usuario']['unidadeativa']['unidade_id']; ?>
+        <?php foreach (Zend_Db_Table::getDefaultAdapter()->fetchAll("SELECT * FROM examinador WHERE examinador_status = 0 AND fk_unidade_id = {$unidadeId} ORDER BY examinador_especialidade, examinador_nome ASC") as $item): ?>
+            <tr>
+                <td><?php echo $item['examinador_especialidade'] ?></td>
+                <td><?php echo $item['examinador_nome'] ?></td>
+                <td><?php echo $item['examinador_crm'] ?></td>
+            </tr>
+        <?php endforeach ?>
+    </tbody>
+</table>
+
+<pre>
+
+<strong>IDENTIFICAÇÃO DA CLINICA:</strong>
+
+<strong>Clinica:</strong> <?php echo $unidade["empresa"] ?>
+
+<strong>CNPJ:</strong> <?php echo Util::cnpj($unidade["cnpj"]) ?>
+
+<strong>Endereço:</strong> <?php echo $unidade["endereco"] ?>
+
+<strong>CEP:</strong> <?php echo Util::cep($unidade["cep"]); ?>
+
+<strong>Telefone:</strong> <?php echo $unidade["telefone"] ?>
+
+<strong>Contato:</strong> <?php echo $unidade["contato"] ?>
+
+<strong>E-mail:</strong> <?php echo $unidade["email"] ?>
+
+</pre>
+
+<tocentry content="2 - INTRODUÇÃO" />
+<h4>2 - INTRODUÇÃO</h4>
+
+<pre>O Programa de Controle Médico de Saúde Ocupacional – PCMSO - foi instituído pela portaria ministerial n° 24 de 29 de Dezembro de 1.994 (DOU 30/12/94), da Secretaria de Segurança do Trabalhador, órgão do Ministério do Trabalho. A portaria em referência, regulamentada pela NR-7, estabelece a obrigatoriedade da elaboração e implementação do PCMSO por parte dos empregadores e instituições que admitam trabalhadores empregados, de forma que todos os trabalhadores devem ter o controle de sua saúde de acordo com os riscos a que estão expostos. Além de ser uma exigência legal prevista no art. 168 da CLT, estão respaldadas na Convenção 161 da Organização Internacional do Trabalho - OIT, respeitando princípios éticos, morais e técnicos. O PCMSO deverá estar articulado com o disposto nas demais NR, principalmente com o PPRA – Programa de Prevenção de Riscos Ambientais.</pre>
+
+<tocentry content="3 - OBJETIVO E PARÂMETROS GERAIS – UTILIZAÇÃO DO INSTRUMENTAL EPIDEMIOLÓGICO NA SAÚDE DO TRABALHADOR" />
+<h4>3 - OBJETIVO E PARÂMETROS GERAIS – UTILIZAÇÃO DO INSTRUMENTAL EPIDEMIOLÓGICO NA SAÚDE DO TRABALHADOR</h4>
+
+<pre>
+O objetivo do Programa de Controle Médico de Saúde Ocupacional - PCMSO é a prevenção e a promoção da saúde dos trabalhadores, observando-se o disposto na NR-7. A referida norma estabelece os parâmetros mínimos e diretrizes gerais a serem observados na execução do mesmo, que deverá ser parte integrante do conjunto mais amplo de iniciativas da empresa no campo de saúde dos trabalhadores.
+O PCMSO considera as questões incidentes sobre o indivíduo e a coletividade de trabalhadores, privilegiando o instrumental clínico-epidemiológico na abordagem da relação entre a sua saúde e o trabalho. O Programa tem caráter de prevenção, rastreamento e diagnóstico precoce dos agravamentos à saúde relacionados ao trabalho, inclusive de natureza sub-clínica, além da constatação dos casos de doenças profissionais ou danos irreversíveis à saúde dos trabalhadores. Sua aplicação eficaz visa os seguintes benefícios:
+
+<ul class="seta">
+    <li>Manter o trabalhador com saúde, melhorar seu desempenho e sua qualidade de vida;</li>
+    <li>Melhorar o relacionamento entre os trabalhadores e a própria empresa;</li>
+    <li>Criar espírito de colaboração entre trabalhador e empresa;</li>
+    <li>Reduzir o absenteísmo;</li>
+    <li>Reduzir despesas médicas;</li>
+    <li>Gerar condições diversas para melhorias das condições ambientais nos locais de trabalho;</li>
+    <li>Detectar antecipadamente outros sintomas físicos e mentais não relacionados com o trabalho.</li>
+</ul>
+
+O PCMSO foi planejado e deve ser implantado com base nos riscos detectados à saúde dos trabalhadores, especialmente os identificados nas avaliações previstas nas demais Normas Regulamentadoras.
+É dever moral e profissional dos responsáveis por recursos humanos da empresa ou do SESMT, quando houver, realizar a efetiva integração de todos os funcionários, para quaisquer funções, contemplando-os com as orientações básicas de higiene, de segurança e de saúde do trabalho, constantes do PPRA ou PCMSO, bem como cumprir e fazer cumprir as disposições legais e regulamentares sobre Engenharia e Medicina do Trabalho para que assim, por suas ações, garantir a eficácia do PCMSO.
+</pre>
+
+<tocentry content="4 - DESENVOLVIMENTO E IMPLEMENTAÇÃO DO PCMSO COM BASE NO INSTRUMENTAL CLÍNICO-EPIDEMIOLÓGICO ANALISADO NA EMPRESA E SUA ABORDAGEM DA SAÚDE DOS TRABALHADORES" />
+<h4>4 - DESENVOLVIMENTO E IMPLEMENTAÇÃO DO PCMSO COM BASE NO INSTRUMENTAL CLÍNICO-EPIDEMIOLÓGICO ANALISADO NA EMPRESA E SUA ABORDAGEM DA SAÚDE DOS TRABALHADORES</h4>
+
+<pre>O Desenvolvimento deste PCMSO conta com os seguintes parâmetros de execução, respeitando o instrumental clínico-epidemiológico na abordagem da saúde do trabalhador:
+
+<ul class="seta">
+    <li>Planejamento, elaboração do documento base do PCMSO, coordenação do PCMSO e relatório anual.</li>
+    <li>Estudo in loco para reconhecimento ou confirmação dos riscos ocupacionais existentes.</li>
+    <li>Exames admissionais, periódicos, de retorno ao trabalho, demissionais e de mudança de função.</li>
+    <li>Exames complementares obrigatórios, e/ou solicitados pelo médico examinador.</li>
+    <li>Atestados e prontuários médicos.</li>
+    <li>Análise dos métodos ou processos de trabalho, visando identificar os riscos potenciais e introduzir exames de controle de exposição aos riscos encontrados no ambiente de trabalho, bem como adotar programas especiais e, caso exista necessidade, através de estudos periódicos da população.</li>
+    <li>Subsidiar as ações da Rede Nacional de Assistência à Saúde do Trabalhador (RENAST), portaria do Ministério da Saúde, que tem como base estratégica o SUS, através da vigilância epidemiológica que contempla a área técnica de saúde do Trabalhador e da Vigilância Sanitária, efetivando ações voltadas também para a vigilância em Saúde do Trabalhador.</li>
+</ul>
+</pre>
+
+<tocentry content="5 - ATRIBUIÇÕES E RESPONSABILIDADES" />
+<h4>5 - ATRIBUIÇÕES E RESPONSABILIDADES</h4>
+
+<tocentry content="5.1 - DO EMPREGADOR" />
+<h4>5.1 - DO EMPREGADOR</h4>
+
+<pre>
+Garantir a elaboração efetiva, implementação do PCMSO, bem como zelar pela sua eficácia.
+
+Custear sem ônus para o empregado todos os procedimentos relacionados ao PCMSO. (PT SSST n 08 de 08.05.96)
+</pre>
+
+<tocentry content="5.2 - DO EMPREGADO" />
+<h4>5.2 - DO EMPREGADO</h4>
+
+<pre>
+Colaborar e participar da implantação e execução do Programa de Controle Médico de Saúde Ocupacional – PCMSO:
+
+<ul class="bolinha">
+    <li>Seguir as orientações médicas sugeridas dentro do programa de controle médico de saúde ocupacional.</li>
+    <li>Informar a sua liderança imediata, ocorrência que a seu julgamento, possam implicar risco a saúde dos empregados.</li>
+</ul>
+
+
+
+
+
+
+</pre>
+
+<tocentry content="5.3 - DO MÉDICO DO TRABALHO" />
+<h4>5.3 - DO MÉDICO DO TRABALHO</h4>
+
+<pre>
+<ul class="bolinha">
+    <li>Realizar os exames médicos previstos ou encarregar os mesmos a profissional médico familiarizado com os princípios da patologia ocupacional e suas causas, bem como com o ambiente, as condições de trabalho e os riscos a que está ou será exposto cada trabalhador da empresa a ser examinado;</li>
+    <li>Encarregar dos exames complementares previstos na NR profissionais e/ou entidades devidamente capacitados, equipados e qualificados.</li>
+</ul>
+</pre>
+
+<!--
+<tocentry content="6 - DISTRIBUIÇÃO DOS EMPREGADOS CONFORME FAIXA ETÁRIA" />
+<h4>6 - DISTRIBUIÇÃO DOS EMPREGADOS CONFORME FAIXA ETÁRIA</h4>
+
+<table class="largo" border="1">
+    <thead>
+        <tr>
+            <th>&lt; 18</th>
+            <th>18-45</th>
+            <th>&gt; 45</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td class="alinha-meio"><?php echo $this->tabelaPorIdade['-18'] ?></td>
+            <td class="alinha-meio"><?php echo $this->tabelaPorIdade['18-45'] ?></td>
+            <td class="alinha-meio"><?php echo $this->tabelaPorIdade['45+'] ?></td>
+        </tr>
+    </tbody>
+</table>
+-->
+
+<pagebreak />
+
+<tocentry content="6 - IDENTIFICAÇÕES DE RISCOS / ROTINA DE EXAMES POR FUNÇÃO" />
+<h4>6 - IDENTIFICAÇÕES DE RISCOS / ROTINA DE EXAMES POR FUNÇÃO</h4>
+
+<?php
+foreach ($this->pcmso['itens'] as $item) {
+
+    echo '<div class="afastado">';
+
+    $colspan = 3;
+    $html = '<table class="largo" border="1">';
+    $html = $html . '<tr><td><strong>SETOR:</strong> ' . $item['setor']['setor_nome'] . '</td></tr>';
+    $html = $html . '</table>';
+
+    /* $html = $html . '<table class="largo" border="1">';
+      $html = $html . '<tr><th>MASCULINOS</th><th>FEMININOS</th><th>TOTAL</th></tr>';
+      $html = $html . '<tr><td class="alinha-meio">' . $funcaoSexo[$item['setor']['setor_id']]['masculinos'] . '</td><td class="alinha-meio">' . $funcaoSexo[$item['setor']['setor_id']]['femininos'] . '</td><td class="alinha-meio">' . $funcaoSexo[$item['setor']['setor_id']]['total'] . '</td></tr>';
+      $html = $html . '</table>'; */
+
+    $html = $html . '<table class="largo" border="1">';
+    $html = $html . '<tr><td colspan="' . $colspan . '"><strong>FUNÇÃO:</strong> ' . $item['funcao']['funcao_nome'] . '</td></tr>';
+    $html = $html . '</table>';
+
+    $html = $html . '<table class="largo" border="1">';
+    $html = $html . '<tr><th>HORÁRIOS</th><th>MASCULINOS</th><th>FEMININOS</th><th>TOTAL</th></tr>';
+    $html = $html . '<tr><td>' . $funcaoSexo[$item['setor']['setor_id']]["funcoes"][$item['funcao']['funcao_id']]['horarios'] . '</td><td class="alinha-meio">' . $funcaoSexo[$item['setor']['setor_id']]["funcoes"][$item['funcao']['funcao_id']]['masculinos'] . '</td><td class="alinha-meio">' . $funcaoSexo[$item['setor']['setor_id']]["funcoes"][$item['funcao']['funcao_id']]['femininos'] . '</td><td class="alinha-meio">' . $funcaoSexo[$item['setor']['setor_id']]["funcoes"][$item['funcao']['funcao_id']]['total'] . '</td></tr>';
+    $html = $html . '</table>';
+
+    $html = $html . '<table class="largo" border="1">';
+    $html = $html . '<tr><td colspan="' . $colspan . '"><strong>DESCRIÇÃO DE ATIVIDADES:</strong><br/>' . $item['ppra_item']['ppra_item_descricao_atividades'] . '</td></tr>';
+    $html = $html . '<tr><td colspan="' . $colspan . '" align="center"><strong>IDENTIFICAÇÃO DOS RISCOS</strong></td></tr>';
+    $html = $html . '<tr>';
+    $html = $html . '<td align="center"><strong>Agente Nocivo</strong></td>';
+    $html = $html . '<td align="center"><strong>Tipo de Risco</strong></td>';
+    $html = $html . '<td align="center"><strong>Tipo de Exposição</strong></td>';
+    $html = $html . '</tr>';
+
+    foreach ($item['riscos'] as $risco):
+        $riscoDados = $riscoModel->obterPeloId($risco['fk_risco_id']);
+        $exposicaoDados = $exposicaoModel->obterPeloId($risco['fk_exposicao_id']);
+        $html = $html . '<tr>';
+        $html = $html . '<td align="left">' . $riscoDados['risco_nome'] . '</td>';
+        $html = $html . '<td align="left">' . $riscoDados['classerisco_nome'] . '</td>';
+        $html = $html . '<td align="left">' . (isset($exposicaoDados['exposicao_nome']) ? $exposicaoDados['exposicao_nome'] : '---') . '</td>';
+        $html = $html . '</tr>';
+    endforeach;
+
+    $html = $html . '<tr><td colspan="' . $colspan . '"><strong>PRODUTOS MANUSEADOS:</strong><br/>' . $item['ppra_item']['ppra_item_produtos_manuseados'] . '</td></tr>';
+    $html = $html . '</table>';
+
+    echo $html;
+
+    $item_pcmso_id = $item['item_pcmso_id'];
+
+    $model_pcmso = new Application_Model_Pcmso();
+    $model_itemPcmso = new Application_Model_ItemPcmso();
+    $model_cargo = new Application_Model_Cargo();
+    $model_funcao = new Application_Model_Funcao();
+    $model_setor = new Application_Model_Setor();
+    $model_produto = new Application_Model_Produto();
+    $model_tipoexame = new Application_Model_TipoExame();
+    $model_periodo = new Application_Model_Periodo();
+    $model_classerisco = new Application_Model_ClasseRisco();
+    $model_risco = new Application_Model_Risco();
+    $model_exposicao = new Application_Model_Exposicao();
+    $model_item_pcmso_produto = new Application_Model_ItemPcmsoProduto();
+    $model_item_pcmso_risco = new Application_Model_ItemPcmsoRisco();
+
+    $item_pcmso = $model_itemPcmso->obter($item_pcmso_id);
+
+    $this->dados = array(
+        'item_pcmso' => $item_pcmso,
+        'examesDoPcmso' => $model_item_pcmso_produto->obterExamesPeloItemDoPcmso($item_pcmso_id),
+        'pcmso' => $model_pcmso->obter($item_pcmso['fk_pcmso_id']),
+        'setor' => $model_setor->obter($item_pcmso['fk_setor_id']),
+        'cargos' => $model_cargo->obterTodos(),
+        'funcoes' => $model_funcao->obterTodos(),
+        'exames' => $model_produto->obterExames(),
+        'tiposexame' => $model_tipoexame->obterTodos(),
+        'periodos' => $model_periodo->obterTodos(),
+        'exposicoes' => $model_exposicao->obterTodos(),
+        'classesrisco' => $model_classerisco->obterTodos(),
+        'riscos' => $model_risco->obterTodos(),
+        'riscosDoPcmso' => $model_item_pcmso_risco->obterRiscosPeloItemDoPcmso($item_pcmso_id)
+    );
+    $temAudiometria = false;
+    include('tabela-exames.phtml');
+    echo '<pre>';
+    echo $temAudiometria ? 'Audiometria: repetir exame audiométrico após 06 meses da realização do exame admissional.' : '';
+    echo '<br/><br/>';
+    echo $item_pcmso['item_pcmso_desc_rotina_exame'];
+    //echo 'Durante a realização do exame Clínico, outros exames complementares poderão ser solicitados a critério do médico examinador, inclusive durante os exames de Mudança de Função e Retorno ao Trabalho.';
+    //echo '<br/><br/>';
+    //echo 'Durante o demissional, alguns exames previstos acima podem ser “dispensados” a critério médico, sendo analisada para tal, a última data de realização.';
+    echo '</pre><pagebreak />';
+}
+?>
+
+<tocentry content="7 - PROGRAMAÇÃO DE EXAMES" />
+<h4>7 - PROGRAMAÇÃO DE EXAMES</h4>
+
+<pre>Todos os trabalhadores serão submetidos aos exames clínicos na admissão, na demissão, nas mudanças de função com mudanças de riscos, quando do retorno ao trabalho, nas hipóteses previstas na NR –7, e no exame periódico, conforme as legislações vigentes, acompanhadas dos exames complementares indicados, se necessários.</pre>
+
+<h4>DETALHAMENTO</h4>
+
+<table border="1" class="largo">
+    <thead>
+        <tr>
+            <th>TIPO DE EXAME</th>
+            <th>QUANDO FAZER</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td><strong>Admissional</strong></td>
+            <td>Deverá ser realizado antes que o trabalhador assuma o cargo.</td>
+        </tr>
+        <tr>
+            <td><strong>Periódico</strong></td>
+            <td>
+                &raquo; Trabalhadores expostos a quaisquer tipos de risco:<br/>
+                Exames clínicos anuais.<br/>
+                &raquo; Trabalhadores não expostos a riscos:<br/>
+                < 18 e > 45 = exames clínicos anuais;<br/>
+                ≥ 18 e ≤ 45 = exames clínicos a cada 02 anos.<br/>
+                <strong>OBS: As periodicidades acima podem sofrer alterações a critério do médico coordenador do PCMSO.</strong>
+            </td>
+        </tr>
+        <tr>
+            <td><strong>Mudança de Função</strong></td>
+            <td>Antes da mudança de função, quando houver alteração do(s) risco(s) em relação da função anterior.</td>
+        </tr>
+        <tr>
+            <td><strong>Retorno ao Trabalho</strong></td>
+            <td>No 1º Dia do retorno ao trabalho, quando o trabalhador ficar afastado por 30 (trinta) ou mais dias, devido a cirurgias obstétricas (parto), doenças previdenciárias ou profissionais e acidentes de trabalho.</td>
+        </tr>
+        <tr>
+            <td><strong>Demissional</strong></td>
+            <td>
+                Antes da homologação desde que o último ASO (Atestado de Saúde Ocupacional), tenha sido realizado há mais de:<br/>
+                - 135 dias para empresas com grau de risco 1 ou 2;<br/>
+                - 90 dias para empresas com grau de risco 3 ou 4.
+            </td>
+        </tr>
+        <tr>
+            <td><strong>Exames Complementares</strong></td>
+            <td>Realizar os exames obrigatórios previstos na legislação de acordo com a exposição a agentes químicos, físicos ou biológicos, e outros exames por solicitação médica, quando detectada sua necessidade.</td>
+        </tr>
+    </tbody>
+</table>
+
+<h4>PROCEDIMENTOS PARA REALIZAÇÃO DE EXAMES COMPLEMENTARES</h4>
+
+<pre>
+<strong>Hemograma com Plaquetas:</strong> Material: Sangue
+Preparo: Não é necessária nenhuma preparação especial.
+
+<strong>Acuidade Visual, Avaliação Oftalmológica e Campimetria:</strong> Preparo: No caso utilização de lentes corretivas, comparecer com as mesmas para o exame.
+
+<strong>Ácido Hipúrico e Ácido Metil Hipúrico:</strong> Material: Urina 
+Preparo: A urina deverá ser coletada no final da jornada de trabalho, após no mínimo 02 (dois) dias seguidos de exposição e ser mantida sob-refrigeração, salvo exceção para o exame admissional.
+
+<strong>Triclorocompostos Totais:</strong> Material: Urina
+Preparo: A urina deverá ser coletada no final da jornada de trabalho, após no mínimo 02 (dois) dias seguidos de exposição e ser mantida sob-refrigeração, salvo exceção para o exame admissional.
+
+<strong>Audiometria:</strong> Preparo: Repouso auditivo total por um período mínimo de 14 horas.
+Poderá ocorrer a solicitação de retirada de cerume para a realização do exame.
+
+<strong>Espirometria:</strong> Preparo: Não pode realizar o exame gripado (a), deverá estar bem alimentado e preferencialmente não ingerir produtos que contenham cafeína (café, refrigerante, chocolate). Nos casos em que o cliente faz uso de medicamento BRONCODILATADOR, o mesmo deverá ser suspenso na data do exame.
+
+<strong>Telerradiografia do Tórax (OIT):</strong> Preparo: Não é necessária nenhuma preparação especial.
+
+<strong>EEG:</strong> Preparo: Não é necessário nenhum cuidado específico ou jejum antes da realização de um eletroencefalograma. Os medicamentos de uso contínuo devem ser tomados normalmente no dia do exame. Recomenda-se boa alimentação e uma boa noite de sono antes do exame.
+
+<strong>ECG:</strong> Preparo: Não é necessário nenhum cuidado específico ou jejum antes da realização de um eletrocardiograma. Os medicamentos de uso contínuo devem ser tomados normalmente no dia do exame. Em alguns pacientes do sexo masculino, poderá ser necessária a realização de uma tricotomia (raspagem dos pelos do tórax), para diminuir as interferências no traçado. Recomenda-se boa alimentação e uma boa noite de sono antes dos exames.
+
+<strong>Glicemia em Jejum:</strong> Material: Sangue 
+Preparo: O paciente deverá ficar em jejum por no mínimo 8 horas, máximo de 10 horas.
+
+<strong>Dosagem de Manganês:</strong> Material: Urina
+Preparo: A urina deverá ser coletada no final da jornada de trabalho, após no mínimo 02 (dois) dias seguidos de exposição e ser mantida sob-refrigeração, salvo exceção para o exame admissional.
+
+<strong>Cádmio:</strong> Material: Urina
+Preparo: A urina deverá ser coletada no final da jornada de trabalho, após no mínimo 02 (dois) dias seguidos de exposição e ser mantida sob-refrigeração, salvo exceção para o exame admissional.
+
+<strong>Cromo:</strong> Material: Urina
+Preparo: A urina deverá ser coletada no final da jornada de trabalho, após no mínimo 02 (dois) dias seguidos de exposição e ser mantida sob-refrigeração, salvo exceção para o exame admissional.
+
+<strong>ALA-U:</strong> Material: Urina
+Preparo: A urina deverá ser coletada no final da jornada de trabalho, após no mínimo 02 (dois) dias seguidos de exposição e ser mantida sob-refrigeração, salvo exceção para o exame admissional.
+
+<strong>Ácido Mandélico e Metiletilcetona:</strong> Material: Urina
+Preparo: A urina deverá ser coletada no final da jornada de trabalho, após no mínimo 02 (dois) dias seguidos de exposição e ser mantida sob-refrigeração, salvo exceção para o exame admissional.
+
+<strong>EPF:</strong> Evacuar em recipiente limpo e seco e transferir uma porção das fezes recém-emitidas para o frasco coletor, tendo o cuidado para não ultrapassar a metade do frasco. Manter em local fresco e arejado por até 08 horas antes de entregar ao técnico de coleta.
+
+<strong>EAS:</strong> Pacientes do sexo feminino: A paciente deve lavar bem as mãos com água e sabão neutro e secá-las com toalha de papel limpa e descartável. Urinar, desprezando a primeira parte do jato urinário. Colher cerca de 30 ml (aproximadamente a metade do frasco) de urina em um recipiente estéril, fechando assim que a urina for colhida. Em seguida a amostra colhida, contida no recipiente fechado, deve ser entregue ao técnico de coleta. 
+Pacientes do sexo masculino: O paciente deve lavar bem as mãos, desprezar no vaso uma pequena quantidade de urina e após colher cerca de 30 ml de urina no frasco estéril. Em seguida, a amostra colhida, contida no recipiente fechado, deve ser entregue ao técnico de coleta.
+
+<strong>Ácido Tricloroacético:</strong> Material: Urina 
+Preparo: A urina deverá ser coletada no final da jornada de trabalho, após no mínimo 02 (dois) dias seguidos de exposição e ser mantida sob-refrigeração, salvo exceção para o exame admissional.
+
+<strong>Zinco Urinário:</strong> Material: Urina
+Preparo: A urina deverá ser coletada no final da jornada de trabalho, após no mínimo 02 (dois) dias seguidos de exposição e ser mantida sob-refrigeração, salvo exceção para o exame admissional.
+</pre>
+
+<pagebreak />
+
+<tocentry content="8 - AÇÕES DE PREVENÇÃO" />
+<h4>8 - AÇÕES DE PREVENÇÃO</h4>
+
+<table border="1" class="largo middle pre" style="font-size: 90%;">
+    <thead>
+        <tr>
+            <th colspan="2">Riscos</th>
+            <th>Possíveis efeitos</th>
+            <th>Ação de saúde</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td rowspan="2">Ruído</td>
+            <td>Auditivos</td>
+            <td>Perda auditiva zumbidos Otalgia Perda da discriminação da fala</td>
+            <td rowspan="2">Afastamento da exposição nociva através de controle ruído e EPI<br/>
+                Exame audiométrico basal <br/>
+                Exame audiométrico periódico <br/>
+                Rodízio de pessoal <br/>
+                Treinamentos <br/>
+                Vigilância ambiental</td>
+        </tr>
+        <tr>
+            <td>Extra-auditivos</td>
+            <td>Irritabilidade, ansiedade, insônia, hipertensão arterial, etc.</td>
+        </tr>
+        <tr>
+            <td colspan="2">Ergonômico</td>
+            <td>Distúrbios no Sistema Osteomuscular</td>
+            <td>Ações organizacionais <br/>
+                Avaliação clínica periódica <br/>
+                Manutenção e adequação de equipamentos e mobiliário</td>
+        </tr>
+        <tr>
+            <td colspan="2">Produtos Químicos</td>
+            <td>Esses agentes podem reagir com os tecidos humanos, ou afetar o organismo causando alteração em sua estrutura e ou funcionamento.</td>
+            <td>Avaliação clínica periódica para cada tipo de exposição <br/>
+                EPI <br/>
+                Exames médicos específicos <br/>
+                Monitoramento periódico do ambiente</td>
+        </tr>
+        <tr>
+            <td colspan="2">Poeiras</td>
+            <td>Irritantes Pulmonares e efeitos tóxicos sistêmicos</td>
+            <td>Avaliação clínica periódica <br/>
+                EPI <br/>
+                Exames médicos específicos <br/>
+                Monitoramento periódico do ambiente</td>
+        </tr>
+        <tr>
+            <td colspan="2">Acidentes</td>
+            <td>Integridade física do trabalhador</td>
+            <td>Treinamentos <br/>
+                Ações organizacionais <br/>
+                EPI</td>
+        </tr>
+        <!--
+        <tr>
+            <td colspan="2">Vibrações</td>
+            <td>Anemia aplástica, alteração na formação de leucócitos, intoxicação crônica, leucemia, irritação do sistema nervoso central e dos órgãos hematopoéticos, irritação das vias respiratórias e das mucosas, fadiga, vertigens, calafrios, dispnéia, dentre outros.</td>
+            <td>EPI <br/>
+                Exames médicos específicos <br/>
+                Monitoramento periódico do ambiente.
+            </td>
+        </tr>
+        -->
+        <tr>
+            <td colspan="2">Mãos e Braços</td>
+            <td>Os efeitos nocivos resultante deste tipo de contato normalmente se manifestam na zona de contato com a fonte de vibração, mas também pode ocasionar uma transmissão considerável para o resto do corpo. Atualmente o efeito mais frequente e mais estudado é a síndrome de Reynaud, de origem profissional, também chamado de Dedo Branco que tem sua origem em alterações vasculares.</td>
+            <td>EPI<br/>
+                Exames médicos específicos <br/>
+                Monitoramento periódico do ambiente.
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2">Corpo Inteiro</td>
+            <td>A transmissão das vibrações ao corpo e seus efeitos sobre o mesmo são muito dependentes da postura e nem todos os indivíduos apresentam a mesma sensibilidade, assim a mesma exposição às vibrações pode resultar em consequências diferentes. Entre os efeitos que se atribuem às vibrações de corpo inteiro, encontram-se os associados aos traumatismos na coluna vertebral, se bem que as vibrações não são o único agente causador. Também são atribuídos às vibrações outros efeitos à saúde, tais como, dores abdominais e digestivas, problemas de equilíbrio, dores de cabeça, transtornos visuais, falta de sono e sintomas similares.</td>
+            <td>EPI<br/>
+                Exames médicos específicos <br/>
+                Monitoramento periódico do ambiente.</td>
+        </tr>
+    </tbody>
+</table>
+
+<pre>
+<ul class="bolinha" style="font-size: 90%;">
+    <li>Realização de treinamento periódico com todos os funcionários, colocando à que riscos estão expostos, as complicações à que estão sujeitos quando desta exposição e, conscientizá-los, sobretudo, às medidas necessárias destes riscos.</li>
+    <li>Durante a realização do exame clínico periódico, o empregado deverá ser abordado quanto às doenças mais prevalecentes conforme a faixa etária. Se necessária solicitação de exames complementares e/ou avaliação especializada (Exemplo: Ginecologia para mulheres em idade fértil e Urologia para homens acima de 40 anos).</li>
+    <li>Verificação do estado vacinal de cada empregado e programar vacinas quando observado necessidade das mesmas.</li>
+    <li>Cronograma anual de palestras ou outras atividades (Exemplo: Vídeos) sobre doenças mais prevalecentes na população comum, vícios (tabaco, álcool), etc.</li>
+    <li>Elaboração e avaliação do relatório anual, com posteriores programações de atividades de prevenção conforme o resultado do mesmo.</li>
+    <li>Visitas periódicas dos profissionais responsáveis pela elaboração e execução deste programa.</li>
+</ul>
+</pre>
+
+<pagebreak />
+
+<tocentry content="9 - PROGRAMA DE CONSERVAÇÃO AUDITIVA" />
+<h4>9 - PROGRAMA DE CONSERVAÇÃO AUDITIVA</h4>
+
+<tocentry content="9.1 - OBJETIVOS" />
+<h4>9.1 - OBJETIVOS</h4>
+
+<pre>
+Estabelecer diretrizes e parâmetros mínimos para avaliação e acompanhamento da audição do trabalhador através da realização de exames audiológicos de referências e sequenciais.
+
+Fornecer subsídios para a adoção de programas que visem à prevenção da perda auditiva induzidas por níveis de pressão sonora elevada a conservação da saúde auditiva dos trabalhadores.
+</pre>
+
+<tocentry content="9.2 - DEFINIÇÕES E CARACTERIZAÇÃO" />
+<h4>9.2 - DEFINIÇÕES E CARACTERIZAÇÃO</h4>
+
+<pre>
+Entende-se por perda auditiva por níveis de pressão sonora elevada as alterações dos limiares auditivos, do tipo sensório neural, decorrente da exposição sistemática a níveis de pressão sonora elevada. Tem como características principais a irreversibilidade e a progressão gradual com o tempo de exposição o risco. A sua historia natural mostra, inicialmente o acometimento dos limiares auditivos em uma ou mais frequências das faixas de 3000 a 6000 Hz. As frequências mais altas e mais baixas poderão levar mais tempo para serem afetadas. Uma vez cessada a exposição não haverá progressão da redução auditiva.
+
+Entende-se por exames audiológicos de referência e sequenciais o conjunto de procedimentos necessários para a avaliação da audição do trabalhador ao longo do tempo de exposição ao risco, incluindo:
+
+<ul class="abc">
+    <li>Anamnese clínico – ocupacional;</li>
+    <li>Exame otológico;</li>
+    <li>Exames audiométricos realizados segundo os termos previstos nesta norma técnica;</li>
+    <li>Outros exames audiológicos complementares solicitados a critério médico.</li>
+</ul>
+</pre>
+
+<tocentry content="9.3 - PRINCÍPIOS E PROCEDIMENTOS BÁSICOS PARA A REALIZAÇÃO DE EXAMES AUDIOMÉTRICOS" />
+<h4>9.3 - PRINCÍPIOS E PROCEDIMENTOS BÁSICOS PARA A REALIZAÇÃO DE EXAMES AUDIOMÉTRICOS</h4>
+
+<pre>
+Devem ser submetido a exame audiométricos de referência e sequenciais, no mínimo todos os trabalhadores que exerçam ou exercerão suas atividades em ambientes cujos níveis de pressão sonora ultrapassem os limites de tolerância estabelecidos nos anexos 1 e 2 da NR 15 da Portaria 3214 de 78, do ministério do trabalho independentemente do uso do protetor auditivo.
+
+O audiômetro será submetido a procedimentos de verificação e controle médico de seu funcionamento.
+
+A aferição será anual.
+
+Calibração acústica sempre que a aferição acústica indicar alteração e, obrigatoriamente, a cada 5 anos.
+
+A aferição biológica é recomendada precedendo a realização dos exames audiométricos. Em caso de alteração submeter o equipamento a aferição acústica.
+
+Os exames audiométricos serão executados por profissional habilitado, ou seja, médico ou fonoaudiólogo, conforme resoluções dos respectivos conselhos federais profissionais.
+
+Periodicidade dos exames audiométricos.
+
+Os exames audiométricos serão realizados no mínimo, no momento da admissão, no sexto mês após a mesma, anualmente a partir de então e na demissão.
+
+No momento da demissão do mesmo modo como previsto para a avaliação clínica no item 7.4.3.5 da NR 07, poderá ser aceito o resultado de um exame audiométricos realizado ate:
+135 (cento trinta e cinco) dias retroativos em relação à data do exame médico demissional de trabalhador em empresa classificada em grau de risco 1 ou 2.
+
+90 (noventa) dias retroativos em relação à data do exame médico demissional de trabalhador em empresa classificada em grau de risco 3 ou 4.
+
+O intervalo dos exames audiométricos poderá ser reduzido a critério de médico coordenador do PCMSO ou por notificação do médico agente de inspeção do trabalho, ou mediante negociação coletiva de trabalho.
+
+O resultado de exame audiométrico deve ser registrado em uma ficha que contenha no mínimo
+
+<ul>
+    <li>Nome, idade e número de registro de identidade do trabalhador;</li>
+    <li>Nome da empresa e a função do trabalhador;</li>
+    <li>Tempo de repouso auditivo cumprido para a realização do exame audiométrico;</li>
+    <li>Nome do fabricante, modelo e a data da ultima aferição acústica do audiômetro;</li>
+    <li>Traçado audiométrico e símbolos;</li>
+    <li>Nome, número no registro do conselho regional e assinatura do profissional responsável pelo exame audiométrico.</li>
+</ul>
+</pre>
+
+<tocentry content="9.4 - TIPOS DE EXAMES AUDIOMÉTRICOS" />
+<h4>9.4 - TIPOS DE EXAMES AUDIOMÉTRICOS</h4>
+
+<pre>
+O trabalhador deverá ser submetido a exames audiométricos de referência e a exames audiométricos sequencial na forma abaixo descrita.
+
+Exames audiométricos de referência aqueles com quais os exames sequenciais serão comparados e cujas diretrizes constam nos subitens abaixo deve ser realizados:
+
+<ul class="abc">
+    <li>Quando não possuir um exame audiométrico de referência previa.</li>
+    <li>Quando algum exame audiométrico sequencial apresentar alteração significativa em relação ao de referência.</li>
+</ul>
+
+O exame audiométrico será realizado em cabine audiométrica, cujos níveis de pressão sonora não ultrapassem os níveis máximos permitidos de acordo com a norma ISSO 8253.1.
+
+Nas empresas em que existir ambientes acusticamente tratados que atenda a norma ISO 8253.1, a cabine audiométrica poderá ser dispensada.
+
+O trabalhador permanecerá em repouso auditivo por um período mínimo de 14 horas até o momento de realização do exame audiométricos.
+
+O responsável pelo exame audiométrico inspecionará o meato acústico externo de ambas as orelhas e anotará os dados na ficha de registro. Se identificada alguma anormalidade, encaminhar ao médico responsável.
+</pre>
+
+<tocentry content="9.5 - VIAS, FREQUENTE E OUTROS TESTES COMPLEMENTARES" />
+<h4>9.5 - VIAS, FREQUENTE E OUTROS TESTES COMPLEMENTARES</h4>
+
+<pre>
+O exame audiométrico será realizado sempre pelas vias áreas nas frequências 500, 1000, 2000, 3000, 4000, 6000, 8000 Hz.
+
+No caso de alteração detectada pelo teste pela via aérea ou segundo a avaliação do profissional responsável pela execução do exame o mesmo será feito também pela via óssea nas frequências 500, 1000, 2000, 3000 e 4000 Hz.
+
+Segundo a avaliação do profissional responsável no momento da realização do exame poderão ser determinados os limiares de reconhecimento de fala (LRF).
+
+Exame audiométrico sequencial aquele que será comparado com o de referência, aplica-se a todo trabalhador que já possua um exame audiométrico de referência, prévio nos moldes previstos. As seguintes diretrizes mínimas devem ser estabelecidas.
+
+Na impossibilidade da realização dos exames audiométricos nas condições previstas, o responsável pela execução do programa avaliará a viabilidade de sua realização em um ambiente silencioso através de um exame audiométrico em dois indivíduos cujos limiares auditivos detectados em exames audiométricos de referencia atual, sejam conhecidos. 
+
+Diferença entre limiar auditivo em qualquer um dos dois indivíduos examinados. Acima de 5 dB (NA) Nível de audição em decibel inviabiliza a realização do exame em local escolhido.
+
+O responsável pela execução do exame audiométrico inspecionará o meato acústico externo de ambas as orelhas e anotará os achados na ficha de registro.
+
+Os exames audiométricos será pela via aérea nas frequências 500, 1000, 2000, 3000, 4000, 6000 e 8000 Hz.
+</pre>
+
+<tocentry content="9.6 - INTERPRETAÇÃO DO RESULTADO DO EXAME AUDIOMÉTRICO COM FINALIDADE DE PREVENÇÃO" />
+<h4>9.6 - INTERPRETAÇÃO DO RESULTADO DO EXAME AUDIOMÉTRICO COM FINALIDADE DE PREVENÇÃO</h4>
+
+<pre>
+A interpretação do resultado do exame audiométrico deve seguir os seguintes parâmetros:
+
+- São considerados dentro dos limites aceitáveis para efeito desta norma técnica, de caráter preventivo os casos cujos audiogramas mostram limiares auditivos menores ou iguais a 25 dB (A) em todas as frequências examinadas.
+
+- São consideradas sugestivas de perda auditiva induzida por níveis de pressão sonoros elevados as causas cujos audiogramas nas frequências de 3000, 4000 ou 6000 Hz apresentam limiares auditivos acima de 25 dB (A) e nas mais elevadas do que nas outras frequências testadas, estando estas comprometidas ou não quanto no teste da via aérea quanto no teste da via óssea em um ou ambos os lados.
+
+- São considerados não sugestivos de perda auditiva induzida os níveis de pressão sonora elevada os casos cujos audiogramas não se enquadram nas descrições contidas.
+
+A interpretação do resultado do exame audiométrico sequencial deve seguir os seguintes parâmetros.
+
+- São considerados sugestivos de desencadeamento de perda auditiva induzida por níveis de pressão sonora elevada os casos em que os limiares auditivos em todas as frequências testadas no exame audiométrico de referencia e no sequencial permanecem menores ou iguais a 25 dB (NA), mas a comparação do audiograma sequencial com o de referência mostra uma evolução dentro dos moldes definidos e preenche um dos critérios abaixo.
+
+Diferença entre as medidas aritméticas dos limiares auditivos do grupo de frequência 3000, 4000 ou 6000 Hz, igual ou ultrapassa 10 dB (NA).
+
+Piora uma frequência isolada igual ou ultrapassa 15 dB (NA)
+Para fim desta norma técnica o exame audiométrico de referência permanece o mesmo até o momento em que algum dos exames audiométricos for preenchido algum dos critérios apresentados. Uma vez preenchido algum desses critérios deve se marcar um novo exame audiométrico dentro dos moldes previstos desta norma técnica que será a parti de então um novo exame audiométrico de referência os exames anteriores passam a constituir a histórica evolutiva da audição do trabalhador.
+</pre>
+
+<tocentry content="9.7 - DIAGNÓSTICO DA PERDA AUDITIVA INDUZIDA POR NÍVEIS DE PRESSÃO SONORA ELEVADA E DEFINIÇÃO DE APTIDÃO PARA O TRABALHO" />
+<h4>9.7 - DIAGNÓSTICO DA PERDA AUDITIVA INDUZIDA POR NÍVEIS DE PRESSÃO SONORA ELEVADA E DEFINIÇÃO DE APTIDÃO PARA O TRABALHO</h4>
+
+<pre>
+Diagnóstico conclusivo, o diagnóstico diferencial é a definição da aptidão para o trabalho na suspeita de perda auditiva induzida por níveis de pressão sonora elevados, estão cargo do medico coordenador do PCMSO de cada empresa ou do médico encarregado pelo mesmo para realizar o exame médico, dentro dos moldes previstos na NR 07, ou na ausência dele o medico que assiste o trabalhador.
+
+A perda auditiva induzida por níveis de pressão sonora elevados, por si só, não é indicativa de aptidão para o trabalho, devendo-se levar em consideração, na análise de cada caso também no traçado audiométrico ou na evolução sequencial dos exames audiométricos os seguintes fatores:
+
+<ul class="abc">
+    <li>A historia clínica e ocupacional do trabalhador;</li>
+    <li>O resultado da Otoscopia e de outros testes audiológicos complementares;</li>
+    <li>Idade do trabalhador;</li>
+    <li>O tempo de exposição pregressa atual a níveis de pressão sonora elevada;</li>
+    <li>Os níveis de pressão sonora a que o trabalhador estará, esta ou esteve exposto no período do trabalho;</li>
+    <li>A demanda auditiva do trabalho ou da função;</li>
+    <li>A exposição ocupacional a níveis de pressão sonora elevada;</li>
+    <li>A exposição ocupacional a outros agentes de risco ao sistema auditivo;</li>
+    <li>A exposição não ocupacional a outros agentes de risco ao sistema auditivo;</li>
+    <li>A capacitação profissional do trabalhador examinado;</li>
+    <li>Os programas de conservação auditiva aos quais tem ou terá acesso o trabalhador.</li>
+</ul>
+</pre>
+
+<tocentry content="9.8 - CONDUTAS PREVENTIVAS" />
+<h4>9.8 - CONDUTAS PREVENTIVAS</h4>
+
+<pre>
+Em presença do trabalhador cujo exame audiométrico o médico coordenador do PCMSO ou encarregado pelo mesmo do exame médico deverá:
+
+<ul class="abc">
+    <li>Definir a aptidão do trabalhador para a função com base nos fatores ressaltados no item 5.2 desta norma técnica;</li>
+    <li>Incluir o caso no relatório anual do PCMSO;</li>
+    <li>Participar, da implantação aprimoramento e controle de programa de prevenção de progressão de perda auditiva do trabalhador acometido e de outros expostos aos riscos levando-se em consideração o disposto no item 9.3.6 da NR 09;</li>
+    <li>Disponibilizar cópia dos exames audiométricos aos trabalhadores;</li>
+    <li>Orientar as empresas quanto à necessidade de fazer com que os funcionários usem necessariamente os E.P. I (Protetores Auriculares).</li>
+</ul>
+
+Em presença do trabalhador cujo exame audiométrico, o médico coordenador do PCMSO, ou o encarregado pelo mesmo do exame médico deverá:
+
+- Verificar a conformidade da presença concomitante de mais de um tipo de agressão ao sistema auditivo;
+- Orientar e encaminhar o trabalhador para avaliação especializada;
+- Definir sobre aptidão do trabalhador para a função;
+- Participar da implantação, aprimoramento e controle de programa de prevenção da progressão da perda auditiva do trabalhador acometido e de outros expostos aos riscos levando em consideração o disposto no item 9.3.6 da NR 09;
+- Disponibilizar cópia de exames audiométricos aos trabalhadores.
+</pre>
+
+<tocentry content="10 - PROGRAMA DE PROTEÇÃO RESPIRATÓRIA" />
+<h4>10 - PROGRAMA DE PROTEÇÃO RESPIRATÓRIA</h4>
+
+<tocentry content="10.1 - OBJETIVO" />
+<h4>10.1 - OBJETIVO</h4>
+
+<pre>O objetivo deste programa e assegurar a proteção contra todos os trabalhadores contra riscos respiratórios pelo uso correto de respiradores ou equipamentos de proteção coletiva.</pre>
+
+<tocentry content="10.2 - REFERÊNCIA LEGAL" />
+<h4>10.2 - REFERÊNCIA LEGAL</h4>
+
+<pre>Instrução Normativa n 1 do MTE, 11.04.1994.</pre>
+
+<tocentry content="10.3 - CAMPO DE APLICAÇÃO"/>
+<h4>10.3 - CAMPO DE APLICAÇÃO</h4>
+
+<pre>
+O PPR será aplicado a todos os empregados da empresa que executam suas atividades nas dependências onde foi feito reconhecimento dos agentes químicos através dos estudos de agentes ambientais que estejam acima do nível de ação.
+
+<ul class="bolinha">
+    <li>Onde as medidas de controle coletivas dos riscos respiratórios não são viáveis;</li>
+    <li>Enquanto as medidas de controle coletivo estão sendo adotadas;</li>
+    <li>Nas emergências.</li>
+</ul>
+</pre>
+
+<tocentry content="10.4 - RESPONSABILIDADES"/>
+<h4>10.4 - RESPONSABILIDADES</h4>
+
+<pre>
+O médico coordenador do programa auxiliará na administração do programa. Ele será responsável por todos os aspectos deste programa e tem toda a autoridade para tomar as decisões necessárias para garantir o sucesso deste programa esta autoridade inclui:
+
+<ul class="bolinha">
+    <li>A contratação de serviços ou compras de equipamentos necessários para a implantação do programa;</li>
+    <li>A fiscalização da utilização dos equipamentos de proteção respiratória por parte do empregado;</li>
+    <li>Avaliação da realização de treinamentos de conscientização e testes de selagem;</li>
+    <li>Orientar os usuários de respiradores assim que constatada qualquer alteração na estrutura da face, arcada dentaria, doenças ou complicações respiratória que restrinja o uso de respiradores ou comprometa sua vedação;</li>
+    <li>Efetuar estudo no PPR sempre que houver alterações no processo de trabalho ou produtos químicos.</li>
+</ul>
+</pre>
+
+<tocentry content="10.5 - CONSIDERAÇÕES GERAIS"/>
+<h4>10.5 - CONSIDERAÇÕES GERAIS</h4>
+
+<pre>
+Anualmente todo usuário de respirador deve ser submetido a exame médico adequado e teste de vedação para verificar a selagem e a vedação do E.P. I que se ajusta melhor a sua face.
+
+Os equipamentos de proteção respiratória deverão ser selecionados em função dos riscos aos quais os trabalhadores ficaram expostos.
+
+Toda seleção deverá ser feita pelo SESMT.
+
+O usuário deverá ser instruído e treinado sobre o uso correto dos equipamentos de proteção respiratória, bem como sobre suas características e limitações, deverão ser instruídos também os coordenadores e os supervisores dos usuários.
+
+Os coordenadores e supervisores dos usuários deverão fiscalizar diariamente nas áreas o uso de barba e bigode. Nenhum trabalhador que necessite utilizar o respirador poderá utilizar barba ou bigode que interfira na vedação facial.
+
+Não poderá ser utilizado um respirador por mais de um empregado sem devida higienização.
+
+Os equipamentos de proteção respiratória devem ser limpos e desinfetados, regulamente pelo usuário após cada uso ou mais frequentemente se necessário.
+
+Os equipamentos de proteção respiratória deverão ser guardados, no local de trabalho em sacos plásticos limpo, mantidos limpos e em condições de higiene.
+
+Os respiradores de uso rotineiro deverão ser inspecionados regulamente durante limpeza a parte gasta ou deterioradas deverão ser substituídas.
+
+OBS: Sempre que houver necessidade da elaboração do Programa de Proteção Respiratória (PPR), deverão ser seguidas as recomendações acima.
+</pre>
+
+<tocentry content="10.6 - AUDITORIA"/>
+<h4>10.6 - AUDITORIA</h4>
+
+<pre>O programa deverá ser avaliado anualmente com emissão de uma análise crítica, constatando sua aplicação e eficácia.</pre>
+
+<tocentry content="11 - PROGRAMA DE ERGONOMIA"/>
+<h4>11 - PROGRAMA DE ERGONOMIA</h4>
+
+<pre>
+É o conjunto de conhecimentos científicos relativos ao homem e necessárias à concepção de instrumentos máquinas e instrumentos que possam ser utilizados com o Máximo de conforto e eficácia (Wisner 1972). A ergonomia tem como objetivo adaptar o trabalho ao homem, bem como melhorar as condições de trabalho e as relações homem máquinas, a ergonomia pode ser construtiva, corretiva e cognitiva.
+
+<strong>Agentes Ergonômicos:</strong> Desajuntes de ritmo e frequência de trabalho, equipamento e instrumentos utilizados nas atividades profissionais que podem gerar desgaste físico, emocional, fadiga, sono, dores musculares na coluna e articulações.
+
+<strong>Antropometria:</strong> Ciência que estuda as medidas das partes do corpo humano e suas proporções. Geralmente a finalidade dos estudos da Antropometria é classificatória e compatível.
+LER DORT: Distúrbios osteomusculares relacionados ao trabalho
+
+<strong>LER:</strong> lesão por esforço repetitivo, o termo LER refere-se a um conjunto de doenças que atingem principalmente os membros superiores atavam músculos nervos e tendões provocando irritações e inflamações dos membros a LER geralmente causada por movimentos repetitivos e contínuos com consequente sobrecarga do sistema músculo esquelético, o esforço excessivo, má postura, stress, também contribuem para o aparecimento da LER. Em casos extremos podem causar sérios danos aos tendões, dor e perda de movimentos. A LER inclui várias doenças entre as quais: Tenossinovite, Tendinite, Epicondilite, Síndrome do Túnel do Carpo, Bursite, Dedo em gatilho. Alguns especialistas e entidades preferem atualmente denominar as LER por DORT, a LER também e conhecida por LTC (Lesão por trauma cumulativo).
+
+A LER pode ser classificada em:
+
+Nível 1 se a doença classificada nesta fase, caracterizada por algumas pontadas, pode ser curada facilmente;
+Nível 2 dor mais intensa, porém tolerável, mais localizada, acompanhada de calor e formigamentos;
+Nível 3 nem o repouso conseguem nesta fase, fazer com que a dor diminua por completo, incapacidade para realizar funções simples;
+Nível 4 Dores insuportáveis e só pioram tomando a parte afetada dolorida sem força e deformada nesta fase o paciente tem depressão, ansiedade, angústia, insônia. A doença já não tem mais cura.
+
+Proxemica
+
+1- Doença que estuda os aspectos culturais, comportamentais e sociológicos da distância entre os indivíduos.
+
+2- Conhecimentos relativos ao uso humano do espaço, estudando a relações entre o individuo e seu ambiente, as situações de contato ou de não contato, entre as pessoas estabelecendo distâncias interpessoais.
+
+<strong>Biomecânica:</strong> Ciência que se dedica ao estudo e a aplicação das leis da mecânica ao corpo humano.
+Fisiologia
+
+Disciplina que permite estimar a demanda energética do coração e dos pulmões exigidas por um esforço muscular.
+
+<strong>Máquina:</strong> Em ergonomia consideram-se as máquinas todas as ajudas materiais que o homem utiliza em seu trabalho englobando os equipamentos as ferramentas, mobiliários e instalações.
+
+<strong>Postura:</strong> Posição ou posições que o corpo humano assume durante a realização de tarefa.
+Biônica
+
+Ciência que se ocupa das analogias biológicas com a finalidade de resolver problemas de natureza estruturais, locomotoras, coordenação e emissão de informações dentre outras.
+Cibernética
+
+Ciência da comunicação e do controle seja do animal (Homem, Seres Vivos) seja nas máquinas.
+</pre>
+
+<tocentry content="11.1 - CLASSIFICAÇÃO DA ERGONOMIA"/>
+<h4>11.1 - CLASSIFICAÇÃO DA ERGONOMIA</h4>
+
+<pre>
+A Ergonomia de Concepção é o estudo ergonômico de instrumentos e ambiente de trabalho junto sua construção.
+
+A Ergonomia Corretiva é que modifica sistemas já existentes, portanto o estudo ergonômico só é feito após a construção do instrumento ou ambiente de trabalho.
+
+Ergonomia Seletiva é feita selecionando o homem ideal e ou a faixa de utilizadores ideal, para uma máquina atividade ou ambiente de trabalho já existente. A interação da área de seleção de pessoal com as áreas de engenharia de segurança e medicina do trabalho é importantíssima neste campo. Para obter resultados eficientes em campo da ergonomia seletiva é fundamental a utilização e preenchimento correto da ficha profissiograficas que fornece dados referentes, a função, tipo de equipamento utilizado pelo operador, postura no trabalho, manejo manual de cargas que a função impõe e perfil psicológico, medico e antropométrico do trabalhador.
+</pre>
+
+<tocentry content="11.2 - OBJETIVOS DA ERGONOMIA"/>
+<h4>11.2 - OBJETIVOS DA ERGONOMIA</h4>
+
+<pre>
+Adaptação dos instrumentos condições e ambientes de trabalho as capacidades psicofisiologicas antropométricas e biomecânicas do homem de forma a:
+
+Reduzir o cansaço dos operários.
+
+Aumentar o conforto do trabalhador a produtividade e a rentabilidade, em resumo proporcionar melhores condições de trabalho ao homem e ao mesmo tempo aumentar a eficiência e reduzir custo.
+</pre>
+
+<tocentry content="11.3 - MOVIMENTAÇÃO DE PESOS"/>
+<h4>11.3 - MOVIMENTAÇÃO DE PESOS</h4>
+
+<pre>
+Noções Básicas
+
+Em um sistema homem máquina o homem usa seus músculos de contrações voluntárias (Músculo esquelético) para exercer uma ação sob a máquina. Para que esse desempenho seja adequado e necessário que a máquina esteja adaptada às características do ser humano.
+
+Tendo em vista esse objetivo fornecemos a seguir algumas informações básicas sob aspectos motores. Os músculos esqueléticos são ligados aos ossos através dos tendões, formado por um verdadeiro sistema de alavancas e sempre que a um movimento pelo menos um músculo se contraindo e um se relaxando.
+
+A concentração dos músculos se realiza através da excitação realizada por motoneuronios, os conjuntos de motoneuronios chamam-se unidade motora, os músculos que executam ações delicadas, precisas têm poucas fibras ao contrario da musculatura da perna.
+
+Desta forma devemos delegar trabalho pesado para músculo com unidades motoras grandes e trabalho de natureza leve, precisa e rápida para os músculos com unidades motoras pequenas.
+</pre>
+
+<tocentry content="11.4 - ÁREA DE TRABALHO"/>
+<h4>11.4 - ÁREA DE TRABALHO</h4>
+
+<pre>
+A aplicação da ergonomia do projeto da área de trabalho permite o alcance destes objetivos mediante a adaptação das máquinas, ferramentas e ambientes de trabalho as características psicofisiologicas, antropométricas e biomecânicas do homem.
+De uma forma simplificada área de trabalho abrange os seguintes itens e componentes:
+
+- Lugares de assentamentos e elementos auxiliares: cadeiras, poltronas;
+- Superfície de trabalho e elementos auxiliares: mesas, escrivaninhas;
+- Posicionamento de comandos e controles: áreas de acesso a mãos, pés e visão.
+
+RPG: É um método revolucionário para correção de patologia do sistema músculo esquelético criado pelo francês Pheleppe E. M Souchard
+
+Princípios básicos
+Partindo de um sintoma para chegar até a causa da dor ou um problema no sistema músculo esquelético RPG trata o indivíduo e não a doença porque cada um de nós tem a própria maneira de reagir a ela muitas vezes adotando padrões individuais para evitar uma dor ou um bloqueio.
+
+A fisioterapeuta trabalha com o paciente contra a patologia, durante cada sessão a fisioterapeuta emprega micro ajustes em alongamentos em uma serie de posturas suaves e progressivas (de pé, sentada ou deitada).
+
+A RPG requer do paciente uma participação muito ativa, durante a sessão, ela trabalha seu corpo, alongando os músculos estáticos ao mesmo tempo em que se fortalecem os músculos dinâmicos, seguindo a cadeia que está causando a dor ou outros problemas.
+</pre>
+
+<tocentry content="12 - TREINAMENTO DE DST/AIDS"/>
+<h4>12 - TREINAMENTO DE DST/AIDS</h4>
+
+<pre>
+Objetivo: Conscientizar os empregados das formas de transmissão e prevenção de doenças sexualmente transmissíveis
+
+Programação: A programação de execução do treinamento está estabelecida no cronograma de ações propostas.
+
+Conteúdo mínimo
+Tipos de DST;
+Formas de transmissão;
+Formas de Prevenção;
+Tratamentos existentes.
+</pre>
+
+<tocentry content="12.1 - TREINAMENTO EM PRIMEIROS SOCORROS"/>
+<h4>12.1 - TREINAMENTO EM PRIMEIROS SOCORROS</h4>
+
+<pre>
+Objetivos: Conscientizar os empregados das formas de prestação de primeiros socorros visando à preservação da vida
+
+Programação: A programação de execução do treinamento está estabelecida no cronograma de ações propostos
+</pre>
+
+<tocentry content="12.2 - CAMPANHAS DE SAÚDE"/>
+<h4>12.2 - CAMPANHAS DE SAÚDE</h4>
+
+<pre>
+Hipertensão
+Proteção das mãos
+
+Obs.: A programação esta descrita no cronograma de Ações propostas
+</pre>
+
+<tocentry content="13 - CONDUTAS PROFILÁTICAS NECESSÁRIAS"/>
+<h4>13 - CONDUTAS PROFILÁTICAS NECESSÁRIAS</h4>
+
+<pre>
+As vacinas devem seguir as recomendações do Ministério da saúde e serem realizadas no serviço do Sistema Único de Saúde.
+
+<ul class="abc">
+    <li>Vacinação antitetânica (para todos os empregados) – recomendável;</li>
+    <li>Vacinação contra febre amarela em área endêmica (para todos os empregados) – recomendável;</li>
+    <li>Vacinação contra hepatite tipo B (para médicos, enfermeiros, técnicos e auxiliares de enfermagem do trabalho) – obrigatório segundo a NR 32;</li>
+    <li>Vacinação contra Influenza – recomendável.</li>
+</ul>
+</pre>
+
+<tocentry content="14 - PRIMEIROS SOCORROS"/>
+<h4>14 - PRIMEIROS SOCORROS</h4>
+
+<pre>
+A empresa deverá nomear um trabalhador, componente da CIPA ou o Membro Designado selecionado por turno, treinado em curso de primeiros socorros, para realizar os primeiros socorros. Ele será o responsável por manter o material necessário guardado em local adequado.
+
+Deverá ser providenciada, pela empresa, uma Caixa de Primeiros Socorros, que deverá conter:
+</pre>
+
+<table border="1" class="largo">
+    <thead>
+        <tr>
+            <th>Material</th>
+            <th>Quantidade</th>
+            <th>Observações</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>Tesoura de ponta romba</td>
+            <td>1 unidade</td>
+            <td></td>
+        </tr>
+        <tr>
+            <td>Luva de procedimento cirúrgico (descartável)</td>
+            <td>2 pares</td>
+            <td>Tamanhos 7 ½ e 8 ½</td>
+        </tr>
+        <tr>
+            <td>Algodão hidrófilo</td>
+            <td>1 pacote</td>
+            <td></td>
+        </tr>
+        <tr>
+            <td>Compressa de gaze esterelizada (7,5×7,5cm)</td>
+            <td>5 pacotes</td>
+            <td></td>
+        </tr>
+        <tr>
+            <td>Esparadrapo</td>
+            <td>1 rolo</td>
+            <td><!--10×4,5cm--></td>
+        </tr>
+        <tr>
+            <td>Atadura de crepom</td>
+            <td>2 rolos</td>
+            <td><!--12×4 cm e 20×4,5cm--></td>
+        </tr>
+        <tr>
+            <td>Curativo adesivo (tipo band-aid)</td>
+            <td>1 caixa</td>
+            <td></td>
+        </tr>
+        <tr>
+            <td>Soro fisiológico (0,9%)</td>
+            <td>1 frasco de 500 ml</td>
+            <td></td>
+        </tr>
+        <tr>
+            <td>Solução antisséptica povidine (degermante)</td>
+            <td>1 vidro</td>
+            <td>50 ml</td>
+        </tr>
+        <tr>
+            <td>Termômetro</td>
+            <td>1 unidade</td>
+            <td></td>
+        </tr>
+        <tr>
+            <td>Pinça</td>
+            <td>1 unidade</td>
+            <td></td>
+        </tr>
+<!--        <tr>
+            <td>Unguento Picrato de Butesin para queimaduras leves</td>
+            <td>1 vidro</td>
+            <td>50 ml</td>
+        </tr>-->
+    </tbody>
+</table>
+
+<pre>
+<strong>Obs:</strong> Todos os medicamentos deverão ter rótulos discriminativos.
+
+Nome legível do profissional nomeado: __________________________________________________
+
+Setor: ___________________________________________________________________________________
+
+Função: _________________________________________________________________________________
+</pre>
+
+<tocentry content="15 - RELATÓRIO ANUAL"/>
+<h4>15 - RELATÓRIO ANUAL</h4>
+
+<!--<pre>O Relatório Anual é emitido no término do contrato e deverá ser discriminado, por setores da empresa, o número e a natureza dos exames médicos, incluindo avaliações clínicas e exames complementares, estatísticas de resultados considerados normais e anormais, assim como o planejamento para o próximo ano, tomando como base o modelo proposto no Quadro III da NR 7.</pre>-->
+<pre>O Relatório Anual é emitido anualmente,sendo  discriminado, por setores da empresa, o número e a natureza dos exames médicos, incluindo avaliações clínicas e exames complementares, estatísticas de resultados considerados normais e anormais, assim como o planejamento para o próximo ano, tomando como base o modelo proposto no Quadro III da NR 7.</pre>
+
+<tocentry content="16 - QUANTO AO P.P.R.A."/>
+<h4>16 - QUANTO AO P.P.R.A.</h4>
+
+<pre>A empresa deverá manter a execução do PPRA, visando à neutralização e/ou redução dos riscos ambientais gerenciando a execução das ações corretivas e inibidoras conforme estabelecido no cronograma e no plano de ação.</pre>
+
+<pagebreak />
+
+<tocentry content="17 - TERMO DE RESPONSABILIDADE"/>
+<h4>17 - TERMO DE RESPONSABILIDADE</h4>
+
+<pre>
+Comprometem-se os responsáveis pela empresa e a realizar e acompanhar a efetiva integração de todos os seus funcionários, contemplando-os com as orientações básicas de higiene, de segurança e de saúde do trabalho, cumprindo e fazer cumprir as disposições legais e regulamentares previstas sobre o programa que assim garantam a eficácia e efetividade do PCMSO, em conjunto com o corpo técnico responsável pelo programa.
+
+
+
+<h5 style="text-align: right;"><?php echo $unidade["local"] ?> em <?php echo $data1 ?></h5>
+
+
+
+
+__________________________________________________________
+Médico do Trabalho
+    <?php echo $pcmso['coordenacao_medico'] ?> - CRM <?php echo $pcmso['coordenacao_crm'] ?> 
+
+
+
+__________________________________________________________
+    <?php echo $pcmso['empresa_razao'] ?>
+</pre>
+
+<?php
+//die(ob_get_clean());
+$mpdf->WriteHTML(ob_get_clean());
+$mpdf->Output();

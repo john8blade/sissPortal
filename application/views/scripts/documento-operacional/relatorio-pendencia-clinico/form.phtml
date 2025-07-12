@@ -1,0 +1,81 @@
+<script type="text/javascript" src="/js/AjaxComResultadoJson.js"></script>
+
+<script type="text/javascript">
+    function ProcessarRetornoAjaxResgatarContrarato(Resposta) {
+        if (Resposta.Resultado) {
+            $("#paramContratoId").children().remove();
+            $('#paramContratoId').append('<option value="0">- selecione -</option>');
+            var q = Resposta.Resultado.length;
+            var colecao = Resposta.Resultado;
+            var html = '';
+            for (var i = 0; i < q; i++) {
+                html = '<option value="' + colecao[i].contrato_id + '">' + colecao[i].contrato_numero_custom + '</option>';
+                $('#paramContratoId').append(html);
+            }
+            $('#paramContratoId').focus();
+        }
+    }
+    
+    $(function () {
+        $("#paramEmpresaId").change(function () {
+            var id = this.value;
+            if (parseInt(id) > 0) {
+                ResgartarColecaoDeContratosPeloIdEmpresa(id, ProcessarRetornoAjaxResgatarContrarato);
+            }
+        });
+    });
+</script>
+
+
+<div class="well well-small">
+    <form action="/documento-operacional/emitir-relatorio-pendencia-cli" method="get" target="_blank">
+        <div style="display: none">
+            <input type="hidden" value="1" name="paramRenderizar" id="paramRenderizar"/>
+        </div>
+        <fieldset>
+            <legend>Relatório de Pendência na Avaliação Clínica</legend>
+                                  
+            <div class="row-fluid">
+                <div class="span2">
+                    <label>Data Início</label>
+                    <input type="text" required="true" name="paramDataInicio" id="paramDataInicio" class="span mask-data"/>
+                </div>
+                    
+                <div class="span2">
+                    <label>Data Término</label>
+                    <input type="text" required="true" name="paramDataTermino" id="paramDataTermino" class="span mask-data"/>
+                </div>
+
+                <div class="span6">
+                    <label>Empresa</label>
+                    <select name="paramEmpresaId" id="paramEmpresaId" class="span">
+                        <option value="0">-- selecione --</option>
+                        <?php foreach ($this->form['colecaoEmpresa'] as $item): ?>
+                            <option value="<?php echo $item['empresa_id'] ?>"><?php echo $item['empresa_fantasia'] ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+
+                <div class="span2">
+                    <label>Contrato</label>
+                    <select name="paramContratoId" id="paramContratoId" class="span">
+                        <option value="0">-- aguarde --</option>
+                    </select>
+                </div>
+            </div>
+            <div class="row-fluid">
+                
+                <div class="span2">
+                    <label>&nbsp;</label>
+                    <button type="submit" class="btn btn-block"><span class="icon-ok"></span>&nbsp;Processar</button>
+                </div>
+
+                <div class="span2">
+                    <label>&nbsp;</label>
+                    <a href="/documento-gerencial/index" class="btn btn-block"><span class="icon-chevron-left"></span>&nbsp;Voltar</a>
+                </div>
+            </div>
+
+        </fieldset>
+    </form>
+</div>

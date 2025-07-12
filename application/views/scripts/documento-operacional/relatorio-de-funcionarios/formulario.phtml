@@ -1,0 +1,117 @@
+<script type="text/javascript">
+
+    $(document).ready(function() {
+
+        // Ajax executado ao selecionar empresa para carregar os contratos
+        $("#empresa_id").change(function() {
+            var empresaId = this.value;
+            $("#contrato_id option").remove();
+            if (empresaId !== '') {
+                var url = '/ajax/json/servico/listar-contrato-pela-empresa/';
+                var imprimirRetorno = function(resposta) {
+                    if (resposta) {
+                        var opcoes = '<option value="">---</option>';
+                        for (var i = 0; i < resposta.length; i++) {
+                            opcoes += '<option value="' + resposta[i].contrato_id + '">' + resposta[i].contrato_numero + "</option>";
+                        }
+                        $('#contrato_id').append(opcoes);
+                    }
+                };
+                $.post(url, {id: empresaId}, imprimirRetorno, 'json');
+            }
+        });
+
+    });
+
+</script>
+
+
+<div class="row-fluid">
+    <div class="well well-small"><i class="icon-plus-sign"></i>&nbsp;<strong>Relatório de Funcionário</strong></div>
+</div>
+
+<div class="row-fluid">
+
+    <div class="span12">
+        <form action="" method="post" name="formularioRelatorio">
+            <div class="row-fluid">
+                <div class="span3">
+                    <label>Empresa</label>
+                    <select id="empresa_id" name="empresa_id" class="span">
+                        <option value="">--</option>
+                        <?php foreach ($this->empresas as $item): ?>
+                            <option value="<?php echo $item['empresa_id'] ?>"><?php echo $item['empresa_razao'] ?></option>
+                        <?php endforeach ?>
+                    </select>
+                </div>
+                <div class="span3">
+                    <label>Contrato</label>
+                    <select id="contrato_id" name="contrato_id" class="span">
+                        <option value="">--</option>
+                    </select>
+                </div>
+                <div class="span4">
+                    <label>Nome</label>
+                    <input type="text" name="pessoa_nome" value="" class="span" placeholder="Parte do nome do funcionário"/>
+                </div>
+
+                <div class="span2">
+                    <label>&nbsp;</label>
+                    <button type="submit" value="" name="btnEnviar" class="btn btn-success">Enviar</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<?php if (is_array($this->itensResultadoRelatorio) && count($this->itensResultadoRelatorio) > 0): ?>
+    <div class="row-fluid">
+        <table border="0" class="table table-condensed table-hover table-bordered">
+            <thead>
+                <tr>
+                    <th>Funcionário</th>
+                    <th>CPF</th>
+                    <th>Admissão</th>
+                    <th>Empresa</th>
+                    <th>Contrato</th>
+                    <th>Setor</th>
+                    <th>Cargo</th>
+                    <th>Função</th>
+                </tr>
+            </thead>
+            
+            <tbody>
+                <?php foreach ($this->itensResultadoRelatorio as $item): ?>
+                    <tr>
+                        <td><?php echo $item['pessoa_nome'] ?></td>
+                        <td><?php echo Util::cpf($item['pessoa_cpf']) ?></td>
+                        <td><?php echo Util::dataBR($item['funcionario_data_admissao']) ?></td>
+                        <td><?php echo $item['empresa']['empresa_razao'] ?></td>
+                        <td><?php echo $item['contrato']['contrato_numero'] ?></td>
+                        <td><?php echo $item['setor_nome'] ?></td>
+                        <td><?php echo $item['cargo_nome'] ?></td>
+                        <td><?php if ($item['ppra_item_funcao'] == NULL || $item['ppra_item_funcao'] == '') {
+                                echo $item['cargo_nome'];
+                            }else{
+                                echo $item['ppra_item_funcao'];
+                            }
+                            ?><?php #echo $item['funcao_nome'] ?>
+                        </td>
+                    </tr>
+                <?php endforeach; ?>
+            </tbody>
+
+            <tfoot>
+                <tr>
+                    <td colspan="8" style="text-align: right;" align="right"><strong style="font-size: 9px;padding-top:15px; ">Relatório Gerado em: <?php echo date('d/m/Y'), ' às ', date('H:i:s')?></strong></td>
+                </tr>
+            </tfoot>
+            
+        </table>
+
+    </div>
+<?php endif; ?>
+
+
+
+

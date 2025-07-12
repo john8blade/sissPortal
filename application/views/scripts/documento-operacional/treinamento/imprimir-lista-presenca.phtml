@@ -1,0 +1,149 @@
+<?php
+//util::dump($this->lista);
+require_once "../application/views/scripts/documento-operacional/include/funcoes.php";
+$rodape = '<table><tbody><tr><td>&nbsp;</td></tr><tr><td>&nbsp;</td></tr><tr><td>_________________________________</td></tr><tr><td><strong>ASSINATURA DO INSTRUTOR</strong></td></tr></tbody></table><div class="div_fonte_menor">' . obterHtmlDoRodapeEmPdf() . '</div>';
+
+include 'MPDF/mpdf.php';
+
+$colspan = '3';
+
+$mpdf = new mPDF('utf-8', 'A4', 0, '', 10, 10, 30, 30, 9, 9);
+$mpdf->SetImportUse();
+$mpdf->SetDocTemplate('lista-presenca.pdf', true);
+$mpdf->SetHTMLFooter($rodape);
+$mpdf->setAutoTopMargin = false;
+$mpdf->setAutoBottomMargin = false;
+
+$css = <<<CSS
+<style type="text/css">
+    body, table tr td, table tr th { font-family: Arial; font-size: 10px; color: #003377; }
+    table { border-collapse: collapse; }
+    table.largo { width: 100%; }
+    table tr th.cpf { width: 80px; }
+    table tr th.assinatura { width: 200px; }
+    table tr td { padding: 4px; white-space: nowrap; }
+    table.alto tr td { padding: 8px 4px; }
+    table tr td.justificado { text-align: justify; }
+    table tr td.titulo { font-size: 100%; font-weight: bold; text-align: center; border-top: 2px solid #003377; border-bottom: 2px solid #003377; }
+    table tr td#conteudo { height: 650px; vertical-align: top; }
+    table tr td.centro { text-align: center; }
+    table tr td.fonte_menor { font-size: 60%; }
+    table tr td.fonte_maior { font-size: 120%; }
+    table.table_fonte_maior tr td { font-size: 120%; }
+    .div_fonte_menor table tr td { font-size: 100%; }
+    .entre_linhas { line-height: 5px !important; }
+</style>
+CSS;
+$mpdf->WriteHTML($css);
+
+list($data1, $data2) = array(Util::dataBR($this->agenda['treinamento_agenda_data_inicio']), Util::dataBR($this->agenda['treinamento_agenda_data_fim']));
+$periodo = is_null($data2) ? (' em ' . $data1) : ($data1 . ' à ' . $data2);
+$agenda_produto = $this->agenda['produto_nome'];
+$agenda_instrutor = $this->agenda['instrutor'];
+
+$hrs = NULL;
+if (strlen($this->agenda['treinamento_agenda_carga_horaria']) == 1) {
+    $hrs = '0'.$this->agenda['treinamento_agenda_carga_horaria'].'h';
+}else{
+    $hrs = $this->agenda['treinamento_agenda_carga_horaria'].'h';
+}
+
+$min = NULL;
+if (strlen($this->agenda['treinamento_agenda_carga_horaria_min']) == 1) {
+    $min = '00min';
+}else{
+    $min = $this->agenda['treinamento_agenda_carga_horaria_min'].'min';
+}
+
+$carga = $hrs.$min;
+
+$agenda_carga_horaria = $carga;
+$hora_inicio = Util::hora($this->agenda['treinamento_agenda_hora_inicio']);
+$hora_fim = Util::hora($this->agenda['treinamento_agenda_hora_fim']);
+$cabecalho = <<<HTML
+<table>
+    <tbody>
+        <tr>
+            <td><strong>TREINAMENTO:</strong></td>
+            <td width="450">{$agenda_produto}</td>
+            <td colspan="3"><strong>CARGA HORÁRIA:</strong></td>
+            <td colspan="3">{$agenda_carga_horaria}</td>
+        <tr>
+            <td><strong>DATA/PERÍODO:</strong></td>
+            <td colspan="3">{$periodo}</td>
+        </tr>
+        <tr>
+            <td><strong>HORÁRIO:</strong></td>
+            <td colspan="3">{$hora_inicio} às {$hora_fim}</td>
+        </tr>
+        <tr>
+            <td><strong>INSTRUTOR:</strong></td>
+            <td colspan="3">{$agenda_instrutor}</td>
+        </tr>
+        <tr>
+            <td><strong>OBSERVAÇÕES:</strong></td>
+            <td colspan="3"></td>
+        </tr>
+    </tbody>
+</table>
+<hr/>
+HTML;
+
+foreach ($this->lista as $i => $empresa) {
+
+    $participantes = count($empresa['alunos']);
+
+    $mpdf->WriteHTML($cabecalho);
+
+    # EMPRESA
+    $mpdf->WriteHTML('<table>');
+    $mpdf->WriteHTML('<tbody>');
+    $mpdf->WriteHTML('<tr><td colspan="' . $colspan . '">&nbsp;</td></tr>');
+    $mpdf->WriteHTML('<tr>');
+    $mpdf->WriteHTML('<td><strong>EMPRESA:</strong></td>');
+    $mpdf->WriteHTML('<td>' . $empresa['empresa_razao'] . '</td>');
+    $mpdf->WriteHTML('</tr>');
+    $mpdf->WriteHTML('<tr>');
+    $mpdf->WriteHTML('<td><strong>CNPJ:</strong></td>');
+    $mpdf->WriteHTML('<td>' . Util::cnpj($empresa['empresa_cnpj']) . '</td>');
+    $mpdf->WriteHTML('</tr>');
+    $mpdf->WriteHTML('<tr>');
+    $mpdf->WriteHTML('<td><strong>TOTAL PARTICIPANTES:</strong></td>');
+    $mpdf->WriteHTML('<td>' . $participantes . '</td>');
+    $mpdf->WriteHTML('</tr>');
+    $mpdf->WriteHTML('<tr><td colspan="' . $colspan . '">&nbsp;</td></tr>');
+    $mpdf->WriteHTML('</tbody>');
+    $mpdf->WriteHTML('</table>');
+
+    # THEAD
+    $mpdf->WriteHTML('<table border="1" class="largo alto">');
+    $mpdf->WriteHTML('<thead>');
+    $mpdf->WriteHTML('<tr>');
+    $mpdf->WriteHTML('<th class="cpf">CPF</th>');
+    $mpdf->WriteHTML('<th>NOME</th>');
+    $mpdf->WriteHTML('<th class="assinatura">ASSINATURA</th>');
+    $mpdf->WriteHTML('</tr>');
+    $mpdf->WriteHTML('</thead>');
+    $mpdf->WriteHTML('<tbody>');
+
+    # ALUNOS
+    $qtdalunos = 0;
+    foreach ($empresa['alunos'] as $aluno) {
+        $qtdalunos = $qtdalunos + 1;       
+        $cpf = Util::cpf($aluno['pessoa_cpf']);
+        $mpdf->WriteHTML('<tr>');
+        $mpdf->WriteHTML('<td>' . $cpf . '</td>');
+        $mpdf->WriteHTML('<td>' . $aluno['pessoa_nome'] . '</td>');
+        $mpdf->WriteHTML('<td>' . $assinatura . '</td>');
+        $mpdf->WriteHTML('</tr>');
+    }
+
+    # FIM
+    $mpdf->WriteHTML('</tbody>');
+    $mpdf->WriteHTML('</table>');
+
+    isset($this->lista[$i + 1]) ? $mpdf->AddPage() : null;
+   
+}
+
+$mpdf->Output();

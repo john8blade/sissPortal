@@ -1,0 +1,159 @@
+<?php
+header("Expires: Mon, 26 Jul 1997 05:00:00 GMT");
+header("Last-Modified: " . gmdate("D,d M YH:i:s") . " GMT");
+header("Cache-Control: no-cache, must-revalidate");
+header("Pragma: no-cache");
+header("Content-type: application/x-msexcel");
+header("Content-Disposition: attachment; filename=\"relatorio-funcionarios" . date("YmdHis") . ".xls\"");
+header("Content-Description: PHP Generated Data");
+$dominio = $_SERVER['HTTP_HOST'];
+$cor = "#E8E8E8";
+ob_start();
+?>
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+        <title>Relatório</title>
+        <style type="text/css">
+            body {margin: 0px;padding: 0px;font-family: Arial; font-size: 12px;}  
+            td#linha {height: 81px; vertical-align: middle; display: table-cell}
+        </style>
+    </head>
+    <body>
+        <table border="1" cellpadding="0" cellspacing="0">
+            <tbody>
+                <tr style="border-bottom: none;" colspan="7">
+                    <td style="border-bottom: none;"></td>
+                </tr>                
+                <tr>
+                    <td align="left" colspan="1" style="border-top: none;">
+                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                        <img style="margin: center;" src="http://<?php echo $dominio ?>/img/logo-relatorio.png"/>
+                    </td>
+                    <td id="linha" colspan="6">
+                        <h3 style="font-size: 14px;">RELATÓRIO DE FUNCIONÁRIOS</h3>
+                    </td>
+                </tr> 
+
+                <?php
+                $data = date('d/m/Y');
+                $hora = date("H:i:s");
+                ?>
+
+                <tr style="font-size: 12px;">    
+                    <td align="right" colspan="1"><b>EMITIDO POR:</b></td>
+                    <td align="left" colspan="3" >&nbsp;<?php echo $_SESSION['empresa']['empresa_razao'] ?> </td>
+
+                    <td align="right"><b>DATA/HORA:</b></td>
+                    <td align="left" colspan="2"><?php echo ("$data às $hora"); ?></td>                   
+                </tr>
+                <tr style="font-size: 12px;">    
+                    <td align="right" colspan="2"><b>FILTROS UTILIZADOS:</b></td>
+                    <td align="left" colspan="5"><?php echo $this->filtro; ?> </td>                                        
+                </tr>
+                <tr style="font-size: 12px;">
+                    <th align="left" bgcolor="<?php echo $cor ?>">ITEM</th>
+                    <th align="left" bgcolor="<?php echo $cor ?>">FUNCIONÁRIO</th>
+                    <th align="left" bgcolor="<?php echo $cor ?>">MATRICULA</th>
+                    <th align="left" bgcolor="<?php echo $cor ?>">CPF</th>
+                    <th align="left" bgcolor="<?php echo $cor ?>">SETOR</th>
+                    <th align="left" bgcolor="<?php echo $cor ?>">CARGO</th>
+                    <th align="left" bgcolor="<?php echo $cor ?>">FUNÇÃO</th>                 
+                </tr>
+
+                <!-- Bloco para preenchimento dos dados da planilha excel-->
+                <?php $cont = 1; ?>
+                <?php
+                $setor = array();
+                $cargo = array();
+                $funcao = array();
+                ?>
+                <?php foreach ($this->funcionarios as $item) { ?>
+
+                    <tr style="font-size: 12px;">
+                        <td align="right"><?php echo $cont ?></td>
+                        <td align="left"><?php echo $item['pessoa_nome'] ?></td>
+                        <td align="left"><?php echo $item['funcionario_matricula'] ?></td>
+                        <td align="right"><?php echo $item['pessoa_cpf'] ?></td>
+                        <td align="right"><?php echo $item['setor_nome'] ?></td>
+                        <td align="right"><?php echo $item['cargo_nome'] ?></td>
+                        <td align="right"><?php if ($item['ppra_item_funcao'] == NULL || $item['ppra_item_funcao'] == '') {
+                                echo $item['cargo_nome'];
+                            }else{
+                                echo $item['ppra_item_funcao'];
+                            }
+                            ?><?php #echo $item['funcao_nome'] ?></td>                  
+                    </tr>
+                    <?php $cont++; ?>
+                    <?php $setor[$item['setor_nome']] = isset($setor[$item['setor_nome']]) ? ($setor[$item['setor_nome']] + 1) : 1 ?>
+                    <?php $cargo[$item['cargo_nome']] = isset($cargo[$item['cargo_nome']]) ? ($cargo[$item['cargo_nome']] + 1) : 1 ?>
+                    <?php $funcao[$item['funcao_nome']] = isset($funcao[$item['funcao_nome']]) ? ($funcao[$item['funcao_nome']] + 1) : 1 ?>
+                    <?php #var_dump($setor); ?>
+                <?php } ?>
+                <!-- FIM do Bloco para preenchimento dos dados da planilha excel-->
+
+
+                <tr style="font-size: 12px;">
+                    <th style="border: 0px" align="left" bgcolor="#E8E8E8"><font color="#E8E8E8">.</font></th>
+                    <th style="border: 0px" align="left" bgcolor="#E8E8E8"><font color="#E8E8E8">.</font></th>
+                    <th style="border: 0px" align="left" bgcolor="#E8E8E8"><font color="#E8E8E8">.</font></th>
+                    <th style="border: 0px" align="center" bgcolor="#E8E8E8"><font color="#000000">RESULTADO TOTALIZADOR</font></th>
+                    <th style="border: 0px" align="left" bgcolor="#E8E8E8"><font color="#E8E8E8">.</font></th>
+                    <th style="border: 0px" align="left" bgcolor="#E8E8E8"><font color="#E8E8E8">.</font></th>
+                    <th style="border: 0px" align="left" bgcolor="#E8E8E8"><font color="#E8E8E8">.</font></th>             
+                </tr>           
+        </table>  
+        <table>
+            <tr style="font-size: 12px;">              
+                <td style="border: 0px" colspan="7" align="left" bgcolor="#FFFFFF"><font color="#FFFFFF">.</font></td>
+            </tr>
+            <tr style="font-size: 12px;">
+                <td colspan="2" style="border: 0px;">&nbsp;</td>
+                <td colspan="1" style="border: 0px;" align="right">TOTAL DE REGISTRO: &nbsp;</td>
+                <td colspan="7" style="border: 0px;" align="left"><?php echo ($cont - 1); ?></td>
+            </tr>
+            <tr style="font-size: 12px;">
+                <td colspan="2" style="border: 0px;">&nbsp;</td>
+            </tr>
+            <tr style="font-size: 12px;">
+                <td colspan="1" style="border: 0px;">&nbsp;</td>
+                <td colspan="2" style="border: 0px;" align="right"><b>TOTAL DE SETOR</b></td>
+            </tr>  
+            <?php foreach ($setor as $key => $value): ?>
+                <tr style="font-size: 12px;">
+                    <td colspan="1" style="border: 0px;">&nbsp;</td>
+                    <td colspan="2" style="border: 0px;" align="right">TOTAL <?php echo $key; ?> : &nbsp;</td>
+                    <td colspan="7" style="border: 0px;" align="left"><?php echo $value; ?></td>
+                </tr>  
+            <?php endforeach; ?> 
+            <tr style="font-size: 12px;">
+                <td colspan="2" style="border: 0px;">&nbsp;</td>
+            </tr>
+            <tr style="font-size: 12px;">
+                <td colspan="1" style="border: 0px;">&nbsp;</td>
+                <td colspan="2" style="border: 0px;" align="right"><b>TOTAL DE CARGO</b></td>
+            </tr>  
+            <?php foreach ($cargo as $key => $value): ?>
+                <tr style="font-size: 12px;">
+                    <td colspan="1" style="border: 0px;">&nbsp;</td>
+                    <td colspan="2" style="border: 0px;" align="right">TOTAL CARGO &nbsp;<?php echo $key; ?> : &nbsp;</td>
+                    <td colspan="7" style="border: 0px;" align="left"><?php echo $value; ?></td>
+                </tr>  
+            <?php endforeach; ?> 
+            <tr style="font-size: 12px;">
+                <td colspan="2" style="border: 0px;">&nbsp;</td>
+            </tr>
+            <tr style="font-size: 12px;">
+                <td colspan="1" style="border: 0px;">&nbsp;</td>
+                <td colspan="2" style="border: 0px;" align="right"><b>TOTAL DE FUNÇÃO</b></td>
+            </tr>  
+            <?php foreach ($funcao as $key => $value): ?>
+                <tr style="font-size: 12px;">
+                    <td colspan="1" style="border: 0px;">&nbsp;</td>
+                    <td colspan="2" style="border: 0px;" align="right">TOTAL FUNÇÃO &nbsp;<?php echo $key; ?> : &nbsp;</td>
+                    <td colspan="7" style="border: 0px;" align="left"><?php echo $value; ?></td>
+                </tr>  
+            <?php endforeach; ?> 
+        </table>
+    </body>
+</html>

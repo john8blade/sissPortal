@@ -1,0 +1,81 @@
+<?php ob_start(); ?>
+<style>
+    table { border-collapse: collapse; width: 100%; font-family: Arial; }
+    table td { padding: 8px; border: 1px solid #333; }
+    #p1 { text-align: center; }
+    #p2 { text-align: center; font-weight: bold; }
+    #p3 { text-align: center; font-weight: bold; }
+    .center { text-align: center; }
+</style>
+<table>
+    <tr>
+        <?php if (!is_null($this->atributos['empresa_logo_blob'])) : ?>
+            <td id="p1"><img src="data:<?php echo $this->atributos['empresa_logo_type'] ?>;base64,<?php echo base64_encode($this->atributos['empresa_logo_blob']) ?>" width="160"></td>
+        <?php endif; ?>
+        <td id="p2">
+            <h1><?php echo $this->atributos['empresa_razao']; ?></h1>
+            <p>FICHA DE CONTROLE DE EQUIPAMENTOS DE PROTEÇÃO INDIVIDUAL</p>
+        </td>
+        <td id="p3">REGISTRO: <?php echo $this->atributos['funcionario_id'] ?></td>
+    </tr>
+</table>
+<table>
+    <tr>
+        <td><b>NOME:</b> <?php echo $this->atributos['pessoa_nome'] ?></td>
+        <td><b>CPF:</b> <?php echo Util::cpf($this->atributos['pessoa_cpf']) ?></td>
+        <td><b>DATA ADMISSÃO:</b> <?php echo $this->atributos['funcionario_data_admissao'] ?></td>
+    </tr>
+    <tr>
+        <td><b>CARGO:</b> <?php echo $this->atributos['cargo_nome'] ?></td>
+        <td colspan="2"><b>SETOR:</b> <?php echo $this->atributos['setor_nome'] ?></td>
+    </tr>
+    <tr>
+        <td colspan="3">
+            <p>RECONHEÇO TER SIDO CIENTIFICADO SOBRE OS RISCOS A SAÚDE DOS EVENTUAIS AGENTES AGRESSIVOS DE MEU POSTO DE TRABALHO E TER SIDO ORIENTADO ADEQUADAMENTE SOBRE AS PROTEÇÕES QUE DEVEM SER TOMADAS.</p>
+            <br>
+            <p>RECONHEÇO TAMBÉM, ESTAR RECEBENDO TODOS OS EQUIPAMENTOS DE PROTEÇÃO INDIVIDUAL, NECESSÁRIOS A MINHA FUNÇÃO E TER SIDO TREINADO E ORIENTADO QUANTO A SUA CORRETA E OBRIGATÓRIA UTILIZAÇÃO.</p>
+            <br>
+            <p>CIENTE DE QUE A NÃO UTILIZAÇÃO DOS EPI'S É FALTA GRAVE, RESPONSABILIZANDO-ME PELO SEU USO, CONSERVAÇÃO E GUARDA, FICANDO A EMPRESA AUTORIZADA A EFETUAR DESCONTOS EM MEUS SALÁRIOS, EM CASO DE DANOS OU EXTRAVIOS DOS MESMOS, SEM PREJUÍZO DA DISPENSA POR JUSTA CAUSA, SE FOR O CASO.</p>
+            <br>
+            <p><b>ASSINATURA DO EMPREGADO:</b>________________________________________________________________________</p>
+            <br>
+            <p><b>OBS.:</b>____________________________________________________________________________________________________</p>
+        </td>
+    </tr>
+</table>
+<table>
+    <tr>
+        <td class="center" colspan="2">ENTREGA</td>
+        <td colspan="3"></td>
+        <td class="center" colspan="2">DEVOLUÇÃO</td>
+    </tr>
+    <tr>
+        <td class="center">DATA</td>
+        <td class="center">RESPONSÁVEL</td>
+        <td class="center">EPI FORNECIDO</td>
+        <td class="center">CA</td>
+        <td class="center">ASSINATURA</td>
+        <td class="center">DATA</td>
+        <td class="center">RESPONSÁVEL</td>
+    </tr>
+    <?php foreach ($this->lista as $item) : ?>
+        <tr>
+            <td class="center"><?php echo $item['funcionario_epi_data_entrega'] ?></td>
+            <td><?php echo $item['funcionario_epi_responsavel_entrega'] ?></td>
+            <td><?php echo $item['funcionario_epi_nome'] ?></td>
+            <td><?php echo $item['funcionario_epi_ca'] ?></td>
+            <td></td>
+            <td class="center"><?php echo $item['funcionario_epi_data_devolucao'] ?></td>
+            <td><?php echo $item['funcionario_epi_responsavel_devolucao'] ?></td>
+        </tr>
+    <?php endforeach; ?>
+</table>
+<?php
+$content = ob_get_clean();
+require_once 'MPDF/mpdf.php';
+$mPDF = new mPDF('utf-8', 'A4-L', 0, '', 10, 10, 10, 10, 8, 8);
+$mPDF->setAutoBottomMargin = false;
+$mPDF->setAutoTopMargin = false;
+$mPDF->WriteHTML($content);
+$mPDF->Output();
+exit;

@@ -1,0 +1,323 @@
+<?php
+#Util::dump($this->atributos);
+
+require_once 'MPDF/mpdf.php';
+$localScripts = '../application/views/scripts/documento-operacional/';
+require_once "{$localScripts}include/funcoes.php";
+
+$htmlRodape = obterHtmlDoRodapeEmPdf();
+$htmlCabecalho = file_get_contents($localScripts . 'imprimir-fatura/' . 'cabecalho.html');
+$unidadeDescricao = $this->unidade[0]['unidade_descricao'];
+$unidadeSigla = $this->unidade[0]['unidade_sigla'];
+$enderecoLogradouro = $this->unidade[0]['endereco_logradouro'];
+$enderecoBairro = $this->unidade[0]['endereco_bairro'];
+$enderecoCidade = $this->unidade[0]['endereco_cidade'];
+$enderecoUf = $this->unidade[0]['endereco_uf'];
+
+
+$enderecoCabecalho = /* $unidadeDescricao . ' - ' . */ $unidadeSigla . '<br/>' . $enderecoLogradouro . '<br/>' . $enderecoBairro . ' - ' . $enderecoCidade . ' / ' . $enderecoUf . '<br/>';
+
+
+$htmlCabecalho = str_replace('<[atributoBlocoEndereco]/>', $enderecoCabecalho, $htmlCabecalho);
+
+$p = new mPDF('utf-8', 'A4', 0, '', 10, 10, 35, 30, 8, 8);
+$p->SetHTMLHeader($htmlCabecalho);
+$p->SetHTMLFooter($htmlRodape);
+$p->setAutoTopMargin = false;
+$p->setAutoBottomMargin = false;
+$p->allow_charset_conversion = false;
+$produtosContidosFatura = $this->atributos['produtos'];
+ob_start();
+?>
+<style>
+    body {font: normal 10px Arial; border: 0px solid #000;}
+    table#tabela tr td { font: normal 10px Arial; border: 0px solid #ccc; }
+    table{border-collapse: collapse; font: normal 11px Arial;width: 100%;}
+    table#tabela tr td.etiqueta { font-weight: normal; padding: 4px; }
+    table#tabela tr td.titulo { text-align: center; font-weight: bold; background: #ddd; }
+    table#tabela tr td.separador { padding: 10px; border: none; }
+    table#tabela tr td.centro { text-align: center; }
+</style>
+
+
+<table id="tabela" border="0" style="border-collapse: collapse; width: 100%; ">
+
+    <tr>
+        <td colspan="7" class="etiqueta" style="font-weight: normal; border: 1px solid #000000; border-bottom: none; border-left: none; border-right: none; text-align: left;"></td>
+    </tr>
+    <tr>
+        <td colspan="7" style="font-size: 14px; text-align: center; font-weight: bold;">FATURA</td>
+    </tr>
+
+    <br><br>
+
+    <tr>
+        <td colspan="7" class="etiqueta" style="font-weight: normal; border: 1px solid #000000; border-bottom: none; border-left: none; border-right: none; text-align: left;"></td>
+    </tr>
+
+</table>
+
+
+<table id="tabela" border="0" style="border-collapse: collapse; width: 100%;">
+    <tr>
+        <td colspan="11"></td>3312
+    </tr>
+    <tr>
+        <td class="etiqueta" style="width: 100px; border-right: none; text-align: right; border-bottom: none; font-weight: bold;">Cliente:  </td>
+        <td colspan="2" style="border-left: none; border-right: none; border-bottom: none;">&nbsp;<?php echo $this->atributos['empresa']['empresa_razao'] ?></td>
+        <td colspan="4" style="float: left; border:1px solid #000; margin:0px; height: 30px; width: 10px; font-size: 12px; text-align: center"><b>Data de Vencimento</b><br><?php echo Util::dataBR($this->atributos['fatura']['fatura_data_vencimento']) ?></td>
+        <td colspan="4" style="float: left; border: 1px solid #000; margin:0px; height: 30px; width: 10px; font-size: 12px; text-align: center"><b>Valor a Pagar</b><br>R$ <?php echo Util::moeda($this->atributos['fatura']['fatura_valor_a_cobrar']) ?></td>
+    </tr>
+    <tr>
+        <td class="etiqueta" style=" height:20px; border-right: none; text-align: right; border-bottom: none; font-weight: bold;">Telefone: </td>
+        <td colspan="2" style="border-left: none; border-right: none; border-bottom: none;">&nbsp;<?php echo (strlen(trim($this->atributos['empresa']['telefone'])) >= 8 ) ? Util::telefone($this->atributos['empresa']['telefone']) : null ?></td>
+    </tr>
+    <tr>
+        <td class="etiqueta" style=" width: 100px; border-right: none; text-align: right; border-bottom: none; font-weight: bold;">Endereço: </td>
+        <td colspan="2" style="border-left: none; border-right: none; border-bottom: none;">&nbsp;<?php echo $this->atributos['empresa']['endereco_logradouro'] ?></td>
+        <td colspan="4" style=" width: 100px; border-right: none; text-align: left; border-bottom: none; font-weight: bold;">Período de Apuração: </td>
+        <td colspan="4" style="border-left: none; border-right: none; border-bottom: none;">&nbsp;<?php echo Util::dataBR($this->atributos['fatura']['fatura_data_inicio_apuracao']) . ' à ' . Util::dataBR($this->atributos['fatura']['fatura_data_fim_apuracao']) ?></td>
+    </tr>
+    <tr>
+        <td class="etiqueta" style=" width: 100px; border-right: none; text-align: right; border-bottom: none; font-weight: bold;">Cidade: </td>
+        <td colspan="2" style="border-left: none; border-right: none; border-bottom: none;">&nbsp;<?php echo $this->atributos['empresa']['endereco_cidade'] ?></td>
+        <td colspan="4" style=" width: 100px; border-right: none; text-align: left; border-bottom: none; font-weight: bold;">Data da Emissão: </td>
+        <td colspan="4" style="border-left: none; border-right: none; border-bottom: none;">&nbsp;<?php echo date('d/m/Y') ?></td>
+    </tr>
+    <tr>
+        <td class="etiqueta" style=" width: 100px; border-right: none; text-align: right; border-bottom: none; font-weight: bold;">CEP: </td>
+        <td colspan="2" style="border-left: none; border-right: none; border-bottom: none;">&nbsp;<?php echo Util::cep($this->atributos['empresa']['endereco_cep']) ?></td>
+        <td colspan="4" style=" width: 100px; border-right: none; text-align: left; border-bottom: none; font-weight: bold;">Nº da Fatura: </td>
+        <td colspan="4" style="border-left: none; border-right: none; border-bottom: none;">&nbsp;<?php echo str_pad($this->atributos['fatura']['fatura_id'], 9, '0', STR_PAD_LEFT) ?></td>
+
+    </tr>
+    <tr>
+        <td class="etiqueta" style=" width: 100px; border-right: none; text-align: right; border-bottom: none; font-weight: bold;">N° Contrato: </td>
+        <td colspan="2" style="border-left: none; border-right: none; border-bottom: none;">&nbsp;<?php echo $this->atributos['contrato']['contrato_numero'] ?></td>
+    </tr>
+    <tr>
+        <td class="etiqueta" style=" width: 100px; border-right: none; text-align: right; border-bottom: none; font-weight: bold;">CNPJ: </td>
+        <td colspan="2" style="border-left: none; border-right: none; border-bottom: none;">&nbsp;<?php echo Util::cnpj($this->atributos['empresa']['empresa_cnpj']) ?></td>
+    </tr>
+    <tr>
+        <td colspan="11" class="separador"></td>
+    </tr>
+</table>
+
+
+
+<table id="tabela" border="0" style="border-collapse: collapse; width: 100%; ">
+
+    <tr>
+        <td class="etiqueta" style="font-weight: normal; border: 1px solid #000000; border-bottom: none; border-left: none; border-right: none; text-align: left;"></td>
+    </tr>
+    <tr>
+        <td style="font-size: 14px; text-align: center; font-weight: bold;">RESUMO DA FATURA</td>
+    </tr>
+    <br><br>
+    <tr>
+        <td style=" width: 100%; border-right: none; text-align: left; border-bottom: none; font-weight: bold;"><!-- EXAMES LABORATORIAIS --> </td>
+    </tr>
+</table>
+
+
+<table id="tabela" border="0" style="border-collapse: collapse; width: 100%;">
+    <tr>
+        <td colspan="7"></td>
+    </tr>
+
+    <tr>
+        <td class="etiqueta" style="border-right: none; text-align: center; border-bottom: none; font-weight: bold;width: 40px; ">Código</td>
+        <td style="border-right: none; text-align: center; border-bottom: none; font-weight: bold;">Produto</td>
+        <td style="border-right: none; text-align: center; border-bottom: none; font-weight: bold;">Quantidade</td>
+        <td colspan="2" style="border-right: none; text-align: right; border-bottom: none; font-weight: bold;">Valor Unitário</td>
+        <td colspan="2" style="border-right: none; text-align: right; border-bottom: none; font-weight: bold;">Valor Total</td>
+    </tr>
+</table>
+
+<?php $totalgeral = 0 ?>
+<?php foreach ($produtosContidosFatura as $itemProduto): ?>
+
+    <table id="tabela" border="0" style="border-collapse: collapse; width: 100%;">
+
+        <?php $total = $itemProduto['total'] ?>
+        <?php
+        $valorCobrado = (float) $itemProduto['valor_da_parcela'];
+        $valorMinimoCobranca = (float) $itemProduto['valor_faturamento_minimo'];
+        if ($valorCobrado < $valorMinimoCobranca) {
+            $valorCobrado = $valorMinimoCobranca;
+        }
+        $possibiliades = array('COORDENACAO', 'COORDENAÇÃO', 'COORDENAÇÃO DE PCMSO', 'COORDENACAO DE PCMSO');
+        $coordenacao = false;
+        foreach ($possibiliades as $item) {
+            $x = stristr($itemProduto['categoria_nome'], $item);
+            if (is_string($x)) {
+                $coordenacao = true;
+                $itemProduto['parcela'] = null;
+            }
+        }
+
+        $list = explode(',', $itemProduto['valores']);
+        $sm = 0;
+        $vu = 0;
+
+        if (count($list) > 0 && strtoupper(str_ireplace(array('Ã', 'Ç'), array('A', 'C'), $itemProduto['categoria_nome'])) == 'COORDENACAO') {
+            foreach ($list as $dado) {
+                list($id, $valor) = explode(':', $dado);
+                $sm += (float) $valor * (float) $itemProduto['quantidade'];
+                $vu += $valor;
+            }
+            $valorCobrado = $sm;
+            $itemProduto['valor'] = $vu;
+            if ($valorMinimoCobranca > $valorCobrado) {
+                $valorCobrado = $valorMinimoCobranca;
+            }
+        }
+
+        ?>
+        <tr>
+            <td class="etiqueta" style="width: 40px; border-right: none; text-align: center; border-bottom: none;"><?php echo Util::preencherComZero($itemProduto['produto_id'], 5) ?></td>
+            <td style="border-right: none; text-align: left ;border-bottom: none;"><?php echo (is_null($itemProduto['categoria_nome']) ? $itemProduto['produto'] : $itemProduto['categoria_nome']) . ' ' . (is_null($itemProduto['parcela']) ? null : ('(' . $itemProduto['parcela'] . '/' . $itemProduto['parcelas'] . ')')) ?></td>
+            <td style="width: 20px;border-right: none; text-align: center; border-bottom: none;"><?php echo Util::preencherComZero($itemProduto['quantidade'], 3) ?></td>
+            <td align="right" style="width: 20px;">R$</td>
+            <td style="width: 60px; border-right: none; text-align: right; border-bottom: none;"><?php echo Util::moeda($itemProduto['valor']) ?></td>
+            <td align="right" style="width: 20px;">R$</td>
+            <td style="width: 80px; border-right: none; text-align: right; border-bottom: none;"><?php echo Util::moeda($valorCobrado) ?></td>
+        </tr>
+        <!-- SE FOR UM EXAME NÃO SERÁ DETALHADO ITEM A ITEM -->
+        <?php if ($coordenacao): ?>
+            <?php $_qwe = explode(',', $itemProduto['valores']) ?>
+            <?php if (count($_qwe) > 1) : ?>
+                <?php foreach ($_qwe as $_q): ?>
+                    <?php list($_a, $_b) = explode(':', $_q) ?>
+                    <?php $_p = Application_Model_Produto::obterPeloCodigo($_a) ?>
+                    <tr>
+                        <td class="etiqueta" style="width: 40px; border-right: none; text-align: center; border-bottom: none;"><?php echo Util::preencherComZero($itemProduto['produto_id'], 5) ?></td>
+                        <td style="border-right: none; text-align: left ;border-bottom: none;">&#8627; <?php echo $_p['produto_nome'] ?></td>
+                        <td align="right" style="width: 1px; "></td>
+                        <td align="right" style="width: 20px; ">R$</td>
+                        <td style="width: 80px; border-right: none; text-align: right; border-bottom: none;"><?php echo Util::moeda($_b) ?></td>
+                        <td align="right" style="width: 1px; "></td>
+                        <td align="right" style="width: 1px; "></td>
+                    </tr>
+                <?php endforeach; ?>
+            <?php endif; ?>
+        <?php endif; ?>
+        <?php $totalgeral += $total ?>
+
+    </table>
+
+<?php endforeach; ?>
+
+<table id="tabela" border="0" style="border-collapse: collapse; width: 100%;">
+    <tr>
+        <td colspan="5" style="border-right: none; text-align: right; border-bottom: none; font-weight: bold;">Total Geral:</td>
+        <td align="right" style="width:20px;">R$</td>
+        <td style="width: 80px; border-right: none; text-align: right; border-bottom: none; font-weight: bold;"><?php echo Util::moeda($this->atributos['fatura']['fatura_valor_a_cobrar']) ?></td>
+    </tr>
+    <tr>
+        <td colspan="11" style="font-size: 14px; text-align: center; font-weight: bold;"></td>
+    </tr>
+</table>
+
+<table border="0" style="border-collapse: collapse;width: 100%">
+
+    <tr>
+        <td colspan="2" class="etiqueta" style="font-weight: normal; border: 1px solid #000000; border-bottom: none; border-left: none; border-right: none; text-align: left;"></td>
+    </tr>
+
+    <tr>
+        <td colspan="2" style="font-size: 14px; text-align: center; font-weight: bold;">FECHAMENTO</td>
+    </tr>
+
+    <tr>
+        <td colspan="2" class="etiqueta" style="font-weight: normal; border: 1px solid #000000; border-bottom: none; border-left: none; border-right: none; text-align: left;"></td>
+    </tr>
+
+
+</table>
+
+
+
+<div style="margin-top: 20px;font-size: 11px;">
+    <div style="float: left;width: 320px;padding: 2px;">
+        <strong>Descrição de Impostos</strong>
+        <table border="0" style="border-collapse: collapse;width: 100%;margin-top: 5px;">
+            <?php $soma = 0 ?>
+            <?php foreach ($this->atributos['impostos'] as $item): ?>
+                <tr>
+                    <td style="text-align: right;width: 25px"><?php echo $item['imposto_nome'] ?>:</td>
+                    <td>R$ <?php echo Util::moeda($item['fatura_imposto_valor']) ?></td>
+                </tr>
+                <?php $soma += (float) $item['fatura_imposto_valor']; ?>
+            <?php endforeach ?>
+            <tr>
+                <td style="text-align: right;width: 25px">Total:</td>
+                <td><strong>R$ <?php echo Util::moeda($soma) ?></strong></td>
+            </tr>
+        </table>
+    </div>
+
+    <div style="float: left;width: 200px;padding: 2px;">
+        <strong>Juros/Multas</strong>
+        <table border="0" style="border-collapse: collapse;width: 100%;margin-top: 5px;">
+            <tr>
+                <td style="text-align: right;width: 20px">Multas:</td>
+                <td>R$ <?php echo Util::moeda($this->atributos['fatura']['fatura_valor_multa']) ?></td>
+            </tr>
+            <tr>
+                <td style="text-align: right;width: 20px">Juros:</td>
+                <td>R$ <?php echo Util::moeda($this->atributos['fatura']['fatura_valor_juros']) ?></td>
+            </tr>
+            <?php
+            $soma = 0;
+            $soma = (float) $this->atributos['fatura']['fatura_valor_multa'] + (float) $this->atributos['fatura']['fatura_valor_juros'];
+            ?>
+            <tr>
+                <td style="text-align: right;width: 20px"><strong>Total:</strong></td>
+                <td>R$ <?php echo Util::moeda($soma) ?></td>
+            </tr>
+        </table>
+    </div>
+
+    <div style="float: left;width: 178px;padding: 2px;">
+        <strong>Valor a Cobrar</strong>
+        <table border="0" style="border-collapse: collapse;width: 100%;margin-top: 5px;">
+            <tr>
+                <td style="text-align: right;width: 30px"><strong>T.Bruto:</strong></td>
+                <td>R$ <?php echo Util::moeda($this->atributos['fatura']['fatura_valor_total']) ?></td>
+            </tr>
+            <tr>
+                <td style="text-align: right;width: 30px"><strong>Desconto:</strong></td>
+                <td>R$ <?php echo Util::moeda($this->atributos['fatura']['fatura_valor_desconto']) ?></td>
+            </tr>
+            <tr>
+                <td style="text-align: right;width: 30px"><strong>T.Líquido:</strong></td>
+                <td>R$ <?php echo Util::moeda($this->atributos['fatura']['fatura_valor_a_cobrar']) ?></td>
+            </tr>
+        </table>
+    </div>
+
+
+</div>
+
+<div>
+    <p><strong>Informações sobre descontos/acréscimos</strong></p>
+    <p><?php echo $this->atributos['fatura']['fatura_justificativa_desconto'] ?></p>
+</div>
+
+<?php
+$htmlCorpo = ob_get_clean();
+$p->WriteHTML($htmlCorpo);
+$p->Output();
+#echo ($htmlCorpo);
+
+//header ("Expires: Mon, 26 Jul 1997 05:00:00 GMT");
+//header ("Last-Modified: " . gmdate("D,d M YH:i:s") . " GMT");
+//header ("Cache-Control: no-cache, must-revalidate");
+//header ("Pragma: no-cache");
+//header ("Content-type: application/x-msexcel");
+//header ("Content-Disposition: attachment; filename=\"pcmso-rhmed.xls\"" );
+//header ("Content-Description: PHP Generated Data" );
+
+//echo utf8_decode($htmlCorpo);

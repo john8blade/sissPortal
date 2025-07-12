@@ -1,0 +1,97 @@
+
+<script type="text/javascript" src="/js/AjaxComResultadoJson.js"></script>
+
+<script type="text/javascript">
+    $(function () {
+        $("#empresa").change(function () {
+            var empresaId = this.value;
+            $("#contrato option").remove();
+            if (empresaId !== '') {
+                var imprimirRetorno = function (resposta) {
+                    if (resposta.Resultado) {
+                        var resposta = resposta.Resultado;
+                        var opcoes = '';
+                        for (var i = 0; i < resposta.length; i++) {
+                            opcoes += '<option value="' + resposta[i].contrato_id + '">' + resposta[i].contrato_numero_custom + "</option>";
+                        }
+                        $('#contrato').append(opcoes);
+                    }
+                };
+                ResgatarColecaoDeContratosPeloIdEmpresa(empresaId, imprimirRetorno);
+            }
+        });
+    });
+</script>
+
+
+
+
+<div class="well well-small"><i class="icon-plus-sign"></i>&nbsp;<strong>Relatório de Empregados</strong></div>
+
+<div><?php echo $this->erros ?></div>
+
+<div class="well well-small div-transparente">
+    <?php #var_dump($this->empresas);die(); ?>
+    <form target="_blank" action="/documento-operacional/relatorio-empregados" method="post">
+
+        <div class="row-fluid">
+
+            <div class="span2">
+                <label>Situação</label>
+                <div class="row-fluid">
+                    <select class="span" id="ativo" name="ativo">
+                        <option value="1">EMPREGADOS ATIVOS</option>
+                        <option value="3">EMPREGADOS INATIVOS</option>
+                    </select>
+                </div>
+            </div>
+
+
+            <div class="span4">
+                <label>Empresa</label>
+                <div class="row-fluid">
+                    <select id="empresa" name="empresa" class="span">
+                        <option value="0">---</option>
+                        <?php foreach ($this->empresas as $value) : ?>
+                            <option value="<?php echo $value['empresa_id'] ?>"><?php echo $value['empresa_fantasia'] ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+            </div>
+
+
+            <div class="span3">
+                <label>Contrato</label>
+                <select id="contrato" name="contrato" class="span">
+                    <option value="0">---</option>
+                </select>
+            </div>
+
+
+
+            <div class="span1">
+                <label>&nbsp;</label>
+                <button class="span btn btn-success" type="submit">Enviar</button>
+            </div>
+        </div>
+
+    </form>
+
+</div>
+
+<!--
+<script>
+    $("#empresa").change(function () {
+        if (parseInt(this.value) > 0) {
+            $("#unidades").css('display', 'none');
+            $("#contratos").css('display', 'block');
+            $.post('/ajax/json/servico/obter-contratos-pela-empresa', {empresa: this.value}, function (r) {
+                adicionarOptions("contrato", r, "contrato_id", "contrato_numero", true);
+            }, 'json');
+        } else {
+            $("#unidades").css('display', 'block');
+            $("#contratos").css('display', 'none');
+        }
+    });
+</script>
+-->

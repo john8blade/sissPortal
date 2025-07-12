@@ -1,0 +1,178 @@
+<?php
+header("Expires: Mon, 26 Jul 1997 05:00:00 GMT");
+header("Last-Modified: " . gmdate("D,d M YH:i:s") . " GMT");
+header("Cache-Control: no-cache, must-revalidate");
+header("Pragma: no-cache");
+header("Content-type: application/x-msexcel");
+header("Content-Disposition: attachment; filename=\"relatorio-empresa" . date("YmdHis") . ".xls\"");
+header("Content-Description: PHP Generated Data");
+$dominio = $_SERVER['HTTP_HOST'];
+$cor = "#E8E8E8";
+ob_start();
+?>
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+        <title>Relatório</title>
+        <style type="text/css">
+            body {margin: 0px;padding: 0px;font-family: Arial; font-size: 12px;}  
+            td#linha {height: 81px; vertical-align: middle; display: table-cell}
+        </style>
+    </head>
+    <body>
+        <table border="1" cellpadding="0" cellspacing="0">
+            <tbody>
+                <tr style="border-bottom: none;" colspan="10">
+                    <td style="border-bottom: none;"></td>
+                </tr>                
+                <tr>
+                    <td align="left" colspan="1" style="border-top: none;">
+                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                        <img style="margin: center;" src="http://<?php echo $dominio ?>/img/logo-relatorio.png"/>
+                    </td>
+                    <td id="linha" colspan="9">
+                        <h3 style="font-size: 14px;">RELATÓRIO DE EMPRESAS</h3>
+                    </td>
+                </tr> 
+
+                <?php
+                $data = date('d/m/Y');
+                $hora = date("H:i:s");
+                ?>
+
+                <tr style="font-size: 12px;">    
+                    <td align="right" colspan="2"><b>EMITIDO POR:</b></td>
+                    <td align="left" colspan="4" ><?php echo 'JOSÉ SALAME' ?> </td>
+
+                    <td align="right"><b>DATA/HORA:</b></td>
+                    <td align="left" colspan="3"><?php echo ("$data às $hora"); ?></td>                   
+                </tr>
+                <tr style="font-size: 12px;">    
+                    <td align="right" colspan="2"><b>FILTROS UTILIZADOS:</b></td>
+                    <td align="left" colspan="8"><?php echo 'EMPRESA: HIEST; CNPJ: 0' ?> </td>                                        
+                </tr>
+                <tr style="font-size: 12px;">
+                    <th align="left" bgcolor="<?php echo $cor ?>">ITEM</th>
+                    <th align="left" bgcolor="<?php echo $cor ?>">RAZÃO SOCIAL</th>
+                    <th align="left" bgcolor="<?php echo $cor ?>">NOME FANTASIA</th>
+                    <th align="left" bgcolor="<?php echo $cor ?>">CNPJ</th>
+                    <th align="left" bgcolor="<?php echo $cor ?>">INSC. ESTADUAL</th>
+                    <th align="left" bgcolor="<?php echo $cor ?>">INSC. MUNICIPAL</th>
+                    <th align="left" bgcolor="<?php echo $cor ?>">GRAU RISCO</th>
+                    <th align="left" bgcolor="<?php echo $cor ?>">CNAE</th>
+                    <th align="left" bgcolor="<?php echo $cor ?>">TIPO</th>
+                    <th align="left" bgcolor="<?php echo $cor ?>">UNIDADE</th>                   
+                </tr>
+
+                <!-- Bloco para preenchimento dos dados da planilha excel-->
+                <?php #foreach ($itens as $item) {  ?>
+
+                <tr style="font-size: 12px;">
+                    <td align="right"><?php echo '1' ?></td>
+                    <td align="left"><?php echo 'HIEST ASSESSORIA' ?></td>
+                    <td align="left"><?php echo 'HIEST GROUP' ?></td>
+                    <td align="right"><?php echo '0' ?></td>
+                    <td align="right"><?php echo '0' ?></td>
+                    <td align="right"><?php echo '0' ?></td>
+                    <td align="right"><?php echo '4' ?></td>
+                    <td align="right"><?php echo '410003' ?></td>
+                    <td align="right"><?php echo 'FORNECEDOR, CLIENTE' ?></td>
+                    <td align="right"><?php echo 'UGV' ?></td>                    
+                </tr>
+                <tr style="font-size: 12px;">
+                    <td align="right"><?php echo '1' ?></td>
+                    <td align="left"><?php echo 'HIEST ASSESSORIA' ?></td>
+                    <td align="left"><?php echo 'HIEST GROUP' ?></td>
+                    <td align="right"><?php echo '0' ?></td>
+                    <td align="right"><?php echo '0' ?></td>
+                    <td align="right"><?php echo '0' ?></td>
+                    <td align="right"><?php echo '4' ?></td>
+                    <td align="right"><?php echo '410003' ?></td>
+                    <td align="right"><?php echo 'FORNECEDOR, CLIENTE' ?></td>
+                    <td align="right"><?php echo 'UGV' ?></td>                    
+                </tr>
+                <tr style="font-size: 12px;">
+                    <td align="right"><?php echo '1' ?></td>
+                    <td align="left"><?php echo 'HIEST ASSESSORIA' ?></td>
+                    <td align="left"><?php echo 'HIEST GROUP' ?></td>
+                    <td align="right"><?php echo '0' ?></td>
+                    <td align="right"><?php echo '0' ?></td>
+                    <td align="right"><?php echo '0' ?></td>
+                    <td align="right"><?php echo '4' ?></td>
+                    <td align="right"><?php echo '410003' ?></td>
+                    <td align="right"><?php echo 'FORNECEDOR, CLIENTE' ?></td>
+                    <td align="right"><?php echo 'UGV' ?></td>                    
+                </tr>
+                <tr style="font-size: 12px;">
+                    <td align="right"><?php echo '1' ?></td>
+                    <td align="left"><?php echo 'HIEST ASSESSORIA' ?></td>
+                    <td align="left"><?php echo 'HIEST GROUP' ?></td>
+                    <td align="right"><?php echo '0' ?></td>
+                    <td align="right"><?php echo '0' ?></td>
+                    <td align="right"><?php echo '0' ?></td>
+                    <td align="right"><?php echo '4' ?></td>
+                    <td align="right"><?php echo '410003' ?></td>
+                    <td align="right"><?php echo 'FORNECEDOR, CLIENTE' ?></td>
+                    <td align="right"><?php echo 'UGV' ?></td>                    
+                </tr>
+                <tr style="font-size: 12px;">
+                    <td align="right"><?php echo '1' ?></td>
+                    <td align="left"><?php echo 'HIEST ASSESSORIA' ?></td>
+                    <td align="left"><?php echo 'HIEST GROUP' ?></td>
+                    <td align="right"><?php echo '0' ?></td>
+                    <td align="right"><?php echo '0' ?></td>
+                    <td align="right"><?php echo '0' ?></td>
+                    <td align="right"><?php echo '4' ?></td>
+                    <td align="right"><?php echo '410003' ?></td>
+                    <td align="right"><?php echo 'FORNECEDOR, CLIENTE' ?></td>
+                    <td align="right"><?php echo 'UGV' ?></td>                    
+                </tr>
+
+                <?php #}  ?>
+                <!-- FIM do Bloco para preenchimento dos dados da planilha excel-->
+
+
+                <tr style="font-size: 12px;">
+                    <th style="border: 0px" align="left" bgcolor="#E8E8E8"><font color="#E8E8E8">.</font></th>
+                    <th style="border: 0px" align="left" bgcolor="#E8E8E8"><font color="#E8E8E8">.</font></th>
+                    <th style="border: 0px" align="left" bgcolor="#E8E8E8"><font color="#E8E8E8">.</font></th>
+                    <th style="border: 0px" align="left" bgcolor="#E8E8E8"><font color="#E8E8E8">.</font></th>
+                    <th style="border: 0px" align="center" bgcolor="#E8E8E8"><font color="#000000">RESULTADO TOTALIZADOR</font></th>
+                    <th style="border: 0px" align="left" bgcolor="#E8E8E8"><font color="#E8E8E8">.</font></th>
+                    <th style="border: 0px" align="left" bgcolor="#E8E8E8"><font color="#E8E8E8">.</font></th>
+                    <th style="border: 0px" align="left" bgcolor="#E8E8E8"><font color="#E8E8E8">.</font></th>
+                    <th style="border: 0px" align="left" bgcolor="#E8E8E8"><font color="#E8E8E8">.</font></th>
+                    <th style="border: 0px" align="left" bgcolor="#E8E8E8"><font color="#E8E8E8">.</font></th>                   
+                </tr>           
+        </table>  
+        <table>
+            <tr style="font-size: 12px;">              
+                <td style="border: 0px" align="left" bgcolor="#FFFFFF"><font color="#FFFFFF">.</font></td>
+                <td style="border: 0px" align="left" bgcolor="#FFFFFF"><font color="#FFFFFF">.</font></td>
+                <td style="border: 0px" align="left" bgcolor="#FFFFFF"><font color="#FFFFFF">.</font></td>
+                <td style="border: 0px" align="left" bgcolor="#FFFFFF"><font color="#FFFFFF">.</font></td>
+                <td style="border: 0px" align="left" bgcolor="#FFFFFF"><font color="#FFFFFF">.</font></td>
+                <td style="border: 0px" align="left" bgcolor="#FFFFFF"><font color="#FFFFFF">.</font></td>
+                <td style="border: 0px" align="left" bgcolor="#FFFFFF"><font color="#FFFFFF">.</font></td>
+                <td style="border: 0px" align="left" bgcolor="#FFFFFF"><font color="#FFFFFF">.</font></td>
+                <td style="border: 0px" align="left" bgcolor="#FFFFFF"><font color="#FFFFFF">.</font></td>
+                <td style="border: 0px" align="left" bgcolor="#FFFFFF"><font color="#FFFFFF">.</font></td>
+            </tr>
+            <tr style="font-size: 12px;">
+                <td colspan="2" style="border: 0px;">&nbsp;</td>
+                <td colspan="1" style="border: 0px;" align="left">Total de Empresas: &nbsp;</td>
+                <td colspan="7" style="border: 0px;" align="left"><?php echo '5'; ?></td>
+            </tr>
+            <tr style="font-size: 12px;">
+                <td colspan="2" style="border: 0px;">&nbsp;</td>
+                <td colspan="1" style="border: 0px;" align="left">Total de Clientes: &nbsp;</td>
+                <td colspan="7" style="border: 0px;" align="left"><?php echo '5'; ?></td>
+            </tr>           
+            <tr style="font-size: 12px;">
+                <td colspan="2" style="border: 0px;">&nbsp;</td>
+                <td colspan="1" style="border: 0px;" align="left">Total de Fornecedores: &nbsp;</td>
+                <td colspan="7" style="border: 0px;" align="left"><?php echo '2'; ?></td>
+            </tr>  
+        </table>
+    </body>
+</html>

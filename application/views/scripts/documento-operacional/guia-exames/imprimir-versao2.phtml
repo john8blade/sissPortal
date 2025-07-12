@@ -1,0 +1,138 @@
+<?php
+require_once 'MPDF/mpdf.php';
+$localScripts = '../application/views/scripts/documento-operacional/';
+require_once "{$localScripts}include/funcoes.php";
+
+$htmlRodape = obterHtmlDoRodapeEmPdf();
+$htmlCabecalho = file_get_contents($localScripts . 'guia-exames/' . 'cabecalho-versao2.html');
+
+$p = new mPDF('utf-8', 'A4', 0, '', 10, 10, 26, 30, 8, 8);
+$p->SetHTMLHeader($htmlCabecalho);
+$p->SetHTMLFooter($htmlRodape);
+$p->setAutoTopMargin = false;
+$p->setAutoBottomMargin = false;
+ob_start();
+$quantidadeAgenda = count($this->agendas);
+$quantidadePaginas = $quantidadeAgenda - 1;
+?>
+
+<style>
+    table#tabela tr td { font: normal 12px Arial; border: 0px solid #ccc; }
+    table{border-collapse: collapse; font: normal 11px Arial;width: 100%;}
+    table#tabela tr td.etiqueta { font-weight: bold; padding: 4px; }
+    table#tabela tr td.titulo { text-align: center; font-weight: bold; background: #ddd; }
+    table#tabela tr td.separador { padding: 10px; border: none; }
+    table#tabela tr td.centro { text-align: center; }
+</style>
+<!-- style="page-break-after:always" -->
+<hr />
+<?php if ($quantidadeAgenda > 0): ?>
+
+    <?php foreach ($this->agendas as $indice => $itemAgenda) : ?>
+
+        <?php $hora = (strlen($itemAgenda['agenda_hora_exame']) >= 8) ? substr($itemAgenda['agenda_hora_exame'], 0, 5) : null ?>
+
+        <div style="page-break-after: always;margin-top: 0px;">
+            <table id="tabela" border="0" style="border-collapse: collapse; width: 100%;">   
+                <tr>
+                    <td colspan="11"></td>
+                </tr>
+                <tr>
+        <!--                    <td class="etiqueta" style="width: 100px; border-right: none;text-align: right; border-left: none; border-bottom: none;">MATRÍCULA:</td>
+                    <td colspan="2" style="border-left: none; border-bottom: none;"></td>-->
+                    <td class="etiqueta" style=" width: 100px; border-right: none; text-align: right; border-bottom: none;">CPF: </td>
+                    <td colspan="2" style="border-left: none; border-right: none; border-bottom: none;">&nbsp;<?php echo $itemAgenda['pessoa_cpf'] ?></td>
+                    <td class="etiqueta" style=" width: 100px; border-right: none; text-align: right; border-bottom: none;">IDENTIDADE: </td>
+                    <td colspan="2" style="border-left: none; border-right: none; border-bottom: none;">&nbsp;<?php echo $itemAgenda['pessoa_identidade'] ?></td>
+                    <td class="etiqueta" style=" width: 100px; border-right: none; text-align: right; border-bottom: none;">NASC.: </td>
+                    <td colspan="5" style="border-left: none; border-right: none; border-bottom: none;">&nbsp;<?php echo Util::dataBR($itemAgenda['pessoa_data_nascimento']) ?></td>
+                </tr>
+
+                <tr>
+                    <td colspan="1" class="etiqueta" style="border-top: none; border-bottom: none; border-right: none; text-align: right;">NOME: </td>
+                    <td colspan="5" style="border-bottom: none; border-left: none; border-top: none;">&nbsp;<?php echo $itemAgenda['pessoa_nome'] ?></td>
+                    <td colspan="1" class="etiqueta" style="border-top: none; border-bottom: none; border-right: none; text-align: right;">FUNÇÃO: </td>
+                    <td colspan="4" style="border-bottom: none; border-left: none; border-top: none;">&nbsp;<?php echo $itemAgenda['funcao_nome'] ?></td>
+                </tr>
+
+                <tr>
+                    <td class="etiqueta" style=" width: 100px; border-right: none; text-align: right; border-bottom: none;">TIPO EXAME: </td>
+                    <td colspan="5" style="border-left: none; border-right: none; border-bottom: none;">&nbsp;<?php echo $itemAgenda['tipoexame_nome'] ?></td>
+                    <td class="etiqueta" style="border-top: none; border-right: none; text-align: right;">D.AGENDADA: </td>
+                    <td colspan="4" style="border-left: none; border-top: none;">&nbsp;<?php echo Util::dataBR($itemAgenda['agenda_data_exame']), ' ', ($hora != null) ? str_replace(':', 'hs', $hora) . 'min' : ''; ?></td>
+                </tr>
+                
+                <tr>
+                    <td class="etiqueta" style="text-align: right">R. SOCIAL:</td>
+                    <td colspan="10"><?php echo $itemAgenda['empresa_razao'] ?></td>
+                </tr>
+                
+                <tr>
+                    <td class="etiqueta" style="text-align: right">N. FANTASIA:</td>
+                    <td colspan="10"><?php echo $itemAgenda['empresa_fantasia'] ?></td>
+                </tr>
+
+            </table>
+
+            <table border="0" style="width: 100%;margin-top: 5px;">
+                <thead>
+                    <tr>
+                        <th style="text-align: left">OBSERVAÇÃO:</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td style="border: 1px double #000000;font-weight: 500"><?php echo strlen($itemAgenda['agenda_observacao']) > 0 ? $itemAgenda['agenda_observacao'] : '&nbsp;' ?></td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <table id="tabela" border="0" style="border-collapse: collapse; width: 100%;">
+                <tr>
+                    <td colspan="7" class="etiqueta" style="border: none; font-size: 10px; text-align: center; font-weight: none;"><i>Conforme o Programa de Controle de Saúde Ocupacional estamos solicitando os seguintes exames complementares, necessários para esta função:</i></td>
+                </tr>
+            </table>   
+
+            <table id="tabela" border="1" style="border-collapse: collapse; width: 100%;">
+                <thead>
+                    <tr>
+                        <th style="width: 34%">Exame</th>
+                        <th style="width: 33%">Fornecedor</th>
+                        <th style="width: 33%">Carimbo</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php foreach ($itemAgenda['produto_agenda'] as $itemProduto): ?>
+                        <tr>
+                            <td style="height: 50px;font-size: 10px;"><?php echo $itemProduto['produto_nome'] ?></td>
+                            <td style="height: 50px;font-size: 9px;"><?php echo $itemProduto['empresa_razao'], ' - ', $itemProduto['endereco_logradouro'], ', Nº.', $itemProduto['empresa_numero'], ', ', $itemProduto['endereco_bairro'], ', ', $itemProduto['endereco_cidade'], ', ', $itemProduto['endereco_uf'] ?></td>
+                            <td style="height: 50px;font-size: 10px;"></td>
+                        </tr>
+                    <?php endforeach ?>
+                </tbody>
+            </table>
+            
+            
+            <p style="font-family: arial, verdana, sans-serif; font-size: 12px;">Assinatura do Funcionário:&nbsp;</p>
+            
+            <table border="0" style="border-collapse: collapse; width: 60%;text-align: center" align="center">
+                <tbody>
+                    <tr>
+                        <td style="border-bottom: 1px solid #000000">&nbsp;</td>
+                    </tr>
+                    <tr>
+                        <td><?php echo $itemAgenda['pessoa_nome'] ?></td>
+                    </tr>
+                </tbody>
+            </table>
+            
+            
+        </div>
+    <?php endforeach; ?>
+<?php endif ?>
+
+<?php
+$htmlCorpo = ob_get_clean();
+$htmlCorpo . '</body></html>';
+$p->WriteHTML($htmlCorpo);
+$p->Output();

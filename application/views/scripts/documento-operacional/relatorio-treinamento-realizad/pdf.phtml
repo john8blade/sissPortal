@@ -1,0 +1,69 @@
+
+<?php ob_start() ?>
+
+<style type="text/css">
+    body, table { font: 10px Arial; width: 100%; border-collapse: collapse; }
+    table tr td { padding: 2px 2px 2px 8px; vertical-align: middle; }    
+    #tabela-grid thead tr th {border: 1px solid black;background-color: #dddddd}
+    #tabela-grid tbody tr td {border: 1px solid black;}
+    #tabela-grid tfoot tr td {border: 1px solid black;background-color: #dddddd}
+</style>
+
+<?php $total_horas = $total_participantes = 0 ?>
+<table id="tabela-grid" border="0" style="width: 100%;">
+    <thead>
+        <tr>
+            <th><strong>Data</strong></th>
+            <th><strong>Empresa / Obra</strong></th>
+            <th><strong>Treinamento</strong></th>
+            <th><strong><?php echo utf8_decode('Carga Horária') ?></strong></th>
+            <th><strong><?php echo utf8_decode('N°.Participantes') ?></strong></th>
+            <th><strong>Instrutor</strong></th>
+        </tr>
+    </thead>
+    <tbody>
+        <?php foreach ($this->colecaoResultadoRelatorio as $item): ?>
+            <tr>
+                <td class="com-borda" style="width: 6%"><?php echo date('d/m/Y', strtotime($item['treinamento_agenda_data_inicio'])) ?></td>
+                <td class="com-borda" style="width: 28%"><?php echo utf8_decode(substr($item['empresa_razao'], 0, 47)) ?></td>
+                <td class="com-borda" style="width: 28%"><?php echo utf8_decode(substr($item['produto_nome'], 0, 51)) ?></td>
+                <td class="com-borda" style="width: 7%;text-align: center"><?php echo substr($item['treinamento_agenda_carga_horaria'], 0, 30) ?></td>
+                <td class="com-borda" style="width: 4%;text-align: center"><?php echo $item['quantidade_participante'] ?></td>
+                <td class="com-borda" style="width: 27%"><?php echo utf8_decode(substr($item['pessoa_nome'], 0, 50)) ?></td>
+            </tr>
+            <?php $total_horas += (float) $item['treinamento_agenda_carga_horaria'] ?>
+            <?php $total_participantes += (float) $item['quantidade_participante'] ?>
+        <?php endforeach ?>
+    </tbody>
+    <tfoot>
+        <tr>
+            <td class="com-borda" style="width: 6%"></td>
+            <td class="com-borda" style="width: 28%"></td>
+            <td class="com-borda" style="width: 28%"></td>
+            <td class="com-borda" style="width: 7%;text-align: center"><?php echo '<strong>', $total_horas, '</strong>' ?></td>
+            <td class="com-borda" style="width: 4%;text-align: center"><?php echo '<strong>', $total_participantes, '</strong>' ?></td>
+            <td class="com-borda" style="width: 27%"></td>
+        </tr>
+    </tfoot>
+</table>
+
+<?php
+$htmlCorpo = utf8_encode(ob_get_clean());
+
+require_once 'MPDF/mpdf.php';
+$mpdf = new mPDF('UTF-8', 'A4-L', 0, '', 5, 5, 30, 30, 3, 9, 'L');
+
+$localScripts = '../application/views/scripts/documento-operacional/';
+require_once "{$localScripts}include/funcoes.php";
+$htmlRodape = obterHtmlDoRodapeEmPdf();
+
+
+$htmlCabecalho = file_get_contents("{$localScripts}relatorio-treinamento-realizad/cabecalho.html");
+$html = str_replace('<[AtributoPeriodoRelatorio/]>', $this->paramPeriodoRelatorio, $htmlCabecalho);
+$htmlCabecalho = $html;
+$mpdf->SetHTMLHeader($htmlCabecalho);
+$mpdf->SetHTMLFooter($htmlRodape);
+
+$mpdf->WriteHTML($htmlCorpo);
+
+$mpdf->Output();

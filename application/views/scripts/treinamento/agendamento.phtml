@@ -1,0 +1,270 @@
+
+<?php
+$meses = Util::obterVetorAssociativoDosMesesDoAno();
+$turnos = [
+    ['value' => 'M', 'option' => 'Manhã'],
+    ['value' => 'V', 'option' => 'Tarde'],
+];
+?>
+
+<style type="text/css">
+.icone-chamar-atencao {
+    display: inline-block;
+    background-image: url("/img/warning-icon.png");
+    background-repeat: no-repeat;
+    background-size: 82%, 82%;
+    width: 30px;
+}
+</style>
+
+<div class="panel panel-primary">
+
+<div class="panel-heading"><i class="fa fa-tasks"></i>&nbsp;<span class="destacar"><?php echo $this->agenda['produto_nome'] ?> &rsaquo; <?php echo Util::dataBR($this->agenda['treinamento_agenda_data_inicio']) ?> &rsaquo; AGENDAMENTO</span></div>
+
+    <form id="agendamento-salvar" action="/treinamento/salvar-agendamento" method="post" target="iframe-receptor">
+        <input type="hidden" id="treinamento_agenda_id" name="treinamento_agenda_id" class="form-control input-sm" value="<?php echo $this->agenda['treinamento_agenda_id'] ?>"/>
+        <input type="hidden" id="treinamento_agenda_data_inicio" name="treinamento_agenda_data_inicio" class="form-control input-sm" value="<?php echo $this->agenda['treinamento_agenda_data_inicio'] ?>"/>
+        
+
+        <div class="row" style="padding-bottom: 0px; padding-right: 10px; padding-left: 10px; padding-top: 10px">            
+            <div class="col-md-12">
+                <div class="panel panel-warning" style="background:#F5D0A9; color:black; padding: 10px;">
+                    <strong>Atenção!!!</strong><br>
+                    Para participação nos treinamentos de Trabalho em Altura – NR 35, Espaço Confinado – NR 33 e/ou outros com exigência na legislação é necessário a apresentação prévia de ASO com Resultado positivo de <strong>Aptidão</strong> para a atividade.
+                </div>
+            </div>
+        </div>
+
+        <div class="row" style=";padding-bottom: 0px; padding-right: 10px; padding-left: 10px; padding-top: 0px">
+
+            <div class="col-md-4">
+
+                 <div class="panel panel-primary">
+
+                    <div class="panel-heading">AGENDAMENTO</div>
+                   
+                    <div class="panel-body">
+
+                        <div class="row">
+
+                            <div class="col-md-9">
+                                <div class="form-group">
+                                    <label>Empresa</label>
+                                    <input type="text" class="form-control input-sm" value="<?php echo $_SESSION['empresa']['empresa_razao'] ?>" disabled />
+                                    <input type="hidden" id="fk_empresa_id" name="fk_empresa_id" class="form-control input-sm" value="<?php echo $_SESSION['empresa']['empresa_id'] ?>"/>
+
+                                </div>
+                            </div>
+
+                            <div class="col-md-3">
+                                <div class="form-group">
+                                    <label for="turno">Contrato</label>
+                                    <input type="text" class="form-control input-sm" value="<?php echo $_SESSION['contrato_numero'] ?>" disabled />
+                                    <input type="hidden" id="fk_contrato_id" name="fk_contrato_id" class="form-control input-sm" value="<?php echo $_SESSION['contrato_id'] ?>"/>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+
+                            <div class="col-md-9">
+                                <div class="form-group">
+                                    <label>Nome</label>                                   
+                                    <?php 
+
+                                        $data = date('Y-m-d');
+                                        $data = DateTime::createFromFormat('Y-m-d', $data);
+                                        $data->add(new DateInterval('P1D')); // 1 dias     
+                                        $data = $data->format('Y-m-d');
+
+                                    if (strtotime($this->agenda['treinamento_agenda_data_inicio']) >= strtotime($data)) : ?>
+                                        <select class="form-control input-sm pesquisa" name="fk_alocacao_id" id="fk_alocacao_id">
+                                            <option value="">---</option>      
+                                            <?php foreach ($this->funcionarios as $item): ?>
+                                                <option value="<?php echo $item["alocacao_id"]; ?>"><?php echo $item["pessoa_nome"]; ?></option>                                        
+                                            <?php endforeach ?>
+                                        </select>
+                                    <?php else : ?>
+                                        <select class="form-control input-sm" name="fk_alocacao_id" id="fk_alocacao_id" disabled="disabled">
+                                            <option value="">---</option>      
+                                            <?php foreach ($this->funcionarios as $item): ?>
+                                                <option value="<?php echo $item["alocacao_id"]; ?>"><?php echo $item["pessoa_nome"]; ?></option>                                        
+                                            <?php endforeach ?>
+                                        </select>
+                                    <?php endif; ?>
+                                </div>
+                            </div>
+
+                            <div class="col-md-3">
+                                <div class="form-group">
+                                    <label>CPF</label>
+                                    <input disabled="disabled" class="form-control input-sm" type="text" name="pessoa_cpf" id="pessoa_cpf" />
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-12">
+                                <!--
+                                <?php if (strtotime($this->agenda['treinamento_agenda_data_inicio']) >= strtotime($data)) : ?>
+                                    <a class="btn btn-success" id="btn-salvar"  type="submit"><i class="fa fa-check"></i>Adicionar</a>
+                                <?php else : ?> 
+                                    <a class="btn btn-success" ><i class="fa fa-check"></i>Adicionar</a>
+                                <?php endif; ?>                               
+                                <a class="btn btn-primary" href="/treinamento"><i class="fa fa-arrow-left"></i>Voltar</a>
+                                -->
+                                <a class="btn btn-success" id="btn-salvar"  type="submit"><i class="fa fa-check"></i>Adicionar</a>
+                            </div>
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div class="col-md-8">
+
+                <div class="panel panel-primary">
+
+                    <div class="panel-heading">FUNCIONARIOS AGENDADOS</div>
+
+                    <div class="row" style="padding-bottom: 0px; padding-right: 10px; padding-left: 10px; padding-top: 10px">            
+                        <div class="col-md-12">
+                            <div class="panel-warning" style="background:#F5D0A9; color:black; padding: 8px;">
+                                <strong>Atenção!!!</strong><br>
+                                
+                                Agendamento para <strong><?php echo $this->agenda['produto_nome'] ?></strong> em <strong><?php echo Util::dataBR($this->agenda['treinamento_agenda_data_inicio']) ?></strong> das <strong><?php echo $this->agenda['treinamento_agenda_hora_inicio'] ?></strong>hs às <strong><?php echo $this->agenda['treinamento_agenda_hora_fim'] ?></strong>hs na modalidade <strong><?php if ($this->agenda['treinamento_modalidade'] == 0) 
+                                   {
+                                       echo 'A Distância'; 
+                                   }elseif ($this->agenda['treinamento_modalidade'] == 1) {
+                                       echo 'Presencial'; 
+                                   }else {
+                                       echo 'Semipresencial'; 
+                                   }
+                               ?></strong>.
+                            </div>
+                        </div>
+                    </div>
+                  
+                    <div class="panel-body">
+
+                        <div class="row" >
+
+                                <table class="table table-bordered" >
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Presença</th>
+                                        <th>Nome</th>
+                                        <th>CPF</th>
+                                        <th>Nota</th>                                        
+                                        <th>Resultado</th>                                  
+                                    </tr>
+                                </thead>
+                                <tbody>
+
+                                    <?php foreach ($this->alunos as $item): ?>
+
+                                        <tr id="tr-<?php echo $item['treinamento_agendado_id'] ?>" class="<?php echo is_null($item['treinamento_agendado_data_aprovacao']) ? '' : ($item['treinamento_agendado_aprovado'] == '1' ? 'azul' : 'vermelho') ?>">
+                                            <td class="fit">
+                                                <a data-toggle="tooltip" title="Imprimir Certificado" class="btn btn-xs btn-default" href="/treinamento/imprimir-certificado/agendamento/<?php echo $item['treinamento_agendado_id'] ?>" target="_blank"><i class="fa fa-print no-margin"></i></a>
+                                                <?php if (strtotime($this->agenda['treinamento_agenda_data_inicio']) >= strtotime($data)) : ?>
+                                                    <a data-toggle="tooltip" title="Excluir" class="btn btn-xs btn-default" href="javascript:;" onclick="Util.confirma('Deseja excluir o registro?', '/ajax/excluir/registro/treinamento_agendado/id/<?php echo $item['treinamento_agendado_id'] ?>/', this)"><i class="fa fa-trash no-margin"></i></a>
+                                                <?php endif; ?>                                                               
+                                            </td>
+                                            <td>
+                                                <?php echo $item['treinamento_agendado_presente'] == '0' ? 'AUSENTE' : 'PRESENTE' ?>
+                                            </td>
+                                            <td><?php echo $item['pessoa_nome'] ?></td>
+                                            <td><?php echo Util::cpf($item['pessoa_cpf']) ?></td>
+                                            <td style="text-align: center;">
+                                                <?php echo $item['treinamento_agendado_nota'] ?>                                
+                                            </td>
+                                            <td>
+                                                <?php echo $item['treinamento_agendado_aprovado'] == '1' ? 'APROVADO' : 'REPROVADO' ?>                                                      
+                                            </td>
+                                        </tr>
+
+                                    <?php endforeach ?>
+
+                                </tbody>
+                                </table>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </form>
+
+</div>
+
+<style type="text/css">
+    
+    table tr td { white-space: nowrap; vertical-align: middle !important; padding: 0 6px !important; }
+    table tr td input, table tr td select { border: none !important; margin: 0 !important; background: none !important; }
+    /**/
+
+    table tr.vermelho {
+        background: #ff4d4d !important;
+    }
+
+    table tr.vermelho td,
+    table tr.vermelho td input,
+    table tr.vermelho td select {
+        color: #660000 !important;
+    }
+
+    table tr.azul {
+        background: #4d94ff !important;
+    }
+
+    table tr.azul td,
+    table tr.azul td input,
+    table tr.azul td select {
+        color: #003380 !important;
+    }
+
+    table tr.verde {
+        background: #5c9d5c !important;
+    }
+
+    table tr.verde td,
+    table tr.verde td input,
+    table tr.verde td select {
+        color: #2e4e2e !important;
+    }
+  
+</style>
+
+<script src="/js/util.js" type="text/javascript"></script>
+
+<script>
+
+    $("#btn-salvar").click(function() {
+        $("#agendamento-salvar").submit();
+    });
+
+    $("#fk_alocacao_id").change(function() {
+       var url = '/ajax/json/servico/obter-alocacao-pelo-id/';
+       var parametros = {alocacao_id: this.value};
+        processarAjaxRetorno = function(itemResposta) {
+          if (itemResposta.alocacao) {
+            //if (itemResposta.quantidadeItemAlocado > 0) {
+              var alocacao = itemResposta.alocacao;
+              var cpf = alocacao.pessoa_cpf;
+              $("#pessoa_cpf").val(util.cpf(cpf));
+              //$('input[name=pessoa_cpf]').attr('value', itemResposta.alocacao.pessoa_cpf);
+            //}
+          }
+        }; // fecha "processarAjaxRetorno"
+    $.post(url, parametros, processarAjaxRetorno,"json");
+    });
+
+</script>

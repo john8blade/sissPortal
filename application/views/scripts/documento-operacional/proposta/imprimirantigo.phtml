@@ -1,0 +1,308 @@
+<?php
+ob_start();
+$dataCriarproposta = explode(" ", $this->proposta['os_data_hora_criacao']);
+$dataCriarproposta = Util::dataBR($dataCriarproposta[0]);
+$meses = array(
+    '/01/' => 'Janeiro',
+    '/02/' => 'Fevereiro',
+    '/03/' => 'Março',
+    '/04/' => 'Abril',
+    '/05/' => 'Maio',
+    '/06/' => 'Junho',
+    '/07/' => 'Julho',
+    '/08/' => 'Agosto',
+    '/09/' => 'Setembro',
+    '/10/' => 'Outubro',
+    '/11/' => 'Novembro',
+    '/12/' => 'Dezembro',
+);
+
+$localizar = $alterePor = array();
+foreach ($meses as $mes => $extenso) {
+    $localizar[] = $mes;
+    $alterePor[] = " de {$extenso} de ";
+}
+$dataCriarproposta = str_replace($localizar, $alterePor, $dataCriarproposta);
+//Arial, Helvetica, sans-serif
+?>
+<style>
+    body {font-family: Arial, Helvetica, sans-serif;font-size: 12px;color: black;}
+    p {line-height: 20px;}
+</style>
+<!-- Conteúdo primeira página CAPA -->
+<div style="page-break-after: always">
+    <p><?php echo $dataCriarproposta; ?></p>
+    <h1 style="margin-top: 300px;text-align: center"><?php echo $this->proposta['empresa_razao'] ?></h1>
+    <p style="margin-top: 400px;"><b>A/C.:</b>&nbsp;<?php echo $this->proposta['contrato_responsavel_nome'] ?></p>
+    <p><b>REF.:</b>&nbsp;Proposta para prestação de Serviço</p>
+</div>
+
+<!-- fim capa -->
+
+<!-- pagina de apresentação da HIEST -->
+<div style="page-break-after: always; text-align: justify;">
+    <p style="text-align: center;font-weight: bold">APRESENTAÇÃO DA HIEST</p>
+    <p>A HIEST é uma empresa especializada na prestação de serviços nas áreas de Medicina do Trabalho, Engenharia de Segurança, Higiene Ocupacional, Meio Ambiente, Treinamentos e Atendimentos de Urgências e Emergências.</p>
+    <p>Fundada em 1999, em Belo Horizonte/MG, onde possui sua sede nacional denominada UBH – Unidade Belo Horizonte, a HIEST ampliou sua atuação, criando em 2005 uma unidade integrada no Estado do Espírito Santo, a UGV – Unidade Grande Vitória.</p>
+    <p>Investindo constantemente em projetos, em 2009, a HIEST assumiu a responsabilidade pelos Serviços de Apoio à Saúde, Segurança e Higiene Ocupacional, para os empregados da VALE S/A e de empresas contratadas que atuam no Estado do Espírito Santo, estruturando equipes especializadas, totalmente direcionadas e focadas às demandas dessa grande Contratante.</p>
+    <p>Em 2010 iniciou suas atividades internacionais onde prestou serviços de Higiene Ocupacional para a Vale S.A, Odebrecht e Camargo Correa, em Moçambique.</p>
+    <p>O ano de 2012 foi marcado por importantes conquistas: o início de atividades nas áreas da Samarco Mineração S/A - Ubu (Anchieta/ES) – onde os serviços prestados estão voltados para a Gestão da Saúde Ocupacional das contratadas dessa corporação, e a inauguração de uma nova unidade HIEST, a UVC – Unidade Vitória Camburi, em Vitória/ES, fruto de uma visão sistêmica e empreendedora, cujo objetivo é levar aos seus clientes o que há de mais moderno em saúde ocupacional, segurança do trabalho e treinamentos. A UVC conta com estrutura de excelente porte, além de equipamentos de última geração e salas para capacitação do trabalhador, de altíssimo padrão.</p>
+    <p>Finalmente, em 2013, graças ao desempenho atingido na unidade Samarco Mineração S/A, em Ubu, a HIEST expande suas atividades a outras áreas dessa organização: as unidades de Germano e Matipó, localizadas na cidade de Mariana, em Minas Gerais.</p>
+    <p>Certificada desde 2008 (ISO 9001-2008) pelo PRODFOR, a Hiest mantém em franca aplicação seu Sistema de Gestão da Qualidade de Fornecimento ampliando seu campo de atuação, conquistando o respeito cada vez maior das empresas atendidas e colocando-se de forma definitiva em uma posição privilegiada no mercado. Com uma equipe de profissionais altamente capacitados e equipamentos de alta tecnologia, a HIEST possui um dos laboratórios de Higiene Ocupacional mais modernos e bem aparelhados do país, o que contribui para o desenvolvimento de um trabalho mais ágil e de absoluta qualidade técnica. Para a área de Medicina Ocupacional, em suas unidades, encontram-se os melhores equipamentos para diagnóstico e as melhores instalações, onde se assegura resultados precisos e o respeito no atendimento ao trabalhador.</p>
+    <p>Atualmente, a HIEST atende centenas de clientes que, graças ao reconhecimento, embasado na satisfação e confiabilidade constantes, fazem da HIEST uma parceira definitiva nas questões de promoção, manutenção e prevenção da saúde do trabalhador.</p>
+</div>
+
+<!-- pagina da proposta -->
+<div style="page-break-after: always">
+    <p style="text-align: center;font-weight: bold">P R O P O S T A</p>
+
+    <p>A HIEST Assessoria Ltda. Vem apresentar a V.Sa., a proposta para prestação de serviços em Medicina e Segurança do Trabalho, conforme abaixo descrito:</p>
+    <p>&nbsp;</p>
+    <p><strong>1. Dados da Empresa</strong></p>
+    <p>
+        <?php echo $this->proposta['empresa_razao'] ?><br/>
+        CNPJ: <?php echo Util::cnpj($this->proposta['empresa_cnpj']) ?><br/>
+        Tel.: <?php echo Util::telefone(str_replace(' ', '', $this->proposta['contrato_responsavel_telefone'])); ?><br/>
+        Email: <?php echo $this->proposta['contrato_responsavel_email'] ?><br/>
+        Efetivo: <?php echo $this->proposta['empresa_efetivo'] ?><br/>
+    </p>
+    <p><strong>2. Serviços a serem prestados</strong></p>
+
+    <p>2.1 EXAMES (VALORES CONFORME TABELA EM ANEXO)</p>
+
+    <?php
+    $contador = 2;
+    $jaImpressos = array();
+    ?>
+    <?php foreach ($this->produtos as $k => $categoria): ?>
+
+        <?php if ($categoria['categoriadoproduto_codigo_fixo'] != '0002'): ?>
+
+            <?php foreach ($categoria['produtos'] as $m => $produto): ?>
+
+                <?php if (in_array((int) $produto['produto_id'], $jaImpressos) == false) : ?>
+                    <?php $jaImpressos = array(); ?>
+                    <p>2.<?php echo $contador, " ", $produto["produto_nome"] ?></p>
+                    <span style="margin-left: 10px; text-align: justify; font-style: italic;"><?php echo $produto["produto_descricao"] ?></span>
+                    <?php
+                    $contador++;
+                    $jaImpressos[] = (int) $produto['produto_id'];
+                    ?>
+                <?php endif ?>
+
+            <?php endforeach ?>
+
+        <?php endif ?>
+
+    <?php endforeach ?>
+
+</div>
+<div style="page-break-after: always">
+
+    <p><strong>3. Investimento</strong></p>
+
+    <?php
+    $total = 0;
+    $tabela = array();
+    $tabela[] = '<style type="text/css">.tabela tr td { padding: 2px; white-space: nowrap; }</style>';
+    $tabela[] = '<table class="tabela" width="100%" cellspacing="0" cellpadding="0">';
+
+    foreach ($this->produtos as $k => $categoria) {
+
+        if ($categoria['categoriadoproduto_codigo_fixo'] != '0002'):
+
+            $somar = 0;
+            $tabela[] = '<tr>
+                    <td colspan="3">&nbsp;</td>
+                </tr>
+                <tr bgcolor="#ddd">
+                    <td><strong>' . $categoria['categoriadoproduto_nome'] . '</strong></td>
+                    <td>LOCAL</td>
+                    <td>INVESTIMENTO</td>
+                </tr>';
+            foreach ($categoria['produtos'] as $m => $produto) {
+                $totalCategEfetivo = ((float) $produto['produto_contratado_valor_venda'] * (int) $produto['produto_contratado_efetivo']);
+                $tabela[] = '<tr>
+                        <td>' . $produto['produto_nome'] . '</td>
+                        <td>' . $produto['localentrega_identificacao'] . '</td>
+                        <td>R$ ' . Util::moeda((($categoria['categoriadoproduto_nome'] == "COORDENAÇÃO") ? number_format($totalCategEfetivo, 2) : number_format($produto['produto_contratado_valor_venda'], 2))) . '</td>
+                    </tr>';
+
+                $somar += (($categoria['categoriadoproduto_nome'] == "COORDENAÇÃO") ? number_format($totalCategEfetivo, 2) : (float) $produto['produto_contratado_valor_venda']);
+            }
+
+            $total += (float) $somar;
+
+            $tabela[] = '<tr>
+                    <td colspan="3">&nbsp;</td>
+                </tr>
+                <tr>
+                    <td>
+                        <table class="tabela">
+                            <tr>
+                                <td><strong>Efetivo:</strong></td><td>' . $categoria['produto_contratado_efetivo'] . '</td>
+                                <td><strong>Valor Unit.:</strong></td><td>R$ ' . Util::moeda($categoria['produto_contratado_valor_venda']) . '</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Tipo Cobr.:</strong></td><td>' . $categoria['cobranca']['tipo_cobranca_nome'] . '</td>
+                                <td><strong>Forma Pagto.:</strong></td><td>' . $categoria['formapagamento']['formapagamento_nome'] . '</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Parcelas:</strong></td><td>' . $categoria['cobranca']['cobrancaos_quantidade_parcela'] . '</td>
+                                <td><strong>Primeira Parc.:</strong></td><td>' . util::dataBR($categoria['cobranca']['parcelamento_data']) . '</td>
+                                <td><strong>Faturamento Mínimo.:</strong></td><td>' . (((int) $categoria['produto_contratado_faturamento_minimo'] == 0) ? "" : ('R$ ' . ($categoria['produto_contratado_faturamento_minimo']))) . '</td>
+                            </tr>
+                        </table>
+                    </td>
+                    <td><b>R$ ' . Util::moeda($somar) . '</b></td>
+                </tr>';
+        endif;
+    }
+
+    $tabela[] = '<tr>
+                <td colspan="2">&nbsp;</td>
+            </tr>
+            <tr>
+                <td></td>
+                <td bgcolor="#ddd"><b></b></td>
+            </tr>';
+
+    $tabela[] = '</table>';
+    $tabela[] = '</table>';
+    echo implode('', $tabela);
+    ?>     
+</div>
+
+<div style="page-break-after: auto; text-align: justify;">
+    <?php
+    $textoSemEmail = str_replace("e-mail", "%", $this->proposta['os_observacao']);
+    $textoComQuebraLinha = str_replace("-", "<br> -", $textoSemEmail);
+    ?>
+    <p style="line-height: 0px;"><strong>4. Disposições diversas</strong></p>
+    <p><?php echo str_replace("%", "e-mail", $textoComQuebraLinha); ?></p>
+    <p>&nbsp;</p>
+    <p>&nbsp;</p>
+    <p>Esperando atender as necessidades de vossa empresa, ficamos no aguardo da resposta de V.Sas. e nos colocamos à disposição para dirimir quaisquer dúvidas.</p>
+    <p>Atenciosamente,<p/>
+    <p>&nbsp;</p>
+    <p>&nbsp;</p>
+    <p><strong>PROPOSTA VÁLIDA POR 60 DIAS</strong></p>
+    <p>&nbsp;</p>
+    <?php
+    $telefoneVendedor = '';
+    $nomeVendedor = $this->proposta['pessoa_nome'];
+    $emailVendedor = $this->proposta['usuario_email'];
+    $telefones = (isset($this->telefone['telefones']) && is_array($this->telefone['telefones'])) ? $this->telefone['telefones'] : array();
+    $novosTelefones = array();
+    foreach ($telefones as $t) {
+        $novosTelefones[] = Util::telefone($t['telefone_ddd'] . $t['telefone_numero']);
+    }
+    $telefoneVendedor = implode(' / ', $novosTelefones);
+    ?>
+    <p>
+        <?php echo $nomeVendedor; ?><br/>
+        Hiest Assessoria LTDA<br/>
+        <?php echo $telefoneVendedor; ?><br/>
+        <?php echo $emailVendedor; ?><br/>
+        <strong style="color: darkblue;">www.hiest.com.br</strong>
+    </p>
+</div>
+
+<?php
+require_once 'MPDF/mpdf.php';
+$localScripts = '../application/views/scripts/documento-operacional/';
+require_once "{$localScripts}include/funcoes.php";
+$html = '';
+$htmlCabecalho = file_get_contents($localScripts . 'proposta/' . 'cabecalho.html');
+$htmlCabecalho = str_replace('<[atributoNumeroContrato]>', Util::preencherComZero($this->proposta['os_id'], 5), $htmlCabecalho);
+$htmlRodape = obterHtmlDoRodapeEmPdf();
+
+$p = new mPDF('utf-8', 'A4', 0, 'Arial', 10, 10, 35, 30, 8, 8);
+
+$p->SetHTMLHeader($htmlCabecalho);
+$p->SetHTMLFooter($htmlRodape);
+$p->setAutoTopMargin = false;
+$p->setAutoBottomMargin = false;
+$html = ob_get_clean();
+
+ini_set('display_errors', 0);
+$p->WriteHTML($html);
+if ($this->acao == 'imprimir') {
+    $p->Output();
+} else {
+    //Util::dump($_SESSION['usuario']);
+    ob_start();
+    ?>
+
+    <!DOCTYPE html>
+    <html>
+        <head>
+            <meta charset="utf-8"/>
+            <title>PROPOSTA</title>
+            <style type="text/css">
+                body{
+                    font-family: Arial;
+                    font-size: 12px;
+                }
+                #meio-ambiente{
+                    font-style: italic;
+                    color: green;
+                }
+                #politica{
+                    text-align: justify;
+                    font-style: italic;
+                }
+                #politica strong{
+                    color: red;
+                }
+                .telefone{
+                    font-size: 120%;
+                }
+            </style>
+        </head>
+        <body>
+            <div>
+
+                <p>Olá <?php echo $this->proposta['contrato_responsavel_nome'] ?>,</p>
+
+                <p>Segue proposta em anexo no formato de PDF.</p>
+
+                <p>Atenciosamente,</p>
+                <?php echo $_SESSION['usuario']['pessoa_nome'] ?><br/>
+                <?php echo $_SESSION['usuario']['usuario_setor'] ?><br/>
+                Hiest Assessoria Ltda<br/>
+                <?php foreach ($_SESSION['usuario']['telefones'] as $telefone): ?>
+                    <strong class="telefone"><?php echo Util::telefone($telefone['telefone_ddd'] . $telefone['telefone_numero']) ?></strong><br/>
+                <?php endforeach; ?>
+                <p id="meio-ambiente">Antes de imprimir, pense na sua responsabilidade com o Meio Ambiente</p>
+                <img id="assinatura" src="http://desenvsiss.hiestgroup.com.br/img/hiest-assinatura.png" alt="" title=""/>
+                <p id="politica"><strong>POLÍTICA DA QUALIDADE:</strong> "Oferecer soluções que garantam o atendimento de requisitos de prevenção e manutenção da saúde e preservação do meio ambiente onde atuam os trabalhadores. Aprimorar continuamente os processos de qualidade, capacitar e motivar toda a equipe e, com isso, reduzir o tempo de resposta às demandas do cliente e proporcionar a construção de uma gestão favorável ao crescimento sustentável, ocupando permanentemente a posição de fornecedor preferencial de cada cliente".</p>
+
+            </div>
+        </body>
+    </html>
+
+    <?php
+    $texto = ob_get_clean();
+    //$arquivo = 'arquivos/' . date("YmdHis") . '.pdf';
+    $arquivo = 'arquivos/' . date("YmdHis") . '.pdf';
+    $p->Output($arquivo);
+    $email = new Application_Model_Email();
+    $email->anexo($arquivo);
+    $enviado = $email->enviar($this->proposta['contrato_responsavel_email'], $this->proposta['contrato_responsavel_nome'], 'HIEST - PROPOSTA', $texto);
+    #$enviado = $email->enviar('silas.ugv@hiest.com.br', $this->proposta['contrato_responsavel_nome'], 'PROPOSTA', $texto);
+    if (strlen($enviado) == 0) {
+        try {
+            $sql = "INSERT INTO registro_email SET registro_email_data_hora = NOW(), fk_usuario_id = ?, fk_empresa_id = ?, fk_os_id = ?";
+            $adapter = Zend_Db_Table::getDefaultAdapter();
+            $prep = $adapter->prepare($sql);
+            $prep->execute(array($_SESSION['usuario']['usuario_id'], $this->proposta['empresa_id'], $this->proposta['os_id']));
+            echo "<script>window.top.Util.alerta('success', 'Proposta enviada e registrada <b>COM SUCESSO!</b>')</script>";
+        } catch (Zend_Exception $e) {
+            echo "<script>window.top.Util.alerta('danger', '<b>Erro</b> ao enviar proposta: {$e->getMessage()}.')</script>";
+        }
+    } else {
+        $enviado = preg_replace('/[^a-zA-Z0-9\: ]/', '', $enviado);
+        echo "<script>window.top.Util.alerta(\"danger\", \"<b>Erro</b> ao enviar proposta: {$enviado}. Tente novamente.\")</script>";
+    }
+}

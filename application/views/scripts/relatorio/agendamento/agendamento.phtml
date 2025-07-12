@@ -1,0 +1,64 @@
+<?php echo $this->erro2 ? ('<div class="alert alert-danger">' . $this->erro2 . '</div>') : ''; ?>
+
+<div class="panel panel-primary">
+
+    <div class="panel-heading"><i class="fa fa-check"></i>Relatório de Agendamento</div>
+
+    <div class="panel-body">
+
+        <form action="" method="post" target="iframe-receptor" onsubmit="">
+
+            <div class="row">
+
+                <div class="col-md-2">
+                    <div class="form-group">
+                        <label>Data Início *</label>
+                        <input class="form-control mask-data" type="text" name="data_inicio" value="01/<?php echo date('m/Y') ?>" />
+                    </div>
+                </div>
+
+                <div class="col-md-2">
+                    <div class="form-group">
+                        <label>Data Fim *</label>
+                        <input class="form-control mask-data" type="text" name="data_fim" value="31/<?php echo date('m/Y') ?>" />
+                    </div>
+                </div>
+
+                <div class="col-md-3">
+                    <div class="form-group">
+                        <label>Funcionário</label>
+                        <select class="form-control" id="funcionarios" name="funcionario_id">
+                            <option value="0">-- Não Obrigatório --</option>
+                            <?php foreach ($this->funcionarios as $funcionario) : ?>
+                                <option value="<?php echo $funcionario['funcionario_id'] ?>"><?php echo $funcionario['pessoa_nome'] ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="col-md-3">
+                    <div class="form-group">
+                        <label>Tipo de Exame</label>
+                        <select class="form-control" id="tiposexame" name="tipoexame_id">
+                            <option value="0">-- Não Obrigatório --</option>
+                            <?php foreach ($this->tiposexame as $tipoexame) : ?>
+                                <option value="<?php echo $tipoexame['tipoexame_id'] ?>"><?php echo $tipoexame['tipoexame_nome'] ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="col-md-2">
+                    <div class="form-group">
+                        <label>&nbsp;</label>
+                        <button class="form-control btn btn-success" type="submit"><i class="icon-print"></i>&nbsp;Imprimir</button>
+                    </div>
+                </div>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>

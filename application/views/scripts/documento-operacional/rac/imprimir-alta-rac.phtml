@@ -1,0 +1,165 @@
+<?php
+$agenda = $this->atributos['agenda'][0];
+$marcar = '<img src="/img/marcar.png">';
+$desmarcar = '<img src="/img/naomarcar.png">';
+ob_start();
+
+$idsAtividadesLiberadas = array();
+foreach ($this->atributos['atividadesCriticasLiberadas'] as $atv) {
+    $idsAtividadesLiberadas[] = $atv['atividadecritica_id'];
+}
+?>
+<style>
+    table#tabela tr td { font: normal 12px Arial; border: 1px solid #ccc; }
+    table#tabela tr td.etiqueta { font-weight: bold; padding: 4px; }
+    table#tabela tr td.titulo { text-align: center; font-weight: bold; background: #ddd; }
+    table#tabela tr td.separador { padding: 10px; border: none; }
+    table#tabela tr td.centro { text-align: center; }
+</style>
+<table id="tabela" style="border-collapse: collapse; width: 100%;">
+    <!-- Data atual e portaria -->
+    <tr>
+        <td colspan="2" class="etiqueta" style="border-left: none; border-right: none; font-weight: none;"><?php echo $this->atributos['fichaMedica'][0]['fichamedica_cidade_emissao'] ?>, <?php echo date('d'); ?> de <?php echo util::nomeDoMes(date('m')); ?> de <?php echo date('Y'); ?></td>
+        <td colspan="7" class="etiqueta" style="border-right:none; text-align: right; border-left: none; font-weight: none;">NR 7 Portaria 3214/78 alterada pelas portarias 24/94 e 08/96</td>
+    </tr>
+    <!-- separador -->
+    <tr>
+        <td colspan="7" class="separador"></td>
+    </tr>
+</table>
+
+<table id="tabela" border="0" style="border-collapse: collapse; width: 100%;">
+    <!-- nome do funcionario -->
+    <tr>
+        <td colspan="7" class="etiqueta" style="border: none; font-size: 14px"><?php echo $agenda['pessoa_nome'] ?></td>
+    </tr>
+    <!-- CPF e matricula do funcionario -->
+    <tr>
+        <td class="etiqueta" style=" width: 100px; border-right: none; text-align: right; border-bottom: none;">CPF: </td>
+        <td colspan="2" style="border-left: none; border-right: none; border-bottom: none;">&nbsp;<?php echo Util::cpf($agenda['pessoa_cpf']) ?></td>
+        <td class="etiqueta" style="width: 100px; border-right: none;text-align: right; border-left: none; border-bottom: none;">Matrícula:</td>
+        <td colspan="3" style="border-left: none; border-bottom: none;"><?php echo $this->atributos['funcionario']['funcionario_matricula'] ?></td>
+    </tr>
+    <!-- identidade -->
+    <tr>
+        <td colspan="1" class="etiqueta" style="border-top: none; border-bottom: none; border-right: none; text-align: right;">IDENTIDADE: </td>
+        <td colspan="6" style="border-bottom: none; border-left: none; border-top: none;">&nbsp;<?php echo $agenda['pessoa_identidade'] ?></td>
+    </tr>
+    <!-- funçao -->
+    <tr>
+        <td class="etiqueta" style="border-top: none; border-right: none; text-align: right;">FUNÇÃO: </td>
+        <td colspan="6" style="border-left: none; border-top: none;">&nbsp;<?php echo $this->atributos['alocacao'][0]['funcao_nome'] ?></td>
+    </tr>
+    <!-- razão social -->
+    <tr>
+        <td class="etiqueta" style="border-bottom: none; border-right: none; text-align: right;">EMPRESA: </td>
+        <td colspan="6" style="border-left: none; border-bottom: none;">&nbsp;<?php echo $agenda['empresa_razao'] ?></td>
+    </tr>
+    <!-- CNPJ -->
+    <tr>
+        <td class="etiqueta" style="border-top: none; border-right: none; text-align: right;">CNPJ: </td>
+        <td colspan="6" style="border-left: none; border-top: none;">&nbsp;<?php echo Util::cnpj($agenda['empresa_cnpj']) ?></td>
+    </tr>
+
+    <tr>
+        <td colspan="7" class="separador"></td>
+    </tr>
+
+</table>
+
+<p style="font-size: "><strong>EXAMES REALIZADOS</strong></p>
+
+<table class="tabela" style="font-size: 13px">
+    <tbody>
+        <?php for ($i = 0; $i < count($this->atributos['exames']); $i += 2): ?>
+            <?php $exame = $this->atributos['exames'][$i]; ?>
+            <tr>
+                <td class="label normal"><?php echo util::dataBR($this->atributos['agenda_data_exame']) . " - "?></td>
+                <td class="valor" width="300px"><?php echo $exame['produto_nome'] ?></td>
+                <?php if (isset($this->atributos['exames'][$i + 1])): ?>
+                    <?php $exame = $this->atributos['exames'][$i + 1]; ?>
+                    <td class="label normal margem"><?php echo util::dataBR($this->atributos['agenda_data_exame']) ?></td>
+                    <td class="valor"><?php echo $exame['produto_nome'] ?></td>
+                <?php else: ?>
+                    <td>&nbsp;</td>
+                    <td>&nbsp;</td>
+                <?php endif ?>
+            </tr>
+        <?php endfor ?>
+    </tbody>
+</table>
+<br>
+<table id="tabela" border="0" style="border-collapse: collapse; width: 100%;">
+    <tr>
+        <td colspan="7" class="etiqueta" style="border: none; font-size: 13px">* COMPROVO QUE ESTE EMPREGADO ESTÁ APTO PARA REALIZAR AS SEGUINTES ATIVIDADES CRÍTICAS</td>
+    </tr>
+    <?php foreach ($this->atributos['atividadesCriticas'] as $atividade): ?>
+        <tr>
+            <td style="border:none"><?php echo (in_array($atividade['atividadecritica_id'], $idsAtividadesLiberadas)) ? $marcar : $desmarcar ?></td>
+            <td style="border:none"><?php echo $atividade['atividadecritica_sigla'] ?></td>
+            <td style="border:none"><?php echo $atividade['atividadecritica_nome'] ?></td>
+            <td style="border:none"><?php echo (in_array($atividade['atividadecritica_id'], $idsAtividadesLiberadas)) ? 'LIBERADO' : 'NÃO LIBERADO' ?> </td>
+            <td style="border:none"></td>
+            <td style="border:none"></td>
+            <td style="border:none"></td>
+        </tr>
+    <?php endforeach ?>
+    <tr>
+        <td colspan="7" class="separador"></td>
+    </tr>
+
+</table>
+
+<table id="tabela" border="0" style="border-collapse: collapse; width: 100%;">
+    <tr>
+        <td colspan="7" class="etiqueta" style="border: none; font-size: 13px">PARECER MÉDICO EXAMINADOR</td>
+    </tr>
+    <tr>
+        <td colspan="7" style="border: 1px solid #ccc; font-size: 12px;">Blabla</td>
+    </tr>
+</table>
+
+
+<table id="tabela" border="0" style="border-collapse: collapse; width: 100%;">
+    <tr>
+        <td colspan="2" style="border: none; font-size: 12px;">&nbsp;</td>
+    </tr>
+    <tr>
+        <td colspan="2" style="border: none; font-size: 12px;">Recebi segunda via em: _____/_____/__________</td>
+    </tr>
+    <tr>
+        <td colspan="2" style="border: none; font-size: 12px;">&nbsp;</td>
+    </tr>
+    <tr>
+        <td style="border: none;font-size:12px;width:50%;text-align: center">____________________________________________________________</td>
+        <td style="border: none;font-size:12px;width:50%;text-align:center">____________________________________________________________</td>
+    </tr>
+    <tr>
+        <td style="border: none;font-size:12px;width:50%;text-align: center"><?php echo $agenda['pessoa_nome'] ?></td>
+        <td style="border: none;font-size:12px;width:50%;text-align:center"><?php echo $this->atributos['especialista'][0]['pessoa_nome'] ?></td>
+    </tr>
+    <tr>
+        <td style="border: none;font-size:12px;width:50%;text-align: center">FUNCIONÁRIO</td>
+        <td style="border: none;font-size:12px;width:50%;text-align:center"><?php echo $this->atributos['especialista'][0]['especialidade_nome'], ' ', $this->atributos['especialista'][0]['especialidade_sigla_conselho'], ':', $this->atributos['especialista'][0]['pessoa_especialidade_registro'] ?></td>
+    </tr>
+</table>
+
+
+<?php
+$localScripts = '../application/views/scripts/documento-operacional/';
+require_once 'MPDF/mpdf.php';
+require_once "{$localScripts}include/funcoes.php";
+$htmlRodape = obterHtmlDoRodapeEmPdf();
+$htmlCabecalho = file_get_contents($localScripts . 'rac/cabecalho.html');
+$p = new mPDF('utf-8', 'A4', 0, '', 10, 10, 35, 30, 8, 8);
+$p->SetHTMLHeader($htmlCabecalho);
+$p->SetHTMLFooter($htmlRodape);
+$p->setAutoTopMargin = false;
+$p->setAutoBottomMargin = false;
+$htmlCorpo = ob_get_clean();
+$htmlCorpo . '</body></html>';
+//header('content-type:text/html;charset=utf8');
+//die($htmlCorpo);
+$p->WriteHTML($htmlCorpo);
+$p->Output();
+?>

@@ -1,0 +1,42 @@
+<!--view ajax-->
+<div style="width: 100%">
+    <div class="modal-header" style="width: 720px">
+        <h4 style="border: none" id="myModalLabel"><?php echo $this->resultado[0]['pessoa_nome'] ?></h4>
+        <h5 style="border: none" id="myModalLabel">CPF: <?php echo Util::cpf($this->resultado[0]['pessoa_cpf']) ?></h5>
+    </div>
+    <br>
+    <table class="table table-hover table-bordered" cellspacing="0" cellpadding="0" style="width: 820px">
+        <thead>
+            <tr style="border-color: #CFCFCF;">
+                <th width="20%" style="text-align: center;">Data Exame</th>
+                <th width="20%" style="text-align: center; ">Data Clínico</th>
+                <th width="25%" style="text-align: center; ">Tipo de Exame</th>
+                <th width="35%" style="text-align: left; ">Exames Agendados</th>
+            </tr>
+        </thead>
+        <tbody>
+            <?php foreach ($this->resultado as $resultado): ?>
+            <?php 
+            if($resultado['tipoexame_sigla'] === "DEM"){$tipoexame = "DEMISSIONAL";}
+            if($resultado['tipoexame_sigla'] === "PER"){$tipoexame = "PERIÓDICO";}
+            if($resultado['tipoexame_sigla'] === "ADM"){$tipoexame = "ADMISSIONAL";}
+            if($resultado['tipoexame_sigla'] === "MUD"){$tipoexame = "MUDANÇA DE FUNÇÃO";}
+            if($resultado['tipoexame_sigla'] === "RET"){$tipoexame = "RETORNO AO TRABALHO";}
+            ?>
+                <tr style="border-color: #CFCFCF;">
+                    <td style="text-align: center; border-right: none; padding: 0px"><?php echo Util::dataBR($resultado['agenda_data_exame']); ?></td>
+                    <td style="text-align: center; padding: 0px"><?php echo Util::dataBR($resultado['agenda_data_exame']); ?></td>
+                    <td style="text-align: center; padding: 0px"><?php echo $tipoexame ?></td>
+                    <td style="text-align: left; padding: 0px">
+                        <?php foreach ($resultado['produtos'] as $produto): ?>
+                            <?php echo $produto['produto_nome'] . ', ' ?>
+                        <?php endforeach ?>
+                    </td>
+                </tr>
+            <?php endforeach; ?>
+        </tbody>
+    </table>
+    <div>
+        <p> <b>Verificado no dia:</b> <?php echo date("d/m/Y") . " as " . date("H:i:s"); ?></p>
+    </div>
+</div>

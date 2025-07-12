@@ -1,0 +1,36 @@
+
+<div class="panel panel-primary">
+    <div class="panel-heading"><i class="fa fa-folder"></i>Meus Documentos</div>
+    <div class="panel-body table-responsive">
+        <?php $paginator = $this->itensGrid->getPages(); ?>
+        <?php if ($paginator->pageCount): ?>
+            <table class="table table-hover table-bordered">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Descrição</th>
+                        <th>Tipo</th>
+                        <th style="text-align: center">Criado Em</th>
+                        <th style="text-align: center">Válido Até</th>
+                        <th style="text-align: center">Inserido Em</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php foreach ($this->itensGrid as $k => $item): ?>
+                        <tr>
+                            <td class="fit">
+                                <a class="btn btn-xs btn-default" rel="tooltip" target="blank" title="Vlisualizar" href="/documento/visualizar/id/<?php echo $item['arquivo_id']; ?>/"><i class="fa fa-file no-margin"></i></a>
+                            </td>
+                            <td style="padding: 0px;"><?php echo strtoupper($item['arquivo_descricao']) ?></td>
+                            <td style="padding: 0px;"><?php echo $item['arquivo_tipo'] ?></td>
+                            <td style="text-align: center; padding: 0px"><?php echo Util::dataBR($item['arquivo_data_criacao']) ?></td>
+                            <td style="text-align: center; padding: 0px"><?php echo Util::dataBR($item['arquivo_valido_ate']) ?></td>
+                            <td style="text-align: center; padding: 0px"><?php echo Util::dataBR(substr($item['arquivo_data_registro'], 0, 10)) ?></td>
+                        </tr>
+                    <?php endforeach ?>
+                </tbody>
+            </table>
+        <?php endif; ?>
+        <?php echo $this->render('criar-paginador.phtml'); ?>
+    </div>
+</div>

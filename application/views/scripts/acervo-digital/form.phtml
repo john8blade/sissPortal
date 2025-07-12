@@ -1,0 +1,453 @@
+<style type="text/css">
+    .campo-customizado {
+        box-shadow: none !important;
+        background: transparent !important;
+        border: none !important;
+        border-radius: 0px !important;
+        margin: 0px !important;
+        padding: 0px !important;
+        width: 100%;
+        float: left;
+        font-size: 11px !important
+    }
+</style>
+
+<div class="panel panel-primary">
+
+    <div class="panel-heading"><i class="fa fa-user"></i>Informações do Funcionário</div>
+
+    <div class="panel-body">
+
+        <div class="row">
+
+            <div class="col-md-2">
+                <div class="form-group">
+                    <label>Cod. Localizador</label>
+                    <input type="text" value="<?php echo $this->form['funcionario_localizador_arquivo'] ?>" class="form-control" disabled="true"/>
+                </div>
+            </div>
+
+            <div class="col-md-2">
+                <div class="form-group">
+                    <label>CPF</label>
+                    <input type="text" value="<?php echo $this->form['pessoa_cpf'] ?>" class="form-control mask-cpf" disabled="true"/>
+                </div>
+            </div>
+
+            <div class="col-md-3">
+                <div class="form-group">
+                    <label>Nome</label>
+                    <input type="text" value="<?php echo $this->form['pessoa_nome'] ?>" class="form-control" disabled="true"/>
+                </div>
+            </div>
+
+            <div class="col-md-2">
+                <div class="form-group">
+                    <label>Identidade</label>
+                    <input type="text" value="<?php echo $this->form['pessoa_identidade'] ?>" class="form-control" disabled="true"/>
+                </div>
+            </div>
+
+            <div class="col-md-2">
+                <div class="form-group">
+                    <label>Data Nascimento</label>
+                    <input type="text" value="<?php echo Util::dataBR($this->form['pessoa_data_nascimento']) ?>" class="form-control" disabled="true"/>
+                </div>
+            </div>
+
+            <div class="col-md-1">
+                <div class="form-group">
+                    <label>Sexo</label>
+                    <input type="text" value="<?php echo $this->form['pessoa_sexo'] ?>" class="form-control" disabled="true"/>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="row">
+            <div class="col-md-2">
+                <div class="form-group">
+                    <label>Contrato</label>
+                    <input type="text" value="<?php echo $this->form['contrato_numero'] ?>" class="form-control" disabled="true"/>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label>Razão Social</label>
+                    <input type="text" value="<?php echo $this->form['empresa_razao'] ?>" class="form-control" disabled="true"/>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="form-group">
+                    <label>Nome Fantasia / Obra</label>
+                    <input type="text" value="<?php echo $this->form['empresa_fantasia'] ?>" class="form-control" disabled="true"/>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<div class="panel panel-primary">
+
+    <div class="panel-heading"><i class="fa fa-check"></i>Procedimentos Realizados</div>
+
+    <div class="panel-body">
+
+        <?php if ($this->exibirQualFormulario == 'dossie-medico') : ?>
+
+            <div class="row">
+
+                <div class="col-md-3">
+                    <div class="form-group">
+                        <label>Código Localizador</label>
+                        <input type="text" class="form-control" disabled="true" required="true" value="<?php echo $this->form['funcionario_localizador_arquivo'] ?>"/>
+                    </div>
+                </div>
+
+                <div class="col-md-3">
+                    <div class="form-group">
+                        <label>Data</label>
+                        <input disabled="true" type="text" class="form-control mask-data" value="<?php echo Util::dataBR($this->form['protuario_data']) ?>" name="prontuario_data" required="true"/>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label>Tipo de Exame</label>
+                        <input disabled="true" type="text" class="form-control" name="prontuario_descricao" value="<?php echo $this->form['prontuario_descricao'] ?>" required="true"/>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="row">
+
+                <div class="col-md-12">
+
+                    <div class="panel panel-default alinhar-altura">
+
+                        <div class="panel-heading"><i class="fa fa-sign-out"></i>Documentos</div>
+
+                        <div class="panel-body">
+
+                            <table class="table table-condensed">
+                                <thead>
+                                    <tr>
+                                        <th class="fit">Data</th>
+                                        <th>Procedimento / Documento</th>
+                                        <th class="fit">Validade</th>
+                                        <th class="fit">Exame</th>
+                                        <th class="fit">Laudo</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <?php foreach ($this->colecaoProcedimento as $k => $item): ?>
+                                        <tr>
+                                            <td><?php echo Util::dataBR($item['procedimento_data']) ?></td>
+                                            <td><?php echo($item['procedimento_nome']) ?></td>
+                                            <td><input required="true" class="campo-customizado mask-data" name="procedimento_data_validade[<?php echo $k ?>]" type="text" value="<?php echo Util::dataBR($item['procedimento_data_validade']) ?>" style="min-width: 80px; width: 100%; text-align: center;"/></td>
+
+                                            <?php $json = array('anx_proc_id' => 0, 'anx_proc_tipo' => 'EXAME', 'anx_proc_status' => 0, 'fk_procedimento_id' => (int) $item['procedimento_id'], 'fk_arquivo_upload_id' => null) ?>
+
+                                            <!-- UPLOAD EXAME -->
+                                            <td class="fit">
+                                                <a rel="tooltip" title="Exame" class="ativar-caixa-upload btn btn-default btn-xs" href="javascript:;" siss-set-upload-params='<?php echo json_encode($json) ?>'><span class="fa fa-file-text no-margin"></span></a>
+                                            </td>
+
+                                            <?php $json['anx_proc_tipo'] = 'LAUDO_EXAME' ?>
+                                            <!-- UPLOAD LAUDO -->
+                                            <td class="fit">
+                                                <a rel="tooltip" title="Laudo" class="ativar-caixa-upload btn btn-default btn-xs" href="javascript:;" siss-set-upload-params='<?php echo json_encode($json) ?>'><span class="fa fa-file-text no-margin"></span></a>
+                                            </td>
+                                        </tr>
+                                    <?php endforeach ?>
+                                </tbody>
+                            </table>
+
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- REMOVER PROCEDIMENTOS DE ORIGEM INTERNA
+
+                <div class="col-md-6">
+
+                    <div class="panel panel-default alinhar-altura">
+
+                        <div class="panel-heading"><i class="fa fa-sign-in"></i>Procedimentos de Origem Interna</div>
+
+                        <div class="panel-body">
+
+                            <table class="table table-condensed">
+                                <thead>
+                                    <tr>
+                                        <th>Procedimento / Documento</th>
+                                        <th class="fit"><i class="fa fa-bolt no-margin"></i></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                <?php foreach ($this->colecaoAnexosInternos as $item): ?>
+                                                <tr>
+                                                    <td><?php echo $item['descricao'] ?></td>
+                                                    <td>
+                                                        <a class="btn btn-xs btn-default" href="<?php echo $item['url'] ?>" target="_blank"><span class="fa fa-print no-margin"></span></a>
+                                                    </td>
+                                                </tr>
+                <?php endforeach ?>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                FIM -->
+
+            </div>
+
+            <div class="row">
+                <div class="col-md-12">
+                    <button class="btn btn-primary" type="button" onclick="window.location.href = '/acervo-digital/index/funcionario_id/<?php echo $this->form['funcionario_id'] ?>/empresa_id/<?php echo $this->form['empresa_id'] ?>/contrato_id/<?php echo $this->form['contrato_id'] ?>'"><i class="fa fa-arrow-left"></i>Voltar</button>
+                </div>
+            </div>
+
+        <?php endif ?>
+
+        <?php if ($this->exibirQualFormulario == 'dossie-treinamento') : ?>
+
+            <div class="row">
+
+                <div class="col-md-3">
+                    <div class="form-group">
+                        <label>Código Localizador</label>
+                        <input type="text" class="form-control" disabled="true" required="true" value="<?php echo $this->form['funcionario_localizador_arquivo'] ?>"/>
+                    </div>
+                </div>
+
+                <div class="col-md-3">
+                    <div class="form-group">
+                        <label>Data</label>
+                        <input disabled="true" type="text" class="form-control mask-data" value="<?php echo Util::dataBR($this->form['protuario_data']) ?>" name="prontuario_data" required="true"/>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label>Treinamento</label>
+                        <input disabled="true" type="text" class="form-control" name="prontuario_descricao" value="<?php echo $this->form['prontuario_descricao'] ?>" required="true"/>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="row">
+
+                <?php /*
+                <div class="col-md-6">
+                    <div class="panel panel-default alinhar-altura">
+
+                        <div class="panel-heading"><i class="fa fa-sign-out"></i>Procedimentos de Origem Externa</div>
+
+                        <div class="panel-body">
+
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th class="fit">Data</th>
+                                        <th>Procedimento / Documento</th>
+                                        <th class="fit">Validade</th>
+                                        <th class="fit">Anexo</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <?php foreach ($this->colecaoProcedimento as $k => $item): ?>
+                                        <tr>
+                                            <td class="fit"><?php echo Util::dataBR($item['procedimento_data']) ?></td>
+                                            <td><?php echo($item['procedimento_nome']) ?></td>
+                                            <td><input required="true" style="min-width: 80px; width: 100%; text-align: center;" class="campo-customizado mask-data" name="procedimento_data_validade[<?php echo $k ?>]" type="text" value="<?php echo Util::dataBR($item['procedimento_data_validade']) ?>"/></td>
+                                            <?php $json = array('anx_proc_id' => 0, 'anx_proc_tipo' => 'AVALIACAO', 'anx_proc_status' => 0, 'fk_procedimento_id' => (int) $item['procedimento_id'], 'fk_arquivo_upload_id' => null) ?>
+                                            <?php $json['anx_proc_tipo'] = ('CERTIFICADO' === strtoupper($item['procedimento_nome'])) ? 'CERTIFICADO' : 'AVALIACAO' ?>
+                                            <!-- UPLOAD ANEXO -->
+                                            <td class="fit">
+                                                <a rel="tooltip" title="Anexo" class="ativar-caixa-upload btn btn-default btn-xs" href="javascript:;" siss-set-upload-params='<?php echo json_encode($json) ?>'><span class="fa fa-file-text no-margin"></span></a>
+                                            </td>
+                                        </tr>
+                                    <?php endforeach ?>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                 * */ ?>
+
+                <div class="col-md-12">
+                    <div class="panel panel-default alinhar-altura">
+
+                        <div class="panel-heading"><i class="fa fa-sign-in"></i>Documentos</div>
+
+                        <div class="panel-body">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Procedimento / Documento</th>
+                                        <th class="fit"><i class="fa fa-bolt no-margin"></i></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <?php foreach ($this->colecaoAnexosInternos as $item): ?>
+                                        <tr>
+                                            <td><?php echo $item['descricao'] ?></td>
+                                            <td>
+                                                <a class="btn btn-xs btn-default" href="<?php echo $item['url'] ?>" target="_blank"><span class="fa fa-print no-margin"></span></a>
+                                            </td>
+                                        </tr>
+                                    <?php endforeach ?>
+                                </tbody>
+                            </table>
+                        </div>
+
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="row">
+                <div class="col-md-12">
+                    <button class="btn btn-primary" type="button" onclick="window.location.href = '/acervo-digital/index/funcionario_id/<?php echo $this->form['funcionario_id'] ?>/empresa_id/<?php echo $this->form['empresa_id'] ?>/contrato_id/<?php echo $this->form['contrato_id'] ?>'"><span class="fa fa-arrow-left"></span>Voltar</button>
+                </div>
+            </div>
+
+        <?php endif ?>
+
+    </div>
+</div>
+
+<div id="modal-upload-exame" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="modal-upload-exame-label" aria-hidden="true">
+
+    <div class="modal-dialog" role="document">
+
+        <div class="modal-content">
+
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title" id="modal-title">Prontuário</h4>
+            </div>
+
+            <div class="modal-body">
+
+                <div id="area-feedback-upload-modal"></div>
+
+                <!--
+                <form id="form-upload-anexo" action="/acervo-digital/salvar/frm/dossie-medico" method="post" target="iframe-receptor" enctype="multipart/form-data">
+                    <input type="file" name="anexo" id="item-anexo-upload" class="hide"/>
+                    <div id="parametros-controle-upload"></div>
+                </form>
+                -->
+
+                <table class="table table-striped table-condensed">
+                    <thead>
+                        <tr>
+                            <th class="fit"><i class="fa fa-bolt no-margin"></i></th>
+                            <th class="fit">ID</th>
+                            <th>Tipo</th>
+                        </tr>
+                    </thead>
+                    <tbody id="colecao-itens-anexo-upload">
+                    </tbody>
+                </table>
+
+            </div>
+
+            <div class="modal-footer">
+                <!--<button class="btn btn-primary" type="button" onclick="$('#item-anexo-upload').click()"><i class="fa fa-upload"></i>Selecionar Arquivo</button>-->
+                <!--<button id="btn-processar-upload" maxle type="submit" class="btn btn-success"><i class="fa fa-check"></i>Salvar</button> -->
+                <button class="btn btn-danger" data-dismiss="modal" aria-hidden="true">Fechar</button>
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+<script type="text/javascript">
+    igualarAlturaPelaClasse('alinhar-altura');
+
+    var baseUrlAjax = '/ajax/json/servico/';
+    $(function () {
+        // Atente-se ao atributo siss-set-upload-params definido de link com classe (class) ativar-caixa-upload
+        $('.ativar-caixa-upload').click(function () {
+            $('#item-anexo-upload').val('');
+            var Link = this;
+            var Params = Link.getAttribute('siss-set-upload-params');
+            $('#area-feedback-upload-modal').hide();
+            if (Params.length > 0) {
+                var UpParams = eval("(" + Params + ")");
+                $("#parametros-controle-upload").html('');
+                if (UpParams) {
+                    for (var Param in UpParams) {
+                        $("#parametros-controle-upload").append('<input type="hidden" value="' + UpParams[Param] + '" name="' + Param + '"/>');
+                    }
+                }
+                ImprimirGridComAnexo(UpParams.fk_procedimento_id);
+                $("#modal-upload-exame").modal('show');
+            }
+
+        });
+
+        $("#btn-processar-upload").click(function () {
+            $("#form-upload-anexo").submit();
+        });
+    });
+
+    function obterRetornoRequisicaoUploadModal(objetoResposta) {
+        if (typeof (objetoResposta) == 'object') {
+            var json = objetoResposta
+            var classeCssAlerta = 'alert';
+            if (json.erro == 0)
+                classeCssAlerta = 'alert alert-success';
+            if (json.erro == 1)
+                classeCssAlerta = 'alert alert-error';
+            var html = '<div class="' + classeCssAlerta + '"><button type="button" class="close" data-dismiss="alert">&times;</button>' + json.mensagem + '</div>';
+            $('#area-feedback-upload-modal').html(html);
+            $('#area-feedback-upload-modal').show();
+        }
+    }
+
+    function ExcluirAnexo(AnexoId) {
+        if (AnexoId !== null && parseInt(AnexoId) > 0) {
+            var url = baseUrlAjax + 'excluir-anexo-procedimento-prontuario';
+            var interpretarRetorno = function (Resposta) {
+                if (Resposta.Resultado.Excluido) {
+                    $('#item-anx-' + AnexoId).hide();
+                }
+            }
+            $.post(url, {anx_proc_id: AnexoId}, interpretarRetorno, 'json');
+        }
+    }
+
+    function ImprimirGridComAnexo(ProcedimentoId) {
+        var url = baseUrlAjax + 'resgatar-anexo-pelo-procedimento/procedimento_id/' + ProcedimentoId;
+        $.getJSON(url, null, function (Resposta) {
+            if (Resposta.Resultado) {
+                var linhas = new Array();
+                for (var Resultado in Resposta.Resultado) {
+                    linhas.push('<tr id="item-anx-' + Resposta.Resultado[Resultado].anx_proc_id + '">');
+                    linhas.push('<td class="fit">');
+                    linhas.push('<a class="btn btn-xs btn-default" href="/arquivo-upload/descarregar/id/' + Resposta.Resultado[Resultado].fk_arquivo_upload_id + '"><span class="fa fa-download no-margin"></span></a>');
+                    //linhas.push('<a class="btn btn-xs btn-default" href="javascript:;" onclick="ExcluirAnexo(\'' + Resposta.Resultado[Resultado].anx_proc_id + '\')" ><span class="fa fa-trash no-margin"></span></a>');
+                    linhas.push('</td>');
+                    linhas.push('<td class="fit">');
+                    linhas.push('<strong>' + Resposta.Resultado[Resultado].anx_proc_id + '</strong>');
+                    linhas.push('</td>');
+                    linhas.push('<td>');
+                    linhas.push(Resposta.Resultado[Resultado].anx_proc_tipo);
+                    linhas.push('</td>');
+                    linhas.push('</tr>');
+                }
+                $("#colecao-itens-anexo-upload").html(linhas.join(''));
+            }
+        });
+    }
+</script>

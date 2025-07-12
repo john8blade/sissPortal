@@ -1,0 +1,166 @@
+body {background-color: #e5e5e5;}
+
+#portal-hiest-area-corpo-pagina {
+    background: #fff;
+    padding-top: 15px;
+    padding-bottom: 15px;
+}
+
+#detalhe-navegacao {
+    padding: 10px;
+    padding-left: 15px;
+    background-color: #08c;
+    margin: 0px;
+    left: 0px;
+    right: 0px;
+    margin-top: 12px;
+    /*    border-top: 1px solid #0077b3;
+        border-bottom: 1px solid #0077b3;
+    background: url('../cssmenumaker/images/bottom-bg.png'); */
+}
+#detalhe-navegacao p {
+    color: #fcfcfc;
+    padding: 0px;
+    margin: 0px;
+    font-weight: 800;
+    font-size: 12px;
+}
+
+#portal-hiest-area-menu {
+    margin: 0px;
+    padding: 0px;
+    background: url('../cssmenumaker/images/nav-bg.png');
+}
+
+
+#marca-dagua {
+    background: url('../img/background-padrao.jpg') no-repeat center center;
+    position: fixed;
+    bottom: 0;
+    right: 0;
+    width: 543px;
+    height: 484px;
+}
+
+iframe.oculto {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 0;
+    height: 0;
+    border: none;
+}
+
+#sombra {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: #000000;
+    opacity: 0.8;
+    filter: alpha(opacity=80);
+    z-index: 998;
+}
+
+#aguarde {
+    display: none;
+    position: fixed;
+    top: 10px;
+    left: 10px;
+    padding: 10px 10px 10px 40px;
+    background: #FFFFFF url('../img/ajax.gif') no-repeat 10px center;
+    border: 1px solid #333333;
+    border-radius: 4px;
+    z-index: 999;
+}
+
+.div-transparente {
+    background-color: transparent !important;
+}
+
+.area-com-1-link {
+    width: 20px;
+}
+
+.area-com-2-links {
+    width: 40px;
+}
+
+.area-com-3-links {
+    width: 50px;
+}
+
+.area-com-4-links {
+    width: 70px;
+}
+
+.area-com-5-links {
+    width: 90px;
+}
+
+.popup {
+    text-align: left;
+    padding: 4px;
+    position: absolute;
+    display: none;
+    background: #ffffff;
+    border: 1px solid #cccccc;
+    border-radius: 3px;
+    width: 190px;
+    z-index: 99;
+}
+
+.popup ul li {
+    list-style: none;
+    margin-left: -20px;
+}
+
+.popup ul li a {
+    text-decoration: none;
+    display: block;
+    padding: 2px;
+    padding-left: 20px;
+    font-size: 90%;
+    border: 1px solid transparent;
+    color: #006699;
+}
+
+.popup ul li a:hover {
+    background: #ffcccc url('../img/glyphicons_016_bin.png') no-repeat 4px center;
+    border: 1px solid #993333;
+    border-radius: 2px;
+    color: #990000;
+}
+
+.input-erro {
+    background: #ffcccc !important;
+    border: 1px solid #993333 !important;
+}
+
+/*
+ * Classe para criar tamanho dinâmico
+ * na célula de uma tabela com os icones
+ * de editar, deletar e outros.
+ */
+.icones-td {
+    white-space: nowrap;
+    width: 1px;
+}
+
+.input-append { width: 100% !important; }
+.input-append .add-on { margin-left: -26px !important; z-index: 99 !important; }
+
+.link-sair {color: #ccc}
+.link-sair:hover {color: #fcfcfc}
+
+#linha-rodape {border: none;background-color: #fff;}
+
+i.fa { margin-right: 5px; }
+
+#content { background: #fff; padding-top: 50px; }
+
+footer { padding: 10px 0px; }
+
+.panel-heading { font-weight: bold; }

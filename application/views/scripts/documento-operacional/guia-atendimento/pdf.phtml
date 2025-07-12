@@ -1,0 +1,117 @@
+<?php
+require_once 'MPDF/mpdf.php';
+$localScripts = '../application/views/scripts/documento-operacional/';
+require_once "{$localScripts}include/funcoes.php";
+
+$htmlRodape = obterHtmlDoRodapeEmPdf();
+$htmlCabecalho = file_get_contents($localScripts . 'guia-exames/' . 'cabecalho.html');
+
+if (!is_null($this->agenda['horario_global_de'])) {
+
+    $h2 = explode(':', $this->agenda['horario_global_ate']);
+    $h1 = explode(':', $this->agenda['horario_global_de']);
+    $horario = "{$h1[0]}:{$h1[1]} ~ {$h2[0]}:{$h2[1]}";
+
+} else { $horario = "---"; }
+
+$p = new mPDF('utf-8', 'A4', 0, '', 10, 10, 35, 30, 8, 8);
+$p->SetHTMLHeader($htmlCabecalho);
+$p->SetHTMLFooter($htmlRodape);
+$p->setAutoTopMargin = false;
+$p->setAutoBottomMargin = false;
+ob_start();
+?>
+<style>
+    table#tabela tr td { font: normal 12px Arial; border: 0px solid #ccc; }
+    table{border-collapse: collapse; font: normal 11px Arial;width: 100%;}
+    table#tabela tr td.etiqueta { font-weight: bold; padding: 4px; }
+    table#tabela tr td.titulo { text-align: center; font-weight: bold; background: #ddd; }
+    table#tabela tr td.separador { padding: 10px; border: none; }
+    table#tabela tr td.centro { text-align: center; }
+</style>
+<!-- style="page-break-after:always" -->
+
+<div>
+    <table id="tabela" border="0" style="border-collapse: collapse; width: 100%;">
+        <tr>
+            <td colspan="7" style="border: 1px solid #000000; font-size: 12px; text-align: center;"><b>HTMED</b></td>
+        </tr>
+        <tr>
+            <td colspan="7" class="etiqueta" style="border: 1px solid #000000; border-bottom: none; border-left: none; border-right: none;">&nbsp;</td>
+        </tr>
+    </table>
+
+    <table id="tabela" border="0" style="border-collapse: collapse; width: 100%;">
+
+        <tr>
+            <td colspan="1" class="etiqueta" style="border-top: none; border-bottom: none; border-right: none; text-align: right;">CÓDIGO:</td>
+            <td colspan="5" style="border-bottom: none; border-left: none; border-top: none;">&nbsp;<?php echo $this->agenda['fila_cod_prefixo'], $this->agenda['fila_senha'], $this->agenda['fila_cod_sufixo'] ?></td>
+            <td colspan="1" class="etiqueta" style="border-top: none; border-bottom: none; border-right: none; text-align: right;">HORÁRIO: </td>
+            <td colspan="4" style="border-bottom: none; border-left: none; border-top: none;">&nbsp;<?php echo $horario ?></td>
+        </tr>
+
+        <tr>
+            <td colspan="1" class="etiqueta" style="border-top: none; border-bottom: none; border-right: none; text-align: right;">EMPRESA:</td>
+            <td colspan="5" style="border-bottom: none; border-left: none; border-top: none;">&nbsp;<?php echo $this->agenda['empresa_razao'] ?></td>
+            <td colspan="1" class="etiqueta" style="border-top: none; border-bottom: none; border-right: none; text-align: right;">CONTRATO: </td>
+            <td colspan="4" style="border-bottom: none; border-left: none; border-top: none;">&nbsp;<?php echo $this->agenda['contrato_numero'], '-', $this->agenda['contrato_sufixo_numero'] ?></td>
+        </tr>
+
+        <tr>
+            <td class="etiqueta" style=" width: 100px; border-right: none; text-align: right; border-bottom: none;">CPF: </td>
+            <td colspan="2" style="border-left: none; border-right: none; border-bottom: none;">&nbsp;<?php echo Util::cpf($this->agenda['pessoa_cpf']) ?></td>
+            <td class="etiqueta" style=" width: 100px; border-right: none; text-align: right; border-bottom: none;">IDENTIDADE: </td>
+            <td colspan="2" style="border-left: none; border-right: none; border-bottom: none;">&nbsp;<?php echo $this->agenda['pessoa_identidade'] ?></td>
+            <td class="etiqueta" style=" width: 100px; border-right: none; text-align: right; border-bottom: none;">NASC.: </td>
+            <td colspan="5" style="border-left: none; border-right: none; border-bottom: none;">&nbsp;<?php echo Util::dataBR($this->agenda['pessoa_data_nascimento']) ?></td>
+        </tr>
+
+        <tr>
+            <td colspan="1" class="etiqueta" style="border-top: none; border-bottom: none; border-right: none; text-align: right;">NOME: </td>
+            <td colspan="5" style="border-bottom: none; border-left: none; border-top: none;">&nbsp;<?php echo $this->agenda['pessoa_nome'] ?></td>
+            <td colspan="1" class="etiqueta" style="border-top: none; border-bottom: none; border-right: none; text-align: right;">FUNÇÃO: </td>
+            <td colspan="4" style="border-bottom: none; border-left: none; border-top: none;">&nbsp;<?php echo $this->agenda['ppra_item_funcao'] ?></td>
+        </tr>
+
+        <tr>
+            <td class="etiqueta" style=" width: 100px; border-right: none; text-align: right; border-bottom: none;">TIPO EXAME: </td>
+            <td colspan="5" style="border-left: none; border-right: none; border-bottom: none;">&nbsp;<?php echo $this->agenda['tipoexame_nome'] ?></td>
+            <td class="etiqueta" style="border-top: none; border-right: none; text-align: right;">D.AGENDADA: </td>
+            <td colspan="4" style="border-left: none; border-top: none;">&nbsp;<?php echo Util::dataBR($this->agenda['agenda_data_exame']) ?></td>
+        </tr>
+
+        <tr>
+            <td colspan="11" class="separador"></td>
+        </tr>
+
+    </table>
+
+    <table id="tabela" border="0" style="border-collapse: collapse; width: 100%;">
+        <tr>
+            <td colspan="7" class="etiqueta" style="border: none; font-size: 10px; text-align: center; font-weight: none;"><i>Conforme o Programa de Controle de Saúde Ocupacional estamos solicitando os seguintes exames complementares, necessários para esta função:</i></td>
+        </tr>
+    </table>
+
+
+    <div style="width:100%;margin: 0px;padding: 0px;overflow: auto">
+        <?php foreach ($this->procedimentos as $itemProduto): ?>
+            <div style="float: left;border: 1px solid #000;margin:0px;height: 100px;width: 24.5%;font-size: 10px;font-weight: bold;text-align: center"><?php echo $itemProduto['produto_nome'] ?></div>
+        <?php endforeach ?>
+    </div>
+
+    <?php if (isset($this->agenda['agenda_observacao']) && strlen($this->agenda['agenda_observacao']) > 0): ?>
+        <hr/>
+        <table id="tabela" border="0" style="border-collapse: collapse; width: 100%;">
+            <tr>
+                <td colspan="7" class="etiqueta" style="border: none; font-size: 10px; text-align: left; font-weight: none;"><?php echo $this->agenda['agenda_observacao'] ?></td>
+            </tr>
+        </table>
+    <?php endif ?>
+
+</div>
+
+<?php
+$htmlCorpo = ob_get_clean();
+$htmlCorpo . '</body></html>';
+$p->WriteHTML($htmlCorpo);
+$p->Output();

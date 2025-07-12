@@ -1,0 +1,189 @@
+<script type="text/javascript">
+
+    ConstrutorUrlConsulta.PrefixoUrl = '/esocial/cat/?';
+
+    function ParametrizarExecutarUrlConsulta(pagina) {
+        $(function () {
+            var Params = {
+                paramData: $('#paramData').val(),
+                paramCpf: $('#paramCpf').val(),
+                paramFuncionario: $('#paramFuncionario').val(),
+                paramTipoAcid: $('#paramTipoAcid').val(),
+                paramObito: $('#paramObito').val(),
+                page: (pagina) ? pagina : '1'
+            };
+            ConstrutorUrlConsulta.MapearParametro(Params);
+            ConstrutorUrlConsulta.ExecutarChamadaUrl();
+        });
+    }
+
+    $(function () {
+        $('#paramData, #paramCpf, #paramFuncionario, #paramTipoAcid, #paramObito').blur(function () {
+            ParametrizarExecutarUrlConsulta('1');
+        });
+        $('#filtar-item-grid').click(function () {
+            ParametrizarExecutarUrlConsulta('1');
+        });
+    });
+
+</script>
+
+<style type="text/css">
+    .item-filtro-pesquisa { 
+        box-shadow: none !important; 
+        background: transparent !important; 
+        border: none !important; 
+        border-radius: 0px !important; 
+        margin: 0px !important; 
+        padding: 0px !important; 
+        width: 100%; 
+        float: left;
+        font-size: 11px !important
+    }
+</style>
+
+<?php $like = (isset($_GET["like"]) && !empty($_GET["like"])) ? $_GET["like"] : ''; ?>
+
+<div class="panel panel-primary">
+
+    <div class="panel-heading"><i class="fa fa-calendar"></i>CATs Registradas<a href="/esocial/adicionar" class="btn btn-xs btn-success pull-right"><i class="fa fa-plus"></i>Registrar CAT</a></div>
+  
+    <div class="span8">
+
+        <?php $this->render('configuracao-paginador.php'); ?>
+
+            <table class="table table-hover table-bordered table-condensed">
+                <thead>
+                    <tr>
+                        <th class="text-center">#</th>
+                        <th class="text-center">Data</th>
+                        <th class="text-center">CPF</th>
+                        <th class="text-center">Funcionário</th>
+                        <th class="text-center">Tipo Acidente</th>
+                        <th class="text-center">Óbito</th>
+                        <th class="text-center">Registro de envio</th>
+                    </tr>
+                    <tr style="background: #f5f5f5 !important">
+                        <th style="text-align: center!important"><a id="filtar-item-grid" href="javascript:;"><span class="icon-search"></span></a></th>
+                        <th><input placeholder="Pesquisar Data" maxlength="10" style="text-align: center;" value="<?php echo $this->form['paramData'] ?>" class="item-filtro-pesquisa mask-data" type="text" id="paramData"/></th>
+                        <th><input placeholder="Pesquisar CPF" maxlength="14" style="text-align: center;" value="<?php echo $this->form['paramCpf'] ?>" class="item-filtro-pesquisa" type="text" id="paramCpf"/></th>
+                        <th><input placeholder="Pesquisar Nome" maxlength="255" style="text-align: center;" value="<?php echo $this->form['paramFuncionario'] ?>" class="item-filtro-pesquisa" type="text" id="paramFuncionario"/></th>
+                        <th><input placeholder="Pesquisar Acidente" maxlength="255" style="text-align: center;" value="<?php echo $this->form['paramTipoAcid'] ?>" class="item-filtro-pesquisa" type="text" id="paramTipoAcid"/></th>
+                        <th><input placeholder="Pesquisar Óbito" maxlength="3" style="text-align: center;" value="<?php echo $this->form['paramObito'] ?>" class="item-filtro-pesquisa" type="text" id="paramObito"/></th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php $paginados = []; ?>
+                    <?php foreach ($this->itensPaginados as $i => $item): ?>
+                        <?php $paginados[] = $i; ?>
+                        <tr id="tr<?php echo $i ?>">
+                            <td class="fit">
+                                <a data-toggle="tooltip"  title="CAT" class="btn btn-xs btn-default" target="_blank" href="/esocial/alterar/id/<?php echo $item['esocial_cat_id'] ?>"><i class="fa fa-user no-margin"></i></a>
+                            </td>
+                            <td class="text-center"><?php echo Util::dataBR($item['esocial_cat_dtAcid']) ?></td>
+                            <td class="text-center"><?php echo str_replace($like, "<strong>$like</strong>", preg_replace('/([0-9]{3})([0-9]{3})([0-9]{3})([0-9]{2})/', "$1.$2.$3-$4", $item['pessoa_cpf'])); ?></td>
+                            <td><?php echo $item['pessoa_nome'] ?></td>
+                            <td class="text-center"><?php echo $item['tpAcid'] ?></td>
+                            <td class="text-center"><?php echo $item['indCatObito'] ?></td>
+                            <td class="text-center">
+                                <?php 
+                                    if ($item['envio_data']) {
+                                        $break = explode(' ', $item['envio_data']);
+                                        $data = array_shift($break);
+                                        $hora = array_shift($break);
+                                        #echo Util::dataBR($data) . ' às ' . $hora;
+                                        echo $item['envio_reg'];
+                                    }else{
+                                        echo 'Aguardando...';
+                                    }
+                                ?>                                
+                            </td>
+                        </tr>
+                    <?php endforeach ?>
+                </tbody>
+            </table>
+
+        <?php if (isset($this->itensPaginados) && $this->itensPaginados instanceof Zend_Paginator): ?>
+
+        <style type="text/css">
+
+            .pagination table {
+                /*width: 100%;*/
+            }
+            .pagination table tr td {
+            }
+            .pagination table tr td a {
+                -moz-border-bottom-colors: none;
+                -moz-border-left-colors: none;
+                -moz-border-right-colors: none;
+                -moz-border-top-colors: none;
+                background: none repeat scroll 0 0 #FFFFFF;
+                border-color: #DDDDDD #DDDDDD #DDDDDD -moz-use-text-color;
+                border-image: none;
+                border-style: solid solid solid none;
+                border-width: 1px 1px 1px medium;
+                display: block;
+                padding: 4px 10px;
+                text-align: center;
+                text-decoration: none;
+            }
+            .pagination table tr td a.item-inicial {
+                border: 1px solid #DDDDDD;
+                border-radius: 4px 0 0 4px;
+            }
+            .pagination table tr td a.item-final {
+                border: 1px solid #DDDDDD;
+                border-radius: 0 4px 4px 0;
+            }
+            .pagination table tr td a.inativo {
+                background: none repeat scroll 0 0 #EEEEEE;
+                color: #AAAAAA;
+                cursor: default;
+            }
+            .pagination table tr td a.ativo, .pagination table tr td a.ativo:hover {
+                background: none repeat scroll 0 0 #0099FF;
+                border: 1px solid #006699;
+                color: #FFFFFF;
+            }
+            .pagination table tr td a:hover {
+                background: none repeat scroll 0 0 #EEEEEE;
+            }
+        </style>
+
+            <?php $paginator = $this->itensPaginados->getPages() ?>
+
+            <?php if ($paginator->pageCount): ?>
+                <div class="pagination">
+                    <table>
+                        <tr>
+                            <?php if (isset($paginator->previous)): ?>
+                                <td><a class="item-inicial" onclick="ParametrizarExecutarUrlConsulta('<?php echo $paginator->previous ?>')" href="javascript:;">«</a></td>
+                            <?php else: ?>
+                                <td><a class="item-inicial inativo" href="javascript:void(0);">«</a></td>
+                            <?php endif; ?>
+
+                            <?php foreach ($paginator->pagesInRange as $page): ?>
+                                <?php if ($page != $paginator->current): ?>
+                                    <td><a onclick="ParametrizarExecutarUrlConsulta('<?php echo $page ?>')" href="javascript:;"><?php echo $page ?></a></td>
+                                <?php else: ?>
+                                    <td><a class="ativo" href="javascript:void(0);"><?php echo $page ?></a></td>
+                                <?php endif; ?>
+                            <?php endforeach; ?>
+
+                            <?php if (isset($paginator->next)): ?>
+                                <td><a class="item-final" onclick="ParametrizarExecutarUrlConsulta('<?php echo $paginator->next ?>')" href="javascript:;">»</a></td>
+                            <?php else: ?>
+                                <td><a class="item-final inativo" href="javascript:void(0);">»</a></td>
+                            <?php endif ?>
+
+                        </tr>
+                    </table>
+                </div>
+            <?php endif; ?>
+        <?php endif; ?>
+
+    </div>
+
+</div>
+

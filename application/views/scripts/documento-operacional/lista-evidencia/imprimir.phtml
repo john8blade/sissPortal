@@ -1,0 +1,80 @@
+<?php
+$procuroPor = array('Admissional', 'Demissional', 'Mudança de Função', 'Periodico', 'Retorno Trabalho');
+?>
+<?php ob_start() ?>
+<style>
+    body {border-collapse: collapse; font: normal 11px Arial;width: 100%;}
+    #impressao table {text-align: left;border-collapse: collapse;}
+    #impressao table tr th {text-align: left;background-color: #ddd;border: 1px solid #ccc}
+    #impressao table tr td {text-align: left;border: 1px solid #ccc}
+    table tr td span { display: block; overflow: hidden; }
+</style>
+<div id="impressao">
+    <table border="0" cellpadding="0" cellspacing="1" style="width: 100%;text-align: left;">
+        <thead>
+            <tr>
+                <th>T.Exame</th>
+                <!--
+                <?php # if (!empty($this->especialista)) :  ?>
+                    <th>Data Clínico</th>
+                <?php #else:  ?>
+                    <th>Data Exame</th>
+                <?php #endif;  ?>
+                -->
+                <th>Nome</th>
+                <th>CPF</th>
+                <th>Empresa</th>
+                <th>Função</th>
+                <th>Assinatura</th>
+            </tr>
+        </thead>
+        <tbody>
+
+            <?php foreach ($this->lista as $item) : ?>
+                <tr>
+                    <td style="width: 5%;text-align:  center"><?php echo strtoupper($item['tipoexame_sigla']) ?></td>
+
+                    <?php #if (!empty($this->especialista)) :  ?>
+                <!-- <td><?php #echo ($item['agenda_data_clinico'])   ?></td> -->
+                    <?php #else:  ?>
+                <!-- <td><?php #echo ($item['agenda_data_exame'])   ?></td> -->
+                    <?php #endif;  ?>
+
+                    <td style="width: 20%;white-space: nowrap;overflow: hidden;padding-top: 11px;padding-bottom: 11px;"><?php echo $item['pessoa_nome'] ?></td>
+                    <td style="width: 8%;padding-top: 11px;padding-bottom: 11px;text-align:  center"><?php echo util::cpf($item['pessoa_cpf']) ?></td>
+                    <td style="width: 15%;white-space: nowrap;overflow: hidden;padding-top: 11px;padding-bottom: 11px;"><?php echo $item['empresa_razao'] ?></td>
+                    <td style="width: 20%;white-space: nowrap;overflow: hidden;padding-top: 11px;padding-bottom: 11px;"><?php echo $item['funcao_nome'] ?></td>
+                    <td style="width: 25%;padding-top: 11px;padding-bottom: 11px;"></td>
+                </tr>
+            <?php endforeach; ?>
+        </tbody>
+    </table>
+</div>
+
+<?php
+require_once 'MPDF/mpdf.php';
+$localScripts = '../application/views/scripts/documento-operacional/';
+require_once "{$localScripts}include/funcoes.php";
+
+$htmlRodape = "<span>Página: {PAGENO}/{nbpg} | Quantidade de Registro(s): " .  count($this->lista)."</span>";
+$htmlRodape .= obterHtmlDoRodapeEmPdf();
+$htmlCabecalho = file_get_contents($localScripts . 'lista-evidencia/' . 'cabecalho.html');
+$tipoExame = $this->lista[0]['produto_nome'];
+$filtro = '<div style="font-size:90%;">';
+$filtro .= "<strong>Data Inicial:</strong> {$this->datainicio}";
+$filtro .= "<br/><strong>Data Fim:</strong> {$this->datafim}";
+$filtro .= "<br/><strong>Exame:</strong> {$this->lista[0]['produto_nome']}";
+$filtro .=!empty($this->especialista) ? "<br/><strong>Médico:</strong> {$this->especialista['pessoa_nome']}" : "";
+$filtro .= '</div>';
+$htmlCabecalho = str_replace('<[atributoTipoExame]>', $tipoExame, $htmlCabecalho);
+$htmlCabecalho = str_replace('<[atributoFiltrosSolicitados]>', $filtro, $htmlCabecalho);
+
+$p = new mPDF('utf-8', 'A4-L', 0, '', 10, 10, 35, 30, 8, 8, 'L');
+$p->SetHTMLHeader($htmlCabecalho);
+$p->SetHTMLFooter($htmlRodape);
+$p->setAutoTopMargin = false;
+$p->setAutoBottomMargin = false;
+$html = ob_get_clean();
+$p->WriteHTML($html);
+$p->Output();
+?>

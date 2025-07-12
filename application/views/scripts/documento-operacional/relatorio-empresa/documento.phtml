@@ -1,0 +1,107 @@
+<?php
+if ($this->modo == 1):
+    header("Expires: Mon, 26 Jul 1997 05:00:00 GMT");
+    header("Last-Modified: " . gmdate("D,d M YH:i:s") . " GMT");
+    header("Cache-Control: no-cache, must-revalidate");
+    header("Pragma: no-cache");
+    header("Content-type: application/x-msexcel");
+    header("Content-Disposition: attachment; filename=\"siss" . str_replace("/", "-", $this->url()) . "-" . date("YmdHis") . ".xls\"");
+    header("Content-Description: PHP Generated Data");
+    ob_start();
+endif;
+$dados = $this->resultado['dados'];
+$lista = $this->resultado['lista'];
+$filtro = $this->filtro;
+
+$colspan = 10;
+$colspan = 14;
+$colspan = 18;
+?>
+<style>
+<?php include 'css/documento.css' ?>
+</style>
+
+<?php if ($this->modo == 0): ?>
+    <a href="javascript:window.history.go(-1);void(0);" class="btn btn-success">Voltar</a><hr/>
+<?php endif; ?>
+
+<table border="1" class="largo sem-margem">
+    <tbody>
+
+        <tr>
+            <td class="logo"><img src="/img/logo-relatorio.png"/></td>
+            <td class="titulo" colspan="<?php echo $colspan - 1 ?>"><h1>RELATÓRIO DE EMPRESA</h1></td>
+        </tr>
+
+        <tr><td colspan="<?php echo $colspan ?>">&nbsp;</td></tr>
+
+        <tr>
+            <th colspan="<?php echo $colspan ?>">DADOS</th>
+        </tr>
+
+        <?php foreach ($dados as $label => $valor): ?>
+            <tr>
+                <td class="etiqueta"><?php echo strtoupper($label) ?>:</td>
+                <td class="conteudo" colspan="<?php echo $colspan - 1 ?>"><?php echo $valor ?></td>
+            </tr>
+        <?php endforeach; ?>
+
+        <tr>
+            <th colspan="<?php echo $colspan ?>">FILTROS</th>
+        </tr>
+
+        <?php foreach ($filtro as $label => $valor): ?>
+            <tr>
+                <td class="etiqueta"><?php echo strtoupper($label) ?>:</td>
+                <td class="conteudo" colspan="<?php echo $colspan - 1 ?>"><?php echo $valor ?></td>
+            </tr>
+        <?php endforeach; ?>
+
+        <tr><td colspan="<?php echo $colspan ?>">&nbsp;</td></tr>
+
+        <tr>
+            <th colspan="2">RAZÃO SOCIAL</th>
+            <th colspan="1">NOME FANTASIA</th>
+            <th colspan="1">CNPJ</th>
+            <th colspan="1">UNIDADE</th>
+            <th colspan="1">LOGRADOURO</th>
+            <th colspan="1">BAIRRO</th>
+            <th colspan="1">CIDADE</th>
+            <th colspan="1">UF</th>
+            <th colspan="1">NOME RESPONSAVEL EMPRESA</th>
+            <th colspan="1">TELEFONE RESPONSAVEL EMPRESA</th>
+            <th colspan="1">CELULAR RESPONSAVEL EMPRESA</th>
+            <th colspan="1">E-MAIL RESPONSAVEL EMPRESA</th>
+            <th colspan="1">NOME RESPONSAVEL CONTRATO</th>
+            <th colspan="1">TELEFONE RESPONSAVEL CONTRATO</th>
+            <th colspan="1">CELULAR RESPONSAVEL CONTRATO</th>
+            <th colspan="1">E-MAIL RESPONSAVEL CONTRATO</th>
+        </tr>
+
+        <?php foreach ($lista as $item): ?>
+            <tr>
+                <td colspan="2"><?php echo $item['empresa_razao'] ?></td>
+                <td colspan="1"><?php echo $item['empresa_fantasia'] ?></td>
+                <td colspan="1"><?php echo Util::cnpj($item['empresa_cnpj']) ?></td>
+                <td colspan="1"><?php echo $item['unidade_sigla'] ?></td>
+                <td colspan="1"><?php echo $item['endereco_logradouro'] . ', ' . $item['empresa_numero'] ?></td>
+                <td colspan="1"><?php echo $item['endereco_bairro'] ?></td>
+                <td colspan="1"><?php echo $item['endereco_cidade'] ?></td>
+                <td colspan="1"><?php echo $item['endereco_uf'] ?></td>
+                <td colspan="1"><?php echo $item['responsavel_empresa_nome'] ?></td>
+                <td colspan="1"><?php echo $item['responsavel_empresa_telefone'] ?></td>
+                <td colspan="1"><?php echo $item['responsavel_empresa_celular'] ?></td>
+                <td colspan="1"><?php echo $item['responsavel_empresa_email'] ?></td>
+                <td colspan="1"><?php echo $item['responsavel_contrato_nome'] ?></td>
+                <td colspan="1"><?php echo $item['responsavel_contrato_telefone'] ?></td>
+                <td colspan="1"><?php echo $item['responsavel_contrato_celular'] ?></td>
+                <td colspan="1"><?php echo $item['responsavel_contrato_email'] ?></td>
+            </tr>
+        <?php endforeach; ?>
+
+    </tbody>
+</table>
+<?php
+if ($this->modo == 1):
+    echo utf8_decode(ob_get_clean());
+endif;

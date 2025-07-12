@@ -1,0 +1,204 @@
+<?php
+require_once "../application/views/scripts/documento-operacional/include/funcoes.php";
+$rodape = '<div class="div_fonte_menor">' . obterHtmlDoRodapeEmPdf() . '</div>';
+
+include 'MPDF/mpdf.php';
+
+$colspan = '3';
+
+$mpdf = new mPDF('utf-8', 'A4', 0, '', 10, 10, 30, 35, 9, 9);
+$mpdf->SetImportUse();
+$mpdf->SetDocTemplate('avaliacao.pdf', true);
+$mpdf->SetHTMLHeader('<table id="topo"><tr><td>&nbsp;</td></tr><tr><td align="right">Página {PAGENO} / {nbpg}</td></tr></table>');
+$mpdf->SetHTMLFooter($rodape);
+$mpdf->setAutoTopMargin = false;
+$mpdf->setAutoBottomMargin = false;
+
+$css = <<<CSS
+<style type="text/css">
+    #topo { width: 100%; }
+    h1 { text-align: center; font-size: 150%; }
+    body, table tr td, table tr th { font-family: Arial; font-size: 10px; color: #003377; }
+    table { border-collapse: collapse; }
+    table.largo { width: 100%; }
+    table tr th.cpf { width: 80px; }
+    table tr th.assinatura { width: 200px; }
+    table tr td { padding: 2px; white-space: nowrap; }
+    table.alto tr td { padding: 8px 4px; }
+    table tr td.justificado { text-align: justify; }
+    table tr td.titulo { font-size: 100%; font-weight: bold; text-align: center; border-top: 2px solid #003377; border-bottom: 2px solid #003377; }
+    table tr td#conteudo { height: 650px; vertical-align: top; }
+    table tr td.centro { text-align: center; }
+    table tr td.fonte_menor { font-size: 60%; }
+    table tr td.fonte_maior { font-size: 120%; }
+    table.table_fonte_maior tr td { font-size: 120%; }
+    .div_fonte_menor table tr td { font-size: 100%; }
+    .entre_linhas { line-height: 5px !important; }
+</style>
+CSS;
+$mpdf->WriteHTML($css);
+
+list($data1, $data2) = array(Util::dataBR($this->agenda['treinamento_agenda_data_inicio']), Util::dataBR($this->agenda['treinamento_agenda_data_fim']));
+$periodo = is_null($data2) ? (' em ' . $data1) : ($data1 . ' à ' . $data2);
+$agenda_produto = $this->agenda['produto_nome'];
+$agenda_instrutor = $this->agenda['instrutor'];
+$agenda_carga_horaria = $this->agenda['treinamento_agenda_carga_horaria'] . ' horas.';
+$hora_inicio = Util::hora($this->agenda['treinamento_agenda_hora_inicio']);
+$hora_fim = Util::hora($this->agenda['treinamento_agenda_hora_fim']);
+$cabecalho = <<<HTML
+<table>
+    <tbody>
+        <tr>
+            <td><strong>TREINAMENTO:</strong></td>
+            <td width="450">{$agenda_produto}</td>
+            <td><strong>CARGA HORÁRIA:</strong></td>
+            <td>{$agenda_carga_horaria}</td>
+        <tr>
+            <td><strong>DATA/PERÍODO:</strong></td>
+            <td colspan="3">{$periodo}</td>
+        </tr>
+        <tr>
+            <td><strong>HORÁRIO:</strong></td>
+            <td colspan="3">{$hora_inicio} às {$hora_fim}</td>
+        </tr>
+        <tr>
+            <td><strong>INSTRUTOR:</strong></td>
+            <td colspan="3">{$agenda_instrutor}</td>
+        </tr>
+        <tr>
+            <td><strong>OBSERVAÇÕES:</strong></td>
+            <td colspan="3"></td>
+        </tr>
+    </tbody>
+</table>
+<hr/>
+HTML;
+
+foreach ($this->lista as $i => $empresa) {
+
+    $mpdf->WriteHTML($cabecalho);
+
+    $mpdf->WriteHTML('<h1>AVALIAÇÃO DE ALUNOS</h1>');
+
+    # EMPRESA
+    $mpdf->WriteHTML('<table class="table_fonte_maior">');
+    $mpdf->WriteHTML('<tbody>');
+    $mpdf->WriteHTML('<tr>');
+    $mpdf->WriteHTML('<td><strong>EMPRESA:</strong></td>');
+    $mpdf->WriteHTML('<td>' . $empresa['empresa_razao'] . '</td>');
+    $mpdf->WriteHTML('</tr>');
+    $mpdf->WriteHTML('<tr>');
+    $mpdf->WriteHTML('<td><strong>CNPJ:</strong></td>');
+    $mpdf->WriteHTML('<td>' . Util::cnpj($empresa['empresa_cnpj']) . '</td>');
+    $mpdf->WriteHTML('</tr>');
+    $mpdf->WriteHTML('<tr><td colspan="' . $colspan . '">&nbsp;</td></tr>');
+    $mpdf->WriteHTML('</tbody>');
+    $mpdf->WriteHTML('</table>');
+
+    # THEAD
+    $mpdf->WriteHTML('<table border="1" class="largo">');
+    $mpdf->WriteHTML('<thead>');
+    $mpdf->WriteHTML('<tr>');
+    $mpdf->WriteHTML('<th class="cpf">CPF</th>');
+    $mpdf->WriteHTML('<th>NOME</th>');
+    $mpdf->WriteHTML('<th class="nota">NOTA</th>');
+    $mpdf->WriteHTML('<th>APROVEITAMENTO</th>');
+    $mpdf->WriteHTML('<th>RESULTADO</th>');
+    $mpdf->WriteHTML('</tr>');
+    $mpdf->WriteHTML('</thead>');
+    $mpdf->WriteHTML('<tbody>');
+
+    # ALUNOS
+    foreach ($empresa['alunos'] as $aluno) {
+
+        $cpf = Util::cpf($aluno['pessoa_cpf']);
+        $mpdf->WriteHTML('<tr>');
+        $mpdf->WriteHTML('<td class="centro">' . $cpf . '</td>');
+        $mpdf->WriteHTML('<td>' . $aluno['pessoa_nome'] . '</td>');
+        $mpdf->WriteHTML('<td class="centro">' . Util::preencherComZero($aluno['treinamento_agendado_nota'], 2) . '</td>');
+        $mpdf->WriteHTML('<td class="centro">' . Util::preencherComZero($aluno['treinamento_agendado_indice_aproveitamento'], 3) . '%</td>');
+        $mpdf->WriteHTML('<td class="centro">' . ($aluno['treinamento_agendado_aprovado'] == '1' ? 'APROVADO' : 'REPROVADO') . '</td>');
+        $mpdf->WriteHTML('</tr>');
+    }
+
+    # FIM
+    $mpdf->WriteHTML('</tbody>');
+    $mpdf->WriteHTML('</table>');
+    $pesquisa = $this->pesquisa;
+    ob_start();
+    ?>
+    <table border="1" class="largo">
+
+        <thead>
+            <tr>
+                <th>ITEM</th>
+                <th>ÓTIMO</th>
+                <th>MUITO BOM</th>
+                <th>RAZOÁZEL</th>
+                <th>RUIM</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            <tr>
+                <td>CONTEÚDO DO TREINAMENTO</td>
+                <td class="centro"><?php echo @$pesquisa['treinamento_pesquisa_conteudo_treinamento_3'] ?></td>
+                <td class="centro"><?php echo @$pesquisa['treinamento_pesquisa_conteudo_treinamento_2'] ?></td>
+                <td class="centro"><?php echo @$pesquisa['treinamento_pesquisa_conteudo_treinamento_1'] ?></td>
+                <td class="centro"><?php echo @$pesquisa['treinamento_pesquisa_conteudo_treinamento_0'] ?></td>
+            </tr>
+            <tr>
+                <td>OS RECURSOS UTILIZADOS</td>
+                <td class="centro"><?php echo @$pesquisa['treinamento_pesquisa_recursos_utilizados_3'] ?></td>
+                <td class="centro"><?php echo @$pesquisa['treinamento_pesquisa_recursos_utilizados_2'] ?></td>
+                <td class="centro"><?php echo @$pesquisa['treinamento_pesquisa_recursos_utilizados_1'] ?></td>
+                <td class="centro"><?php echo @$pesquisa['treinamento_pesquisa_recursos_utilizados_0'] ?></td>
+            </tr>
+            <tr>
+                <td>A DIDÁTICA DO INSTRUTOR</td>
+                <td class="centro"><?php echo @$pesquisa['treinamento_pesquisa_didatica_do_instrutor_3'] ?></td>
+                <td class="centro"><?php echo @$pesquisa['treinamento_pesquisa_didatica_do_instrutor_2'] ?></td>
+                <td class="centro"><?php echo @$pesquisa['treinamento_pesquisa_didatica_do_instrutor_1'] ?></td>
+                <td class="centro"><?php echo @$pesquisa['treinamento_pesquisa_didatica_do_instrutor_0'] ?></td>
+            </tr>
+            <tr>
+                <td>AMBIENTE</td>
+                <td class="centro"><?php echo @$pesquisa['treinamento_pesquisa_ambiente_3'] ?></td>
+                <td class="centro"><?php echo @$pesquisa['treinamento_pesquisa_ambiente_2'] ?></td>
+                <td class="centro"><?php echo @$pesquisa['treinamento_pesquisa_ambiente_1'] ?></td>
+                <td class="centro"><?php echo @$pesquisa['treinamento_pesquisa_ambiente_0'] ?></td>
+            </tr>
+        </tbody>
+
+        <tfooter>
+            <tr>
+                <td><strong>PARCIAL</strong></td>
+                <td class="centro"><?php echo @$pesquisa['treinamento_pesquisa_ambiente_0'] ?></td>
+                <td class="centro"><?php echo @$pesquisa['treinamento_pesquisa_ambiente_0'] ?></td>
+                <td class="centro"><?php echo @$pesquisa['treinamento_pesquisa_ambiente_0'] ?></td>
+                <td class="centro"><?php echo @$pesquisa['treinamento_pesquisa_ambiente_0'] ?></td>
+            </tr>
+            <tr>
+                <td><strong>TOTAL</strong></td>
+                <td class="centro" colspan="2"><?php echo @$pesquisa['treinamento_pesquisa_total_2_3'] ?></td>
+                <td class="centro" colspan="2"><?php echo @$pesquisa['treinamento_pesquisa_total_0_1'] ?></td>
+            </tr>
+            <tr class="verde">
+                <td><strong>ÍNDICE DE SATISFAÇÃO</strong></td>
+                <td class="centro" colspan="4"><strong><?php echo @$pesquisa['treinamento_pesquisa_indice'] ?>%</strong></td>
+            </tr>
+        </tfooter>
+
+    </table>
+    <?php
+    $mpdf->WriteHTML('<h1>AVALIAÇÃO DO TREINAMENTO</h1>');
+    $mpdf->WriteHTML(ob_get_clean());
+    $mpdf->WriteHTML('<h1>CONTEÚDO PROGRAMÁTICO</h1>');
+    $mpdf->WriteHTML('<div class="entre_linhas">' . $this->agenda['produto_descricao'] . '</div>');
+    if (isset($this->lista[$i + 1])) {
+        $mpdf->WriteHTML('<pagebreak resetpagenum="1" suppress="off" />');
+        //$mpdf->AddPage();
+    }
+}
+
+$mpdf->Output();

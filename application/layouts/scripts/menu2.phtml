@@ -1,0 +1,38 @@
+<?php
+$menus = array(
+    array('Home', '/index/', 'icon-home icon-white'),
+    array('Meu Contrato', '/contrato/', 'icon-briefcase icon-white'),
+    array('Minha Agenda', '/agenda/', 'icon-calendar icon-white'),
+    array('Meus Funcionarios', '/funcionario/', 'icon-user icon-white'),
+    array('Minhas Faturas', '/fatura/', 'icon-file icon-white'),
+    array('Meus Documentos', '/documento/', 'icon-folder-close icon-white'),
+    array('Meus Relatórios', '/relatorio/', 'icon-th-large icon-white')
+);
+$subMenu = array(
+    array('Meu Contrato', '/index/', 'icon-briefcase icon-white'),
+    array('Minha Agenda', '/agenda/', 'icon-calendar icon-white')
+);
+?>
+<style>
+    #logo { font-size: 26px !important; padding: 17px 30px !important; }
+    #logo:hover {
+        background: none !important;
+        height: 26px !important;
+        padding-top: 21px !important;
+        color: #fff !important;
+        text-shadow: none !important;
+    }
+</style>
+<div id='cssmenu' style="padding: 0px; height: 35px; margin-bottom: 30px">
+    <ul style="">
+        <li><a href="/" id="logo">SISS</a></li>
+        <?php foreach ($menus as $item): ?>
+            <li style="font-size: 14px; padding: 0px" <?php echo (strtolower('/' . $this->mapeamentoAcesso['controlador'] . '/') == $item[1]) ? 'class="active"' : null ?>><a style="font-size: 12px" href="<?php echo $item[1] ?>"><i class="<?php echo $item[2] ?>"></i>&nbsp;<span><?php echo $item[0] ?></span></a></li>
+        <?php endforeach ?>
+        <li><a href='/Auth/logout'><i class="icon-lock icon-white"></i>&nbsp;<span>Sair</span></a></li>
+        <li style="float: right; padding: 15px; color: #fff;">
+            <p><?php echo $_SESSION['empresa']['empresa_razao'] ?></p>
+            <p><?php echo $_SESSION['contrato_responsavel_nome'] ?></p>
+        </li>
+    </ul>
+</div>
