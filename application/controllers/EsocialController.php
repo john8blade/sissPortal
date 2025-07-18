@@ -30,25 +30,10 @@ class EsocialController extends Controller {
             'paramResponsavel' => $responsavel
         ];
 
-        $dt = null;
-        if (strlen($data) >= 10) {
-            $dt = Util::dataBD($data);
+        $filtro = '';
+        if (!empty($responsavel)) {
+            $filtro .= " AND (p.pessoa_nome LIKE '%{$responsavel}%' OR p.pessoa_cpf LIKE '%{$responsavel}%')";
         }
-        /*
-        $filtro = " AND c.contrato_id = ". $atributos['contrato_id'];
-        if (!empty($evento)) {
-            $filtro .= " AND etp.esocial_tipoevento_nome LIKE '%{$evento}%'";
-        }
-        $filtro .= " AND etp.esocial_tipoevento_nome LIKE '%{$dt}%'";
-        $filtro .= " AND p.pessoa_nome LIKE '%{$responsavel}%'";
-        */
-
-        $filtro = " AND et.fk_contrato_id = ". $atributos['contrato_id'];
-        if (!empty($evento)) {
-            $filtro .= " AND tp.esocial_tipoevento_nome LIKE '%{$evento}%'";
-        }
-        #$filtro .= " AND etp.esocial_tipoevento_nome LIKE '%{$dt}%'";
-        #$filtro .= " AND p.pessoa_nome LIKE '%{$responsavel}%'";
         
         try {
             $funcionarios = $FuncionarioModel->xobter([
@@ -59,7 +44,7 @@ class EsocialController extends Controller {
                 "funcionario.fk_contrato_id = {$_SESSION['empresa']['fk_contrato_id']}"
             ], 'ORDER BY pessoa.pessoa_nome ASC');
 
-            $consulta = $EsocialModel->obterTodosContrato($filtro);
+            $consulta = $EsocialModel->obterTodosContrato($atributos['contrato_id'], $filtro);
             $eventos = $TipoEvtModel->obter(['nome', 'detalhe', 'id'], 'ORDER BY esocial_tipoevento.esocial_tipoevento_nome DESC');
             $resultadoPaginado = Zend_Paginator::factory($consulta);
             $resultadoPaginado->setCurrentPageNumber($pagina);
@@ -74,6 +59,7 @@ class EsocialController extends Controller {
         $this->view->itensPaginados = $resultadoPaginado;
         $this->view->like           = '';
         $this->view->form           = $form;
+        $this->view->params         = $this->getAllParams();
 
     }
 

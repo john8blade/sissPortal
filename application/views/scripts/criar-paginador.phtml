@@ -1,28 +1,33 @@
-<script>
-    var filtros = JSON.stringify(obterFiltros());
-</script>
 <?php if (isset($this->itensPaginados) && $this->itensPaginados instanceof Zend_Paginator): ?>
 
-    <?php $paginator = $this->itensPaginados->getPages() ?>
+    <?php
+    $paginator = $this->itensPaginados->getPages();
+    // Prepara os parâmetros da URL para serem mesclados com os parâmetros do post
+    $urlParams = !empty($this->params) ? $this->params : [];
+    unset($urlParams['module']);
+    unset($urlParams['controller']);
+    unset($urlParams['action']);
+    unset($urlParams['page']);
+    ?>
 
     <?php if ($paginator->pageCount): ?>
         <ul class="pagination">
             <?php if (isset($paginator->previous)): ?>
-                <li><a class="item-inicial" href="javascript:;" onclick="post('<?php echo $this->url() ?>', {page: '<?php echo $paginator->previous ?>', like: '<?php echo $this->like ?>', filters: filtros})">«</a></li>
+                <li><a class="item-inicial" href="javascript:;" onclick="post('<?php echo $this->url() ?>', <?php echo json_encode(array_merge($urlParams, ['page' => $paginator->previous, 'like' => $this->like])) ?>)">«</a></li>
             <?php else: ?>
                 <li><a class="disabled" href="javascript:void(0);">«</a></li>
             <?php endif; ?>
 
             <?php foreach ($paginator->pagesInRange as $page): ?>
                 <?php if ($page != $paginator->current): ?>
-                    <li><a href="javascript:;" onclick="post('<?php echo $this->url() ?>', {page: '<?php echo $page ?>', like: '<?php echo $this->like ?>', filters: filtros})"><?php echo $page ?></a></li>
+                    <li><a href="javascript:;" onclick="post('<?php echo $this->url() ?>', <?php echo json_encode(array_merge($urlParams, ['page' => $page, 'like' => $this->like])) ?>)"><?php echo $page ?></a></li>
                 <?php else: ?>
                     <li class="active"><a href="javascript:void(0);"><?php echo $page ?></a></li>
                 <?php endif; ?>
             <?php endforeach; ?>
 
             <?php if (isset($paginator->next)): ?>
-                <li><a href="javascript:;" onclick="post('<?php echo $this->url() ?>', {page: '<?php echo $paginator->next ?>', like: '<?php echo $this->like ?>', filters: filtros})">»</a></li>
+                <li><a href="javascript:;" onclick="post('<?php echo $this->url() ?>', <?php echo json_encode(array_merge($urlParams, ['page' => $paginator->next, 'like' => $this->like])) ?>)">»</a></li>
             <?php else: ?>
                 <li><a class="disabled" href="javascript:void(0);">»</a></li>
                 <?php endif ?>

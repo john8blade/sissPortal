@@ -2,43 +2,65 @@
 
 class Application_Model_Esocial extends Zend_Db_Table {
 
-    public function obterTodosContrato($filtro) {
-        /*
-        $comando = "SELECT 
-                        e.empresa_id,
-                        e.empresa_cnpj,
-                        e.empresa_razao, 
-                        c.contrato_id,
-                        c.contrato_numero,
-                        etp.esocial_tipoevento_nome,
-                        ev.esocial_envio_datahora, 
-                        ev.esocial_envio_recibo,
-                        ev.esocial_envio_id,
-                        p.pessoa_nome
-                    FROM esocial_envio ev 
-                        JOIN esocial_tipoevento etp ON etp.esocial_tipoevento_id = ev.fk_tipoevento_id
-                        LEFT JOIN contratante ct ON ct.fk_empresa_id = ev.fk_empresa_id
-                        LEFT JOIN usuario u ON u.usuario_id = ev.fk_usuario_id
-                        LEFT JOIN pessoa p ON p.pessoa_id = u.fk_pessoa_id
-                        JOIN empresa e ON e.empresa_id = ev.fk_empresa_id
-                        JOIN contrato c ON c.contrato_id = ct.fk_contrato_id
-                    WHERE ev.esocial_envio_status = 0
-                        {$filtro}                                                
-                    ORDER BY e.empresa_razao ASC, ev.esocial_envio_datahora DESC";
-        */
-        $comando = "SELECT 
-                    et.esocial_envio_tecnospeed_id,
-                    tp.esocial_tipoevento_nome,
-                    et.esocial_envio_tecnospeed_datahora,
-                    #DATE_FORMAT(et.esocial_envio_tecnospeed_datahora,'%d/%m/%Y') AS 'esocial_envio_tecnospeed_datahora',
-                    et.esocial_envio_tecnospeed_disparo_id
-                    FROM esocial_envio_tecnospeed et
-                    JOIN esocial_tipoevento tp ON tp.esocial_tipoevento_id = et.fk_tipoevento_id 
-                        AND tp.esocial_tipoevento_status = 0
-                    WHERE et.esocial_envio_tecnospeed_status = 0
-                    {$filtro}
-                    ORDER BY et.esocial_envio_tecnospeed_datahora DESC
-                    ";
+    public function obterTodosContrato($contrato_id, $filtro = '') {
+        
+        $comando = "
+        SELECT
+            p.pessoa_nome,
+            p.pessoa_cpf,
+            f.funcionario_motivo_inativacao,
+            GROUP_CONCAT(DISTINCT CASE WHEN ev.esocial_tipoevento_nome = 'S2210' THEN CONCAT(ev.evento_id, '|', ev.data_hora) END ORDER BY ev.data_hora SEPARATOR ';') AS eventos_s2210,
+            GROUP_CONCAT(DISTINCT CASE WHEN ev.esocial_tipoevento_nome = 'S2220' THEN CONCAT(ev.evento_id, '|', ev.data_hora) END ORDER BY ev.data_hora SEPARATOR ';') AS eventos_s2220,
+            GROUP_CONCAT(DISTINCT CASE WHEN ev.esocial_tipoevento_nome = 'S2240' THEN CONCAT(ev.evento_id, '|', ev.data_hora) END ORDER BY ev.data_hora SEPARATOR ';') AS eventos_s2240
+        FROM contrato c
+        JOIN funcionario f ON f.fk_contrato_id = c.contrato_id AND f.funcionario_status = 0
+        JOIN pessoa p ON p.pessoa_id = f.fk_pessoa_id AND p.pessoa_status = 0
+        LEFT JOIN (
+            -- Eventos da ALOCAÇÃO (S2210, S2240)
+            SELECT
+                p.pessoa_id,
+                et.esocial_tipoevento_nome,
+                en.esocial_envio_tecnospeed_datahora AS data_hora,
+                en.esocial_envio_tecnospeed_id AS evento_id
+            FROM contrato c
+            JOIN funcionario f ON f.fk_contrato_id = c.contrato_id AND f.funcionario_status = 0
+            JOIN pessoa p ON p.pessoa_id = f.fk_pessoa_id AND p.pessoa_status = 0
+            JOIN alocacao al ON al.fk_funcionario_id = f.funcionario_id
+            JOIN esocial_detalhe_envio ed ON ed.fk_alocacao_id = al.alocacao_id AND ed.esocial_detalhe_envio_status = 0
+            JOIN esocial_envio_tecnospeed en ON en.esocial_envio_tecnospeed_id = ed.fk_esocial_envio_tecnospeed_id AND en.esocial_envio_tecnospeed_status = 0
+            JOIN esocial_tipoevento et ON et.esocial_tipoevento_id = ed.fk_esocial_tipoevento_id_id AND et.esocial_tipoevento_status = 0
+            WHERE c.contrato_id = {$contrato_id}
+              AND c.contrato_status = 0
+              AND et.esocial_tipoevento_nome IN ('S2210', 'S2240')
+
+            UNION ALL
+
+            -- Eventos da AGENDA (S2220)
+            SELECT
+                p.pessoa_id,
+                et.esocial_tipoevento_nome,
+                en.esocial_envio_tecnospeed_datahora AS data_hora,
+                en.esocial_envio_tecnospeed_id AS evento_id
+            FROM contrato c
+            JOIN funcionario f ON f.fk_contrato_id = c.contrato_id AND f.funcionario_status = 0
+            JOIN pessoa p ON p.pessoa_id = f.fk_pessoa_id AND p.pessoa_status = 0
+            JOIN agenda a ON a.fk_pessoa_id = p.pessoa_id
+            JOIN esocial_detalhe_envio ed ON ed.fk_agenda_id = a.agenda_id AND ed.esocial_detalhe_envio_status = 0
+            JOIN esocial_envio_tecnospeed en ON en.esocial_envio_tecnospeed_id = ed.fk_esocial_envio_tecnospeed_id AND en.esocial_envio_tecnospeed_status = 0
+            JOIN esocial_tipoevento et ON et.esocial_tipoevento_id = ed.fk_esocial_tipoevento_id_id
+            WHERE c.contrato_id = {$contrato_id}
+              AND c.contrato_status = 0
+              AND et.esocial_tipoevento_nome = 'S2220'
+        ) AS ev ON ev.pessoa_id = p.pessoa_id
+        WHERE c.contrato_id = {$contrato_id}
+          AND c.contrato_status = 0
+          {$filtro}
+        GROUP BY
+            p.pessoa_nome,
+            p.pessoa_cpf
+        ORDER BY
+            p.pessoa_nome ASC;
+        ";
         $dados = $this->getDefaultAdapter()->fetchAll($comando);
         return $dados;
     }
