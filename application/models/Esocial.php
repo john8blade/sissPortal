@@ -29,7 +29,7 @@ class Application_Model_Esocial extends Zend_Db_Table {
             JOIN esocial_detalhe_envio ed ON ed.fk_alocacao_id = al.alocacao_id AND ed.esocial_detalhe_envio_status = 0
             JOIN esocial_envio_tecnospeed en ON en.esocial_envio_tecnospeed_id = ed.fk_esocial_envio_tecnospeed_id AND en.esocial_envio_tecnospeed_status = 0
             JOIN esocial_tipoevento et ON et.esocial_tipoevento_id = ed.fk_esocial_tipoevento_id_id AND et.esocial_tipoevento_status = 0
-            WHERE c.contrato_id = {$contrato_id}
+            WHERE en.fk_contrato_id = {$contrato_id}
               AND c.contrato_status = 0
               AND et.esocial_tipoevento_nome IN ('S2210', 'S2240')
 
@@ -48,7 +48,7 @@ class Application_Model_Esocial extends Zend_Db_Table {
             JOIN esocial_detalhe_envio ed ON ed.fk_agenda_id = a.agenda_id AND ed.esocial_detalhe_envio_status = 0
             JOIN esocial_envio_tecnospeed en ON en.esocial_envio_tecnospeed_id = ed.fk_esocial_envio_tecnospeed_id AND en.esocial_envio_tecnospeed_status = 0
             JOIN esocial_tipoevento et ON et.esocial_tipoevento_id = ed.fk_esocial_tipoevento_id_id
-            WHERE c.contrato_id = {$contrato_id}
+            WHERE en.fk_contrato_id = {$contrato_id}
               AND c.contrato_status = 0
               AND et.esocial_tipoevento_nome = 'S2220'
         ) AS ev ON ev.pessoa_id = p.pessoa_id
