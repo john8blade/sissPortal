@@ -132,7 +132,14 @@
             
             <div class="row">
                 <div class="table-responsive">
-                    <table class="table table-striped table-hover table-bordered">
+                    <table class="table table-striped table-hover table-bordered" style="table-layout: fixed; width: 100%;">
+                        <colgroup>
+                            <col style="width: 25%;">
+                            <col style="width: 15%;">
+                            <col style="width: 20%;">
+                            <col style="width: 20%;">
+                            <col style="width: 20%;">
+                        </colgroup>
                         <thead>
                             <tr>
                                 <th style="text-align: left;">Nome</th>
@@ -155,11 +162,13 @@
                                         <?php
                                         if (!empty($item['eventos_s2210'])) {
                                             $eventos = explode(';', $item['eventos_s2210']);
+                                            echo '<div style="display: flex; flex-wrap: wrap;">';
                                             foreach ($eventos as $evento) {
                                                 list($id, $datetime) = explode('|', $evento);
                                                 $data = explode(' ', $datetime)[0];
-                                                echo '<a href="/documento-operacional/esocial-recibo/' . $id . '" target="_blank" style="margin: 0 5px;">' . Util::dataBR($data) . '</a>';
+                                                echo '<a href="/documento-operacional/esocial-recibo/' . $id . '" target="_blank" style="margin: 0 5px 5px 0;">' . Util::dataBR($data) . '</a>';
                                             }
+                                            echo '</div>';
                                         }
                                         ?>
                                     </td>
@@ -167,11 +176,17 @@
                                         <?php
                                         if (!empty($item['eventos_s2220'])) {
                                             $eventos = explode(';', $item['eventos_s2220']);
+                                            echo '<div style="display: flex; flex-wrap: wrap;">';
                                             foreach ($eventos as $evento) {
                                                 list($id, $datetime) = explode('|', $evento);
                                                 $data = explode(' ', $datetime)[0];
-                                                echo '<a href="/documento-operacional/esocial-recibo/' . $id . '" target="_blank" style="margin: 0 5px;">' . Util::dataBR($data) . '</a>';
+                                                if ($id == 'Sem esocial_envio_tecnospeed_id') {
+                                                    echo '<span style="margin: 0 5px 5px 0;">' . Util::dataBR($data) . '</span>';
+                                                } else {
+                                                    echo '<a href="/documento-operacional/esocial-recibo/' . $id . '" target="_blank" style="margin: 0 5px 5px 0;">' . Util::dataBR($data) . '</a>';
+                                                }
                                             }
+                                            echo '</div>';
                                         }
                                         ?>
                                     </td>
@@ -179,11 +194,13 @@
                                         <?php
                                         if (!empty($item['eventos_s2240'])) {
                                             $eventos = explode(';', $item['eventos_s2240']);
+                                            echo '<div style="display: flex; flex-wrap: wrap;">';
                                             foreach ($eventos as $evento) {
                                                 list($id, $datetime) = explode('|', $evento);
                                                 $data = explode(' ', $datetime)[0];
-                                                echo '<a href="/documento-operacional/esocial-recibo/' . $id . '" target="_blank" style="margin: 0 5px;">' . Util::dataBR($data) . '</a>';
+                                                echo '<a href="/documento-operacional/esocial-recibo/' . $id . '" target="_blank" style="margin: 0 5px 5px 0;">' . Util::dataBR($data) . '</a>';
                                             }
+                                            echo '</div>';
                                         }
                                         ?>
                                     </td>
