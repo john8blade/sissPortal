@@ -1,8 +1,34 @@
 <script type="text/javascript">
+    function ParametrizarExecutarUrlConsulta(pagina) {
+        var url = '/fatura/index?page=' + (pagina || '1');
+        
+        var filtros = {
+            'filtro-empresa': document.getElementById('filtro-empresa').value,
+            'filtro-data-periodo': document.getElementById('filtro-data-periodo').value,
+            'filtro-data-vencimento': document.getElementById('filtro-data-vencimento').value,
+            'filtro-data-pagamento': document.getElementById('filtro-data-pagamento').value,
+            'filtro-status': document.getElementById('filtro-status').value
+        };
+
+        var filtersObject = {};
+        for (var key in filtros) {
+            if (filtros.hasOwnProperty(key) && filtros[key]) {
+                filtersObject[key] = filtros[key];
+            }
+        }
+        
+        if (Object.keys(filtersObject).length > 0) {
+            // O controller espera os filtros como um JSON string
+            url += '&filters=' + encodeURIComponent(JSON.stringify(filtersObject));
+        }
+
+        window.location.href = url;
+    }
 
     $(function () {
+        // Ao mudar um filtro, ir para a primeira página com o filtro aplicado
         $(".filtro").on("change", function () {
-            filtrar('/fatura');
+            ParametrizarExecutarUrlConsulta('1');
         });
     });
 
@@ -43,7 +69,7 @@
                         html += '</tr>';
                     }
                     html += '</table>';
-                    html += '<a href="' + LINK_BRADESCO + '" target="_blank">Para atualizar o boleto, clique aqui.</a>';
+                    html += '<a href="' + "<?php echo LINK_BRADESCO; ?>" + '" target="_blank">Para atualizar o boleto, clique aqui.</a>';
                     $("#modal-inner").html(html);
                 } else {
                     $("#modal-inner").html('<div class="alert alert-warning">Nenhum anexo disponível para esta fatura.</div>');
@@ -81,39 +107,72 @@
                 <tr class="tr-filtro">
                     <th><a href="/fatura" class="btn btn-xs btn-danger" data-toggle="tooltip" title="Limpar filtros"><i class="fa fa-remove no-margin"></i></a></th>
                     <th class="text-center"></th>
-                    <th><input class="filtro" type="text" value="<?php echo $this->parametrosPesquisa['filtro-empresa'] ?>" id="filtro-empresa" placeholder="Filtro..."></th>
-                    <th class="text-center"><input class="filtro mask-data" type="text" value="<?php echo $this->parametrosPesquisa['filtro-data-periodo'] ?>" id="filtro-data-periodo" placeholder="Filtro..."></th>
-                    <th class="text-center"><input class="filtro mask-data" type="text" value="<?php echo $this->parametrosPesquisa['filtro-data-vencimento'] ?>" id="filtro-data-vencimento" placeholder="Filtro..."></th>
-                    <th class="text-center"><input class="filtro mask-data" type="text" value="<?php echo $this->parametrosPesquisa['filtro-data-pagamento'] ?>" id="filtro-data-pagamento" placeholder="Filtro..."></th>
+                    <th><input class="filtro" type="text" value="<?php echo isset($this->parametrosPesquisa['filtro-empresa']) ? $this->parametrosPesquisa['filtro-empresa'] : '' ?>" id="filtro-empresa" placeholder="Filtro..."></th>
+                    <th class="text-center"><input class="filtro mask-data" type="text" value="<?php echo isset($this->parametrosPesquisa['filtro-data-periodo']) ? $this->parametrosPesquisa['filtro-data-periodo'] : '' ?>" id="filtro-data-periodo" placeholder="Filtro..."></th>
+                    <th class="text-center"><input class="filtro mask-data" type="text" value="<?php echo isset($this->parametrosPesquisa['filtro-data-vencimento']) ? $this->parametrosPesquisa['filtro-data-vencimento'] : '' ?>" id="filtro-data-vencimento" placeholder="Filtro..."></th>
+                    <th class="text-center"><input class="filtro mask-data" type="text" value="<?php echo isset($this->parametrosPesquisa['filtro-data-pagamento']) ? $this->parametrosPesquisa['filtro-data-pagamento'] : '' ?>" id="filtro-data-pagamento" placeholder="Filtro..."></th>
                     <th>
                         <select class="filtro" id="filtro-status">
                             <option value="0">---</option>
                             <?php foreach ($this->statusFatura as $item) : ?>
-                                <option <?php echo ((int) $item['statusfatura_id'] == (int) $this->parametrosPesquisa['filtro-status']) ? ' selected="selected" ' : ''; ?> value="<?php echo $item['statusfatura_id'] ?>"><?php echo $item['statusfatura_nome'] ?></option>
+                                <option <?php echo (isset($this->parametrosPesquisa['filtro-status']) && (int) $item['statusfatura_id'] == (int) $this->parametrosPesquisa['filtro-status']) ? ' selected="selected" ' : ''; ?> value="<?php echo $item['statusfatura_id'] ?>"><?php echo $item['statusfatura_nome'] ?></option>
                             <?php endforeach; ?>
                         </select>
                     </th>
                 </tr>
             </thead>
             <tbody>
-                <?php foreach ($this->itensPaginados as $item): ?>
-                    <tr style="<?php if ($item['statusfatura_nome'] == 'ATRASADO' OR $item['statusfatura_nome'] == 'INADIMPLENTE' OR $item['statusfatura_nome'] == 'PERDIMENTO') : ?>background-color: #FFCC99 <?php endif; ?>">
-                        <td class="fit">
-                            <a class="btn btn-xs btn-default" href="javascript:;" onclick="modalAnexos('<?php echo $item['fatura_id'] ?>')" rel="tooltip" title="Anexos"><i class="fa fa-file no-margin" ></i></a>
-                            <a target="_blank" class="btn btn-xs btn-default" href="/documento-operacional/imprimir-fatura/faturaid/<?php echo $item['fatura_id']; ?>/" rel="tooltip" title="Fatura"><i class="fa fa-print no-margin"></i></a>
-                        </td>
-                        <td class="text-center"><?php echo $item['fatura_id'] ?></td>
-                        <td><?php echo $item['empresa_razao'] ?></td>
-                        <td class="text-center"><?php echo Util::dataBR(substr($item['fatura_data_inicio_apuracao'], 0, 10)) . ' à ' . Util::dataBR(substr($item['fatura_data_fim_apuracao'], 0, 10)) ?></td>
-                        <td class="text-center"><?php echo Util::dataBR($item['fatura_data_vencimento']) ?></td>
-                        <td class="text-center"><?php echo Util::dataBR($item['fatura_data_pagamento']) ?></td>
-                        <td><?php echo $item['statusfatura_nome'] ?></td>
+                <?php if (count($this->itensPaginados) > 0): ?>
+                    <?php foreach ($this->itensPaginados as $item): ?>
+                        <tr style="<?php if (in_array($item['statusfatura_nome'], ['ATRASADO', 'INADIMPLENTE', 'PERDIMENTO'])) : ?>background-color: #FFCC99 <?php endif; ?>">
+                            <td class="fit">
+                                <a class="btn btn-xs btn-default" href="javascript:;" onclick="modalAnexos('<?php echo $item['fatura_id'] ?>')" rel="tooltip" title="Anexos"><i class="fa fa-file no-margin" ></i></a>
+                                <a target="_blank" class="btn btn-xs btn-default" href="/documento-operacional/imprimir-fatura/faturaid/<?php echo $item['fatura_id']; ?>/" rel="tooltip" title="Fatura"><i class="fa fa-print no-margin"></i></a>
+                            </td>
+                            <td class="text-center"><?php echo $item['fatura_id'] ?></td>
+                            <td><?php echo $item['empresa_razao'] ?></td>
+                            <td class="text-center"><?php echo Util::dataBR(substr($item['fatura_data_inicio_apuracao'], 0, 10)) . ' à ' . Util::dataBR(substr($item['fatura_data_fim_apuracao'], 0, 10)) ?></td>
+                            <td class="text-center"><?php echo Util::dataBR($item['fatura_data_vencimento']) ?></td>
+                            <td class="text-center"><?php echo Util::dataBR($item['fatura_data_pagamento']) ?></td>
+                            <td><?php echo $item['statusfatura_nome'] ?></td>
+                        </tr>
+                    <?php endforeach ?>
+                <?php else: ?>
+                    <tr>
+                        <td colspan="7" class="text-center">Nenhuma fatura encontrada.</td>
                     </tr>
-                <?php endforeach ?>
+                <?php endif; ?>
             </tbody>
         </table>
 
-        <?php echo $this->render('criar-paginador.phtml'); ?>
+        <?php if (isset($this->itensPaginados) && $this->itensPaginados instanceof Zend_Paginator): ?>
+            <?php $paginator = $this->itensPaginados->getPages(); ?>
+            <?php if ($paginator->pageCount > 1): ?>
+                <div class="text-center">
+                    <ul class="pagination">
+                        <?php if (isset($paginator->previous)): ?>
+                            <li><a href="javascript:;" onclick="ParametrizarExecutarUrlConsulta('<?php echo $paginator->previous; ?>')">&laquo;</a></li>
+                        <?php else: ?>
+                            <li class="disabled"><a href="javascript:;">&laquo;</a></li>
+                        <?php endif; ?>
+
+                        <?php foreach ($paginator->pagesInRange as $page): ?>
+                            <?php if ($page != $paginator->current): ?>
+                                <li><a href="javascript:;" onclick="ParametrizarExecutarUrlConsulta('<?php echo $page; ?>')"><?php echo $page; ?></a></li>
+                            <?php else: ?>
+                                <li class="active"><a href="javascript:;"><?php echo $page; ?></a></li>
+                            <?php endif; ?>
+                        <?php endforeach; ?>
+
+                        <?php if (isset($paginator->next)): ?>
+                            <li><a href="javascript:;" onclick="ParametrizarExecutarUrlConsulta('<?php echo $paginator->next; ?>')">&raquo;</a></li>
+                        <?php else: ?>
+                            <li class="disabled"><a href="javascript:;">&raquo;</a></li>
+                        <?php endif; ?>
+                    </ul>
+                </div>
+            <?php endif; ?>
+        <?php endif; ?>
 
     </div>
 

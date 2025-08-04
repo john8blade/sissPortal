@@ -228,48 +228,53 @@ class Application_Model_Fatura extends Zend_Db_Table {
         return $produtos;
     }
 
-    public function buscaCompletaUsandoClausula($clausulaComando = '1 = 1', $ordenarPor = 'fatura.fatura_id', $limite = '0,99999999999') {
+        public function buscaCompletaUsandoClausula($clausulaComando = '1 = 1', $ordenarPor = 'fatura.fatura_id') {
         $resultado = array();
-        $comando = "SELECT *
-      FROM fatura
-      JOIN statusfatura ON statusfatura.statusfatura_id = fatura.fk_statusfatura_id
-      JOIN contrato ON contrato.contrato_id = fatura.fk_contrato_id
-      JOIN empresa ON empresa.empresa_id = fatura.fk_empresa_id
-      WHERE {$clausulaComando}
-      ORDER BY {$ordenarPor}
-      LIMIT {$limite}";
+        $comando = "SELECT fatura.fatura_id,
+                           fatura.fatura_data_vencimento,
+                           fatura.fatura_data_pagamento,
+                           fatura.fatura_data_inicio_apuracao,
+                           fatura.fatura_data_fim_apuracao,
+                           fatura.fk_empresa_pagante_id,
+                           statusfatura.statusfatura_nome,
+                           empresa.empresa_razao,
+                           pagador.empresa_razao as fatura_pagante_razao
+                      FROM fatura
+                      JOIN statusfatura ON statusfatura.statusfatura_id = fatura.fk_statusfatura_id
+                      JOIN contrato ON contrato.contrato_id = fatura.fk_contrato_id
+                      JOIN empresa ON empresa.empresa_id = fatura.fk_empresa_id
+                      LEFT JOIN empresa AS pagador ON pagador.empresa_id = fatura.fk_empresa_pagante_id
+                      WHERE {$clausulaComando}
+                       AND fatura.fatura_status = 0
+                      ORDER BY {$ordenarPor}";
         $resultadoConsulta = $this->getDefaultAdapter()->fetchAll($comando);
         $resutadoTemporario = array();
         foreach ($resultadoConsulta as $itemConsulta) {
-            // Resgata a empresa que fará o pagamento da fatura
-            $comando = "SELECT * FROM empresa WHERE empresa_id = ?";
-            $empresaQuePaga = $itemConsulta['fk_empresa_pagante_id'];
-            $resultadoConsultaEmpresa = $this->getDefaultAdapter()->fetchAll($comando, array($empresaQuePaga));
-            $itemConsulta["fatura_pagante"] = (count($resultadoConsultaEmpresa) > 0 && isset($resultadoConsultaEmpresa[0])) ? $resultadoConsultaEmpresa[0] : array();
+            // A empresa pagante agora é obtida pela query principal
+            $itemConsulta["fatura_pagante"] = array('empresa_razao' => $itemConsulta['fatura_pagante_razao']);
 
             $faturaId = $itemConsulta['fatura_id'];
 
             // Resgata os impostos da fatura
             $itemConsulta["fatura_imposto"] = array();
-            $comando = "SELECT *
-      FROM fatura_imposto,
-      imposto
-      WHERE imposto_id = fk_imposto_id
-      AND fatura_imposto_status = 0
-      AND fk_fatura_id = '{$faturaId}'";
-            $resultadoConsultaImposto = $this->getDefaultAdapter()->fetchAll($comando);
+            $comandoImposto = "SELECT imposto.*, fatura_imposto.*
+                             FROM fatura_imposto
+                             JOIN imposto ON imposto.imposto_id = fatura_imposto.fk_imposto_id
+                             WHERE fatura_imposto.fatura_imposto_status = 0
+                               AND fatura_imposto.fk_fatura_id = '{$faturaId}'";
+            $resultadoConsultaImposto = $this->getDefaultAdapter()->fetchAll($comandoImposto);
             $itemConsulta["fatura_imposto"] = (count($resultadoConsultaImposto) > 0) ? $resultadoConsultaImposto : array();
 
             // Resgata os produtos da fatura
             $itemConsulta["fatura_produto"] = array();
-            $comando = "SELECT *
-      FROM produto_fatura
-      JOIN produto ON  produto.produto_id = produto_fatura.fk_produto_id
-      LEFT JOIN produto_agenda ON  produto_agenda.produto_agenda_id = produto_fatura.fk_produto_agenda_id
-      WHERE produto_fatura.fk_fatura_id = '{$faturaId}'
-      AND produto_fatura.produto_fatura_status = 0
-      ORDER BY produto_fatura.fk_produto_id";
-            $resultadoConsultaProduto = $this->getDefaultAdapter()->fetchAll($comando);
+            $comandoProduto = "SELECT p.*, pf.*, pa.*
+                               FROM produto_fatura AS pf
+                               JOIN produto AS p ON p.produto_id = pf.fk_produto_id
+                               LEFT JOIN produto_agenda AS pa ON pa.produto_agenda_id = pf.fk_produto_agenda_id
+                               WHERE pf.fk_fatura_id = '{$faturaId}'
+                                 AND pf.produto_fatura_status = 0
+                               ORDER BY pf.fk_produto_id";
+            $resultadoConsultaProduto = $this->getDefaultAdapter()->fetchAll($comandoProduto);
             $itemConsulta["fatura_produto"] = (count($resultadoConsultaProduto) > 0) ? $resultadoConsultaProduto : array();
             $resultado[] = $itemConsulta;
         }
