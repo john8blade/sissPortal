@@ -29,7 +29,7 @@ class FaturaController extends Controller {
         if ($parametrosPesquisa['filtro-data-periodo'])
             $filtro .= " AND (STR_TO_DATE('" . $parametrosPesquisa['filtro-data-periodo'] . "', '%d/%m/%Y') BETWEEN fatura.fatura_data_inicio_apuracao AND fatura.fatura_data_fim_apuracao) ";
 
-        $ordenarPor = "empresa.empresa_razao ASC";
+        $ordenarPor = "fatura.fatura_data_vencimento DESC";
         $resultado = array();
         $statusFatura = array();
         try {
