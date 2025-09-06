@@ -32,58 +32,55 @@ ob_start();
 <!-- style="page-break-after:always" -->
 
 <div>
-    <table id="tabela" border="0" style="border-collapse: collapse; width: 100%;">
+    <table id="tabela" border="1" style="border-collapse: collapse; width: 100%; border: 1px solid #000;">
         <tr>
-            <td colspan="7" style="border: 1px solid #000000; font-size: 12px; text-align: center;"><b>HTMED</b></td>
+            <td colspan="4" style="font-size: 12px; text-align: center; background-color: #DDDDDD;"><b>GUIA DE ATENDIMENTO</b></td>
         </tr>
         <tr>
-            <td colspan="7" class="etiqueta" style="border: 1px solid #000000; border-bottom: none; border-left: none; border-right: none;">&nbsp;</td>
+            <td colspan="4" class="separador" style="border: none; padding: 5px;"></td>
         </tr>
     </table>
 
-    <table id="tabela" border="0" style="border-collapse: collapse; width: 100%;">
-
+    <table id="tabela" border="1" style="border-collapse: collapse; width: 100%; font-size: 11px; border: 1px solid #000;">
         <tr>
-            <td colspan="1" class="etiqueta" style="border-top: none; border-bottom: none; border-right: none; text-align: right;">CÓDIGO:</td>
-            <td colspan="5" style="border-bottom: none; border-left: none; border-top: none;">&nbsp;<?php echo $this->agenda['fila_cod_prefixo'], $this->agenda['fila_senha'], $this->agenda['fila_cod_sufixo'] ?></td>
-            <td colspan="1" class="etiqueta" style="border-top: none; border-bottom: none; border-right: none; text-align: right;">HORÁRIO: </td>
-            <td colspan="4" style="border-bottom: none; border-left: none; border-top: none;">&nbsp;<?php echo $horario ?></td>
+            <td class="etiqueta" style="width: 15%; text-align: right;">CÓDIGO:</td>
+            <td style="width: 35%;">&nbsp;<?php echo $this->agenda['fila_cod_prefixo'], $this->agenda['fila_senha'], $this->agenda['fila_cod_sufixo'] ?></td>
+            <td class="etiqueta" style="width: 15%; text-align: right;">HORÁRIO:</td>
+            <td style="width: 35%;">&nbsp;<?php echo $horario ?></td>
         </tr>
-
         <tr>
-            <td colspan="1" class="etiqueta" style="border-top: none; border-bottom: none; border-right: none; text-align: right;">EMPRESA:</td>
-            <td colspan="5" style="border-bottom: none; border-left: none; border-top: none;">&nbsp;<?php echo $this->agenda['empresa_razao'] ?></td>
-            <td colspan="1" class="etiqueta" style="border-top: none; border-bottom: none; border-right: none; text-align: right;">CONTRATO: </td>
-            <td colspan="4" style="border-bottom: none; border-left: none; border-top: none;">&nbsp;<?php echo $this->agenda['contrato_numero'], '-', $this->agenda['contrato_sufixo_numero'] ?></td>
+            <td class="etiqueta" style="width: 15%; text-align: right;">EMPRESA:</td>
+            <td>&nbsp;<?php echo $this->agenda['empresa_razao'] ?></td>
+            <td class="etiqueta" style="width: 15%; text-align: right;">CONTRATO:</td>
+            <td>&nbsp;<?php echo $this->agenda['contrato_numero'], '-', $this->agenda['contrato_sufixo_numero'] ?></td>
         </tr>
-
         <tr>
-            <td class="etiqueta" style=" width: 100px; border-right: none; text-align: right; border-bottom: none;">CPF: </td>
-            <td colspan="2" style="border-left: none; border-right: none; border-bottom: none;">&nbsp;<?php echo Util::cpf($this->agenda['pessoa_cpf']) ?></td>
-            <td class="etiqueta" style=" width: 100px; border-right: none; text-align: right; border-bottom: none;">IDENTIDADE: </td>
-            <td colspan="2" style="border-left: none; border-right: none; border-bottom: none;">&nbsp;<?php echo $this->agenda['pessoa_identidade'] ?></td>
-            <td class="etiqueta" style=" width: 100px; border-right: none; text-align: right; border-bottom: none;">NASC.: </td>
-            <td colspan="5" style="border-left: none; border-right: none; border-bottom: none;">&nbsp;<?php echo Util::dataBR($this->agenda['pessoa_data_nascimento']) ?></td>
+            <td class="etiqueta" style="width: 15%; text-align: right;">CPF:</td>
+            <td>&nbsp;<?php echo Util::cpf($this->agenda['pessoa_cpf']) ?></td>
+            <td class="etiqueta" style="width: 15%; text-align: right;">IDENTIDADE:</td>
+            <td>&nbsp;<?php echo $this->agenda['pessoa_identidade'] ?></td>
         </tr>
-
         <tr>
-            <td colspan="1" class="etiqueta" style="border-top: none; border-bottom: none; border-right: none; text-align: right;">NOME: </td>
-            <td colspan="5" style="border-bottom: none; border-left: none; border-top: none;">&nbsp;<?php echo $this->agenda['pessoa_nome'] ?></td>
-            <td colspan="1" class="etiqueta" style="border-top: none; border-bottom: none; border-right: none; text-align: right;">FUNÇÃO: </td>
-            <td colspan="4" style="border-bottom: none; border-left: none; border-top: none;">&nbsp;<?php echo $this->agenda['ppra_item_funcao'] ?></td>
+            <td class="etiqueta" style="width: 15%; text-align: right;">NASC.:</td>
+            <td>&nbsp;<?php echo Util::dataBR($this->agenda['pessoa_data_nascimento']) ?></td>
+            <td class="etiqueta" style="width: 15%; text-align: right;">Cód. CBO:</td>
+            <td>&nbsp;<?php echo $this->agenda['cargo_cbo'] ?></td>
         </tr>
-
         <tr>
-            <td class="etiqueta" style=" width: 100px; border-right: none; text-align: right; border-bottom: none;">TIPO EXAME: </td>
-            <td colspan="5" style="border-left: none; border-right: none; border-bottom: none;">&nbsp;<?php echo $this->agenda['tipoexame_nome'] ?></td>
-            <td class="etiqueta" style="border-top: none; border-right: none; text-align: right;">D.AGENDADA: </td>
-            <td colspan="4" style="border-left: none; border-top: none;">&nbsp;<?php echo Util::dataBR($this->agenda['agenda_data_exame']) ?></td>
+            <td class="etiqueta" style="width: 15%; text-align: right;">NOME:</td>
+            <td>&nbsp;<?php echo $this->agenda['pessoa_nome'] ?></td>
+            <td class="etiqueta" style="width: 15%; text-align: right;">FUNÇÃO:</td>
+            <td>&nbsp;<?php echo $this->agenda['ppra_item_funcao'] ?></td>
         </tr>
-
         <tr>
-            <td colspan="11" class="separador"></td>
+            <td class="etiqueta" style="width: 15%; text-align: right;">TIPO EXAME:</td>
+            <td>&nbsp;<?php echo $this->agenda['tipoexame_nome'] ?></td>
+            <td class="etiqueta" style="width: 15%; text-align: right;">D.AGENDADA:</td>
+            <td>&nbsp;<?php echo Util::dataBR($this->agenda['agenda_data_exame']) ?></td>
         </tr>
-
+        <tr>
+            <td colspan="4" class="separador"></td>
+        </tr>
     </table>
 
     <table id="tabela" border="0" style="border-collapse: collapse; width: 100%;">

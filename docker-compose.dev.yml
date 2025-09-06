@@ -3,7 +3,7 @@ services:
   web:
     build: .
     ports:
-      - "3001:80"
+      - "3002:80"
     volumes:
      - .:/var/www/html
     networks:

@@ -484,7 +484,7 @@ class Application_Model_Agenda extends Zend_Db_Table
 
         $comando =  "SELECT 
                         a.agenda_id, a.agenda_data_exame, a.agenda_observacao, 
-                        a.turno, p.*, al.*, cg.cargo_nome, e.empresa_razao, 
+                        a.turno, p.*, al.*, cg.cargo_nome, cg.cargo_cbo, e.empresa_razao, 
                         e.empresa_fantasia, c.contrato_numero, c.contrato_sufixo_numero, u.unidade_id,
                         u.unidade_sigla, u.unidade_descricao, te.tipoexame_nome, fl.fila_senha, 
                         fl.fila_cod_prefixo, fl.fila_cod_sufixo, fl.fila_id, 
