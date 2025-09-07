@@ -1,17 +1,19 @@
 services:
-  web:
+  portal-app:
+    container_name: portal-app
     build: .
-    ports:
-      - "3001:80"
+    restart: unless-stopped
+    environment:
+      - VIRTUAL_HOST=portal.htmed.com.br
+      - LETSENCRYPT_HOST=portal.htmed.com.br
+    networks:
+      - proxy-tier
+      - default # Mantenha esta rede se você tiver outros containers internos
     deploy:
       resources:
         limits:
           cpus: '1'
-#    volumes:
-#     - .:/var/www/html
-    networks:
-      - app-network
 
 networks:
-  app-network:
-    driver: bridge
+  proxy-tier:
+    external: true
