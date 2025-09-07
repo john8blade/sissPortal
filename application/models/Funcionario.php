@@ -309,6 +309,7 @@ class Application_Model_Funcionario extends Zend_Db_Table {
                     DATE_FORMAT(f.funcionario_data_admissao,'%d/%m/%Y') AS 'funcionario_data_admissao', f.funcionario_id, 
                     f.funcionario_status, f.fk_empresa_id, f.fk_contrato_id, p.pessoa_cpf, p.pessoa_nome, 
                     e.empresa_fantasia, ct.contrato_numero, u.unidade_sigla, c.cargo_nome,
+                    (SELECT pp.ppra_item_funcao FROM item_pcmso i JOIN ppra_item pp ON pp.ppra_item_id = i.fk_ppra_item_id WHERE i.item_pcmso_id = a.fk_item_pcmso_id LIMIT 1) AS ppra_item_funcao,
                     a.fk_item_pcmso_id, a.fk_ppra_item_id,
                     CASE  
                         WHEN (f.funcionario_motivo_inativacao != '' OR f.funcionario_status = 1) THEN 'INATIVO'

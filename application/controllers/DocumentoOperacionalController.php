@@ -570,33 +570,41 @@ class DocumentoOperacionalController extends Controller {
         if (empty($rstCmd)) {
             try {
                 $adapter = Zend_Db_Table::getDefaultAdapter();
+                $fonteProcedimento = $this->_getParam('fonte_procedimento', 'pcmso');
+                $exames = [];
 
-                $sql = "SELECT DISTINCT *
-                        FROM
-                        (
-                        SELECT pro.produto_nome FROM agenda a
-                        JOIN pcmso p ON p.fk_contrato_id = a.fk_contrato_id AND p.fk_empresa_id = a.fk_empresa_id AND p.pcmso_status = 0
-                        JOIN item_pcmso i ON i.fk_pcmso_id = p.pcmso_id AND i.item_pcmso_status = 0
-                        JOIN ppra_item pp ON pp.ppra_item_id = i.fk_ppra_item_id AND pp.ppra_item_status = 0
-                        JOIN item_pcmso_produto ipp ON ipp.fk_item_pcmso_id = i.item_pcmso_id AND ipp.fk_tipoexame_id = a.fk_tipoexame_id
-                        JOIN produto pro ON pro.produto_id = ipp.fk_produto_id AND pro.produto_status = 0
-                        JOIN alocacao alc ON alc.alocacao_id = a.fk_alocacao_id
-                        AND alc.fk_cargo_id = i.fk_cargo_id
-                        AND alc.fk_setor_id = i.fk_setor_id
-                        AND alc.fk_funcao_id = i.fk_funcao_id
-                        AND alc.fk_ghe_id = i.fk_ghe_id
-                        WHERE a.agenda_status = 0 AND a.agenda_id = ?
-
-                        UNION ALL
-
-                        SELECT p.produto_nome FROM produto_agenda pa
-                        JOIN produto p ON p.produto_id = pa.fk_produto_id
-                        WHERE pa.fk_agenda_id = ? AND pa.produto_agenda_status = 0) AS x
-
-                        ORDER BY x.produto_nome ASC";
-                $prepare = $adapter->prepare($sql);
-                $prepare->execute(array($id, $id));
-                $exames = $prepare->fetchALL();
+                if ($fonteProcedimento == 'agendamento') {
+                    $sql = "SELECT DISTINCT
+                                p.produto_nome
+                            FROM
+                                produto_agenda AS pa
+                            INNER JOIN produto AS p ON p.produto_id = pa.fk_produto_id
+                            WHERE
+                                pa.fk_agenda_id = ?
+                                AND pa.produto_agenda_status = 0
+                            ORDER BY
+                                CASE WHEN p.produto_nome = 'CLÍNICO' THEN 0 ELSE 1 END, p.produto_nome ASC";
+                    $prepare = $adapter->prepare($sql);
+                    $prepare->execute(array($id));
+                    $exames = $prepare->fetchAll();
+                } else {
+                    $fila_id = $rst['fila_id'];
+                    if (!empty($fila_id)) {
+                        $sql = "SELECT DISTINCT
+                                    p.produto_nome
+                                FROM
+                                    fila_agenda_procedimento AS fap
+                                INNER JOIN produto AS p ON p.produto_id = fap.fk_produto_id
+                                WHERE
+                                    fap.fila_id = ?
+                                    AND fap.fila_agenda_procedimento_status = 0
+                                ORDER BY
+                                    CASE WHEN p.produto_nome = 'CLÍNICO' THEN 0 ELSE 1 END, p.produto_nome ASC";
+                        $prepare = $adapter->prepare($sql);
+                        $prepare->execute(array($fila_id));
+                        $exames = $prepare->fetchAll();
+                    }
+                }
                 $rstCmd = $exames;
             } catch (Exception $e) {
                 throw new Exception('Ocorreu erro ao buscar exames do funcionario!');

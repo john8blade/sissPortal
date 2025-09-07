@@ -210,7 +210,8 @@ class Application_Model_Agenda extends Zend_Db_Table
     public function buscaCompletaUsandoClausula($clausulaComando = '1 = 1', $ordenarPor = 'agenda.agenda_id', $limite = '0,99999999999', $imprimirComando = false)
     {
         $comando = "SELECT *,
-                                          agenda.fk_empresa_id
+                                          agenda.fk_empresa_id,
+                                          (SELECT pp.ppra_item_funcao FROM item_pcmso i JOIN ppra_item pp ON pp.ppra_item_id = i.fk_ppra_item_id WHERE i.item_pcmso_id = alocacao.fk_item_pcmso_id LIMIT 1) AS ppra_item_funcao
                              FROM agenda
                                        JOIN empresa ON empresa.`empresa_id` = agenda.`fk_empresa_id`
                                        JOIN pessoa ON pessoa.`pessoa_id` = agenda.`fk_pessoa_id`

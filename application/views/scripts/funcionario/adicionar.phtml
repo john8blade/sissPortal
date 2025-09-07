@@ -303,7 +303,7 @@ $(function() {
                                         <th width="10">#</th>
                                         <th>GHE</th>
                                         <th>SETOR</th>
-                                        <th>CARGO</th>
+                                        <th>Cód. CBO</th>
                                         <th>FUNÇÃO</th>
                                     </tr>
                                 </thead>
@@ -321,7 +321,7 @@ $(function() {
                                         </td>
                                         <td><?php echo $ppra_item['ghe_nome'] ?></td>
                                         <td><?php echo $ppra_item['setor_nome'] ?></td>
-                                        <td><?php echo $ppra_item['cargo_nome'] ?></td>
+                                        <td><?php echo $ppra_item['cargo_cbo'] ?></td>
                                         <td><?php if ($ppra_item['ppra_item_funcao'] == NULL || $ppra_item['ppra_item_funcao'] == '') {
                                                     echo $ppra_item['cargo_nome'];
                                                 }else{

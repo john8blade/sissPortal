@@ -21,7 +21,7 @@
                 <tr>
                     <th>#</th>
                     <th>Nome</th>
-                    <th>Cargo</th>
+                    <th>Função</th>
                     <th class="text-center">CPF</th>
                     <th class="text-center">D.Exame</th>
                     <th class="text-center">Horário</th>
@@ -58,7 +58,7 @@
                                 <?php } ?>
                             </td>
                             <td style="<?php echo $cores ?>"><?php echo str_replace($like, "<strong>$like</strong>", $item['pessoa_nome']) ?></td>
-                            <td style="<?php echo $cores ?>"><?php echo $item['alocacao']['cargo_nome'] ?></td>
+                            <td style="<?php echo $cores ?>"><?php echo $item['ppra_item_funcao'] ?></td>
                             <td class="text-center" style="<?php echo $cores ?>"><?php echo preg_replace('/([0-9]{3})([0-9]{3})([0-9]{3})([0-9]{2})/', "$1.$2.$3-$4", $item['pessoa_cpf']) ?></td>
                             <td class="text-center" style="padding:  0px; <?php echo $cores ?>"><?php echo Util::dataBR($item['agenda_data_exame']) ?></td>
                             <td class="text-center" style="padding:  0px; <?php echo $cores ?>"><?php echo Util::horarioGlobalCompleto($item) ?></td>
