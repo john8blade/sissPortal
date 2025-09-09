@@ -586,9 +586,6 @@ class DocumentoOperacionalController extends Controller {
                     $prepare = $adapter->prepare($sql);
                     $prepare->execute(array($id));
                     $exames = $prepare->fetchAll();
-                    if (empty($exames)) {
-                        $exames[] = ['produto_nome' => 'CLÍNICO'];
-                    }
                 } else {
                     $fila_id = $rst['fila_id'];
                     if (!empty($fila_id)) {
@@ -606,6 +603,10 @@ class DocumentoOperacionalController extends Controller {
                         $prepare->execute(array($fila_id));
                         $exames = $prepare->fetchAll();
                     }
+                }
+                
+                if (empty($exames)) {
+                    $exames[] = ['produto_nome' => 'CLÍNICO'];
                 }
                 $rstCmd = $exames;
             } catch (Exception $e) {
