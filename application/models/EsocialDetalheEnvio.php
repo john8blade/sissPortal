@@ -8,20 +8,24 @@ class Application_Model_EsocialDetalheEnvio extends Zend_Db_Table {
 
         $contrato_id = $_SESSION['contrato_id'];
 
-        $sql = "SELECT 
+        $sql = "SELECT
                     ed.esocial_detalhe_envio_id, al.alocacao_id,
                     ed.fk_agenda_id, e.empresa_id, c.contrato_id, c.contrato_numero,
-                    et.esocial_tipoevento_nome, e.empresa_razao, 
+                    et.esocial_tipoevento_nome, e.empresa_razao,
                     en.esocial_envio_tecnospeed_disparo_id,
                     en.esocial_envio_tecnospeed_datahora,
                     e.empresa_fantasia,
-                    CASE 
+                    CASE
                         WHEN ag.agenda_id > 0 THEN p.pessoa_nome
-                        ELSE ps.pessoa_nome
+                        -- Adicionamos a verificação da empresa aqui dentro --
+                        WHEN f.fk_empresa_id = ed.fk_empresa_id THEN ps.pessoa_nome
+                        ELSE NULL -- Se as empresas não baterem, o resultado é nulo
                     END AS 'pessoa_nome',
-                    CASE 
+                    CASE
                         WHEN ag.agenda_id > 0 THEN p.pessoa_cpf
-                        ELSE ps.pessoa_cpf
+                        -- E a mesma verificação para o CPF --
+                        WHEN f.fk_empresa_id = ed.fk_empresa_id THEN ps.pessoa_cpf
+                        ELSE NULL
                     END AS 'pessoa_cpf'
                 FROM esocial_detalhe_envio ed
                 JOIN esocial_envio_tecnospeed en ON en.esocial_envio_tecnospeed_id = ed.fk_esocial_envio_tecnospeed_id
