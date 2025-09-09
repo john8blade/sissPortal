@@ -581,7 +581,6 @@ class DocumentoOperacionalController extends Controller {
                             INNER JOIN produto AS p ON p.produto_id = pa.fk_produto_id
                             WHERE
                                 pa.fk_agenda_id = ?
-                                AND pa.produto_agenda_status = 0
                             ORDER BY
                                 CASE WHEN p.produto_nome = 'CLÍNICO' THEN 0 ELSE 1 END, p.produto_nome ASC";
                     $prepare = $adapter->prepare($sql);
