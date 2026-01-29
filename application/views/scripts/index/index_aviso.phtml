@@ -198,8 +198,8 @@ if (empty($banners)) {
 <script>
     $(document).ready(function() {
         
-        <?php if (count(@$_SESSION['inadimplecia']) > 0) : ?>
-            faturas();
+        <?php if (count(@$_SESSION['inadimplecia']) > 0 || (isset($_SESSION['acesso_restrito_financeiro']) && $_SESSION['acesso_restrito_financeiro'] === true)) : ?>
+            avisoInadimplente();
         <?php else : ?>
             <?php if (count($this->qtd) > 0 AND $this->qtd > 0) : ?>
                 checkaloc();
@@ -208,41 +208,19 @@ if (empty($banners)) {
 
     })
 
-    // Get the modal elements
-    const modal = document.getElementById("informativo");
-    const imagemModal = document.querySelector(".imagem-modal");
-    const botaoFechar = document.querySelector(".close");
-    const botaoOK = document.getElementById("botaoOK");
-
-    // Function to open the modal
-    function abrirModal() {
-    modal.style.display = "block";
-    }
-
-    // Function to close the modal
-    function fecharModal() {
-    modal.style.display = "none";
-    }
-
-    // Add click event listener to the close button
-    botaoFechar.addEventListener("click", fecharModal);
-
-    // Add click event listener to the OK button
-    botaoOK.addEventListener("click", fecharModal);
-
-    // Show the modal when the page loads (optional)
-    // Check the current date and open the modal if necessary
-    const dataAtual = new Date();
-    const diaAtual = dataAtual.getDate();
-    const mesAtual = dataAtual.getMonth() + 1; // Month starts at 0 in JavaScript
-    const anoAtual = dataAtual.getFullYear();
-
-    const dataLimite = new Date(2024, 6, 29); // July is month 6
-    const dataEmMilisegundos = dataAtual.getTime();
-    const dataLimiteEmMilisegundos = dataLimite.getTime();
-
-    if (dataEmMilisegundos <= dataLimiteEmMilisegundos) {
-    abrirModal();
+    function avisoInadimplente(){
+         swal({
+              html: true,
+              title: "Atenção!",
+              type: 'warning',              
+              text: `Favor entrar em contato com o financeiro da Htmed pelo whatsapp 31 99892-8656.`,                  
+              confirmButtonText: "OK", 
+              closeOnConfirm: true,
+              showLoaderOnConfirm: false
+              },
+              function(){
+                
+            });
     }
 
     function checkaloc(){

@@ -15,13 +15,13 @@ class Controller extends Zend_Controller_Action {
 
         // Verifica bloqueio por inadimplência
         if (isset($_SESSION['acesso_restrito_financeiro']) && $_SESSION['acesso_restrito_financeiro'] === true) {
-            $controllersPermitidos = array('fatura', 'auth', 'error');
+            $controllersPermitidos = array('fatura', 'auth', 'error', 'index');
             // Permite 'index' apenas se for ação de logout ou similar, caso contrário, redireciona
             // Mas index controller tem a dashboard, talvez queiramos bloquear a dashboard também.
             // O usuário pediu "acesso limitado, só consegue entrar na aba de faturas".
             
             if (!in_array(strtolower($cont), $controllersPermitidos)) {
-                $this->redirect('/fatura');
+                $this->redirect('/index');
             }
         }
 

@@ -1,5 +1,23 @@
 <?php $meses = Util::obterVetorAssociativoDosMesesDoAno();  ?>
 
+<!-- Modal Retorno ao Trabalho -->
+<div id="modalRetornoTrabalho" class="modal fade" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title"><i class="icone-chamar-atencao">&nbsp;</i> IMPORTANTE</h4>
+            </div>
+            <div class="modal-body">
+                <p>Devido à maior complexidade, o Exame de Retorno ao Trabalho só poderá ser agendado a partir das 10:00.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">OK</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script type="text/javascript">
     var UtilitariosAjax = new UtilitariosAjax();
 
@@ -10,7 +28,60 @@
         });
         listarDiasAtendimento();
 
+        // Verificação Retorno ao Trabalho
+        $("#fk_tipoexame_id").change(function() {
+            var valor = $(this).val();
+            if (valor == '5') { // 5 = Retorno ao Trabalho
+                 // Se ja tiver horario selecionado, verifica
+                 verificarHorarioRetornoTrabalho();
+            } else {
+                 // Reseta validacao se mudar o tipo
+                 resetarValidacaoHorario();
+            }
+            document.getElementById("fk_alocacao_id").disabled = false;
+        });
+
+        // Monitorar mudança no horário (caso o usuário troque a data/horário)
+        // O campo horário é preenchido via ajax/seleção, então monitoramos mudanças nele se possível
+        // Mas como ele é disabled e preenchido por seleção de data, a verificação deve ocorrer ao tentar salvar ou ao selecionar data
+        
+        $("#botao-salvar-padrao").click(function (e) {
+            e.preventDefault();
+            
+            if (verificarHorarioRetornoTrabalho()) {
+                 $("#formulario-padrao-salvar").submit();
+            }
+        });
+
     });
+
+    function verificarHorarioRetornoTrabalho() {
+        var tipoExame = $("#fk_tipoexame_id").val();
+        var horario = $("#horario").val(); // formato HH:mm ou HH:mm:ss
+        
+        if (tipoExame == '5' && horario) {
+            var partes = horario.split(':');
+            var hora = parseInt(partes[0]);
+            
+            if (hora < 10) {
+                 $("#modalRetornoTrabalho").modal('show');
+                 $("#horario").css('background-color', '#ffcccc'); // Vermelho claro
+                 $("#horario").css('border-color', 'red');
+                 $("#botao-salvar-padrao").attr('disabled', 'disabled');
+                 return false;
+            }
+        }
+        
+        // Se estiver tudo ok, reseta estilos
+        resetarValidacaoHorario();
+        return true;
+    }
+
+    function resetarValidacaoHorario() {
+         $("#horario").css('background-color', '');
+         $("#horario").css('border-color', '');
+         $("#botao-salvar-padrao").removeAttr('disabled');
+    }
 
     function ajaxResgatarAtributosFuncionario() {
         var data = new Date();
@@ -157,13 +228,17 @@
 
 
     $(function () {
+        /*
         $("#fk_tipoexame_id").change(function() {
             document.getElementById("fk_alocacao_id").disabled = false;
         });
+        */
 
+        /*
         $("#botao-salvar-padrao").click(function () {
             $("#formulario-padrao-salvar").submit();
         });
+        */
 
         $("#fk_alocacao_id").change(function () {
             UtilitariosAjax.obterAlocacaoPorId(this.value);
