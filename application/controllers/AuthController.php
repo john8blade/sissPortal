@@ -64,7 +64,7 @@ class AuthController extends Zend_Controller_Action {
             #$descricaoStatusPendente = wordwrap($descricaoStatusPendente, 23, "<br />\n");
             $codigoPendencia = array_search($statusContrato, $codigoStatusPendente);
 
-            if (is_numeric($codigoPendencia) OR $statusFaturaContrato == true) {
+            if (is_numeric($codigoPendencia)) {
                 #self::$_mensagens[0] = $descricaoStatusPendente[$codigoPendencia];
                 self::$_mensagens[0] = $descricaoStatusPendente;
                 $logar = false;
