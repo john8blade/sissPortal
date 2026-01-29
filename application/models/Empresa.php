@@ -165,62 +165,47 @@ class Application_Model_Empresa extends Zend_Db_Table {
     }
 
     public function obterEmpresaInadimplente(array $colecaoUnidadeId, array $colecaoEmpresaCnpj = array(), $qtdDiasContabilizarInadimplencia = null) {
-        /*
-         * Informações Importantes:
-         * Codigo de Status da Fatura
-         * 1 - PAGO
-         * 2 - ATRASADO
-         * 3 - NEGOCIAÇÃO
-         * 4 - INADIMPLENTE
-         * 5 - AGUARDANDO PAGAMENTO
-         *
-         * Query(Externa)
-         * /application/models/sql-query/obter-empresas-inadimplentes.sql
-         */
-        $localComando = APPLICATION_PATH . '/models/sql-query/';
-        // Lendo comando SQL externo.
-        $baseComando = file_get_contents($localComando . 'obter-empresas-inadimplentes.sql');
-        if (!$baseComando) {
-            throw new Exception('Este método usa uma consulta SQL (query) lida de um arquivo externo, porém este arquivo com comando não pode ser lido ou não existe');
-        }
-        $comando = str_replace('<sqlParamColecaoUnidade/>', implode(',', $colecaoUnidadeId), $baseComando);
-
         if ($qtdDiasContabilizarInadimplencia == null || !is_numeric($qtdDiasContabilizarInadimplencia)) {
-            $ModeloParametro = new Application_Model_Parametro();
-            $Rst = $ModeloParametro->fetchRow(array('parametro_nome = ?' => 'Fatura.QtdMaxDiasVencToleranciaPorInadimplencia', 'parametro_status = ?' => 0));
-            $qtdDiasContabilizarInadimplencia = ($Rst) ? (int) $Rst->parametro_valor : 30;
-        }
-
-        // Filtra empresa
-        if (count($colecaoEmpresaCnpj) == 0) {
-            $ModeloEmpresa = new Application_Model_Empresa();
-            $Rst = $ModeloEmpresa->fetchAll(array('empresa_status = ?' => 0, 'fk_unidade_id IN(?)' => $colecaoUnidadeId));
-            if ($Rst->count() > 0) {
-                $itens = $Rst->toArray();
-                foreach ($itens as $item) {
-                    $colecaoEmpresaCnpj[] = "{$item['empresa_cnpj']}";
+            $qtdDiasContabilizarInadimplencia = 30; // Default
+            if (class_exists('Application_Model_Parametro')) {
+                try {
+                    $ModeloParametro = new Application_Model_Parametro();
+                    $Rst = $ModeloParametro->fetchRow(array('parametro_nome = ?' => 'Fatura.QtdMaxDiasVencToleranciaPorInadimplencia', 'parametro_status = ?' => 0));
+                    if ($Rst) {
+                        $qtdDiasContabilizarInadimplencia = (int) $Rst->parametro_valor;
+                    }
+                } catch (Exception $e) {
+                    // Ignora erro ao buscar parametro e usa default
                 }
             }
         }
-        $cc = array();
-        foreach ($colecaoEmpresaCnpj as $c) {
-            $cc[] = "'{$c}'";
-        }
-        $comando = str_replace('<sqlParamColecaoCnpj/>', implode(',', $cc), $comando);
 
-        // Filtrando datas
+        // Data de corte: faturas vencidas antes desta data sao consideradas inadimplentes
         $hoje = date('Y-m-d');
         $dataCorteInadimplente = date('Y-m-d', strtotime("{$hoje} - {$qtdDiasContabilizarInadimplencia} days"));
-        $comando = str_replace('<sqlParamDataVencimento/>', "'$dataCorteInadimplente'", $comando);
-        $resultado = array();
-        try {
-            $Cnx = Zend_Db_Table::getDefaultAdapter();
-            $rst = $Cnx->fetchAll($comando);
-            $resultado = (is_array($rst) && count($rst) > 0) ? $rst : array();
-        } catch (Exception $ex) {
-            throw $ex;
+
+        $db = $this->getDefaultAdapter();
+        $select = $db->select()
+            ->from(array('e' => 'empresa'), array('e.empresa_id', 'e.empresa_cnpj', 'e.empresa_razao'))
+            ->join(array('f' => 'fatura'), 'f.fk_empresa_id = e.empresa_id', array())
+            ->where('e.empresa_status = 0')
+            ->where('f.fatura_status = 0')
+            ->where('f.fk_statusfatura_id IN (?)', array(2, 4, 8)) // 2:Atrasado, 4:Inadimplente, 8:Juridico/Protesto
+            ->where('f.fatura_data_vencimento <= ?', $dataCorteInadimplente)
+            // Se permitir acesso (1), não retorna na lista de bloqueados
+            ->where('e.empresa_permitir_acesso_inadimplente = 0 OR e.empresa_permitir_acesso_inadimplente IS NULL');
+
+        if (!empty($colecaoUnidadeId)) {
+            $select->where('e.fk_unidade_id IN (?)', $colecaoUnidadeId);
         }
-        return $resultado;
+
+        if (!empty($colecaoEmpresaCnpj)) {
+            $select->where('e.empresa_cnpj IN (?)', $colecaoEmpresaCnpj);
+        }
+        
+        $select->group('e.empresa_id');
+
+        return $db->fetchAll($select);
     }
 
     public function obterEmpresa($cols = [], $cond = ['empresa_status = 0']) {

@@ -54,7 +54,6 @@ class AuthController extends Zend_Controller_Action {
         } catch (Exception $e) {
             self::$_mensagens[0] = 'Login ou senha inválidos!';
         }
-        /*
         if (is_array($resultadoLogar) && count($resultadoLogar) > 0) {
             $statusContrato = (int) $resultadoLogar['usuario_portal_status'];
             $statusFaturaContrato = $resultadoLogar['situacaofatura'];
@@ -70,7 +69,8 @@ class AuthController extends Zend_Controller_Action {
                 self::$_mensagens[0] = $descricaoStatusPendente;
                 $logar = false;
             } else {
-                // Consulta um serviço para verificar se a empresa está inadimplente
+                // Consulta local para verificar se a empresa está inadimplente
+                // Substituindo chamada de API externa por verificação direta no banco
                 $contratoId = $resultadoLogar['fk_contrato_id'];
                 $unidadeId = $resultadoLogar['fk_unidade_id'];
                 try {
@@ -84,51 +84,28 @@ class AuthController extends Zend_Controller_Action {
                         $empresaId = $Rst->fk_empresa_id;
                         $ModeloEmpresa = new Application_Model_Empresa();
                         $RstEmpresa = $ModeloEmpresa->fetchRow(array('empresa_id = ?' => $empresaId));
-                        #$hoje = date('Y-m-d');
-                        #$dataCorteInadimplente = date('Y-m-d', strtotime("{$hoje} - 30 days"));
-                        #die($dataCorteInadimplente);
-                        //Util::dump("{$unidadeId} / {$RstEmpresa->empresa_cnpj}");
-                        $host = $_SERVER['HTTP_HOST'];
-                        $procuro = array('portal.hiestgroup.com.br', 'developportal.hiestgroup.com.br');
-                        $alterar = array('siss.hiestgroup.com.br', 'developsiss.hiestgroup.com.br');
-                        $hostSiss = str_ireplace($procuro, $alterar, $host);
-                        $url = "http://$hostSiss/api/json/serv/esta-inadimplente/unidade_id/{$unidadeId}/empresa_cnpj/{$RstEmpresa->empresa_cnpj}";
-                        // Abre a conexao
-                        $ch = curl_init();
-                        // Configura a conexao passando os campos
-                        curl_setopt($ch, CURLOPT_URL, $url);
-                        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-                        // Executa a requisicao
-                        $resultado = curl_exec($ch);
-                        // Fecha a conexao
-                        curl_close($ch);
-                        //echo $url;
-                        //echo $resultado;
-                        //Util::dump($resultado);
-
-                        $logar = false;
-                        if ($resultado !== false) {
-                            self::$_atributosContrato = $resultadoLogar;
-                            $respostaApi = json_decode($resultado, true);
-                            if (isset($respostaApi['Resposta']) && $respostaApi['Resposta'] == true) {
-                                self::$_mensagens[0] = $descricaoStatusPendente[1];
-                            } else {
-                                $logar = true;
-                            }
+                        
+                        // Verifica inadimplência usando o método atualizado que considera a flag de permissão
+                        $inadimplentes = $ModeloEmpresa->obterEmpresaInadimplente(array($unidadeId), array($RstEmpresa->empresa_cnpj));
+                        
+                        if (count($inadimplentes) > 0) {
+                            // Se retornou registro, é porque está inadimplente E não tem permissão de acesso
+                            self::$_mensagens[0] = $descricaoStatusPendente;
+                            $logar = false;
                         } else {
-                            self::$_mensagens[0] = 'Serviço de verificação da situação do contrato indisponível no momento';
+                            $logar = true;
+                            self::$_atributosContrato = $resultadoLogar;
                         }
-                        //var_dump($logar);
-                        //exit;
+                    } else {
+                        // Se não achou contratante, permite logar
+                        $logar = true;
+                        self::$_atributosContrato = $resultadoLogar;
                     }
                 } catch (Exception $ex) {
                     self::$_mensagens[0] = 'Erro ao executar comando de identificação do contrato';
                 }
             }
-        } else {
-            self::$_mensagens[0] = 'Login ou senha inválidos!';
         }
-        */
         return $logar;
     }
 
