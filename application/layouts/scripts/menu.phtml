@@ -1,12 +1,19 @@
 <!-- Codigo preparado para receber o menu preto
-<?php $menus = array(); ?>
+<?php 
+$menus = array(); 
+$restrito = (isset($_SESSION['acesso_restrito_financeiro']) && $_SESSION['acesso_restrito_financeiro'] === true);
+?>
 <ul class="nav">
+    <?php if (!$restrito): ?>
     <li><a class="" href="/index/"><i class="icon-briefcase icon-white"></i>&nbsp;Meu Contrato </a></li>
     <li><a class="" href="/agenda/"><i class="icon-calendar icon-white"></i>&nbsp;Minha Agenda</a></li>
     <li><a class="" href="/funcionario"><i class="icon-user icon-white"></i>&nbsp;Meus Funcionários</a></li>
+    <?php endif; ?>
     <li><a class="" href="/fatura"><i class="icon-file icon-white"></i>&nbsp;Minhas Faturas</a></li>
+    <?php if (!$restrito): ?>
     <li><a class="" href="/documento/"><i class="icon-folder-close icon-white"></i>&nbsp;Meus Documentos</a></li>
     <li><a class="" href="/relatorio/"><i class=" icon-th-large icon-white"></i>&nbsp;Meus Relatórios</a></li>
+    <?php endif; ?>
 <?php foreach ($menus as $mod => $servicos): ?>
             <li class="dropdown">
                 <a id="drop<?php echo $mod; ?>" href="#" role="button" class="dropdown-toggle" data-toggle="dropdown"><?php echo $mod; ?><b class="caret"></b></a>
@@ -21,15 +28,22 @@
 <?php endforeach ?>
 </ul>
 -->
-<?php $menus = array(); ?>
+<?php 
+$menus = array(); 
+$restrito = (isset($_SESSION['acesso_restrito_financeiro']) && $_SESSION['acesso_restrito_financeiro'] === true);
+?>
 <ul class="nav">
+    <?php if (!$restrito): ?>
     <li><a class="" href="/index/"><i class="icon-briefcase"></i>&nbsp;HOME </a></li>
     <li><a class="" href="/contrato/"><i class="icon-briefcase"></i>&nbsp;Meu Contrato </a></li>
     <li><a class="" href="/agenda/"><i class="icon-calendar"></i>&nbsp;Minha Agenda</a></li>
     <li><a class="" href="/funcionario"><i class="icon-user"></i>&nbsp;Meus Funcionários</a></li>
+    <?php endif; ?>
     <li><a class="" href="/fatura"><i class="icon-file"></i>&nbsp;Minhas Faturas</a></li>
+    <?php if (!$restrito): ?>
     <li><a class="" href="/documento/"><i class="icon-folder-close"></i>&nbsp;Meus Documentos</a></li>
     <li><a class="" href="/relatorio/"><i class=" icon-th-large"></i>&nbsp;Meus Relatórios</a></li>
+    <?php endif; ?>
     <?php foreach ($menus as $mod => $servicos): ?>
         <li class="dropdown">
             <a id="drop<?php echo $mod; ?>" href="#" role="button" class="dropdown-toggle" data-toggle="dropdown"><?php echo $mod; ?><b class="caret"></b></a>

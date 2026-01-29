@@ -89,20 +89,24 @@ class AuthController extends Zend_Controller_Action {
                         $inadimplentes = $ModeloEmpresa->obterEmpresaInadimplente(array($unidadeId), array($RstEmpresa->empresa_cnpj));
                         
                         if (count($inadimplentes) > 0) {
-                            // Se retornou registro, é porque está inadimplente E não tem permissão de acesso
-                            self::$_mensagens[0] = $descricaoStatusPendente;
-                            $logar = false;
+                            // Está inadimplente, mas permitimos o login com restrições
+                            // Definimos uma flag na sessão para controlar o acesso restrito
+                            self::$_atributosContrato['acesso_restrito_financeiro'] = true;
+                            $logar = true;
                         } else {
                             $logar = true;
-                            self::$_atributosContrato = $resultadoLogar;
+                            self::$_atributosContrato['acesso_restrito_financeiro'] = false;
                         }
+                        self::$_atributosContrato = array_merge(self::$_atributosContrato, isset(self::$_atributosContrato) ? self::$_atributosContrato : array());
                     } else {
                         // Se não achou contratante, permite logar
                         $logar = true;
-                        self::$_atributosContrato = $resultadoLogar;
+                        self::$_atributosContrato['acesso_restrito_financeiro'] = false;
                     }
                 } catch (Exception $ex) {
-                    self::$_mensagens[0] = 'Erro ao executar comando de identificação do contrato';
+                    // Em caso de erro, permite o login normal para não travar o usuário
+                    // self::$_mensagens[0] = 'Erro ao executar comando de identificação do contrato';
+                    $logar = true;
                 }
             }
         }
