@@ -98,12 +98,34 @@
         $("#modalInformacao").modal('show');
     }
 
-    function listarDiasAtendimento() {
-        var mes = $('#disponibilidade-mes').val();
-        var ano = $('#disponibilidade-ano').val();
+    function listarDiasAtendimento(mes, ano) {
+        mes = mes || $('#calendario-mes').val();
+        ano = ano || $('#calendario-ano').val();
         var unidadeId = $('#fk_unidade_id').val();
         UtilitariosAjax.obterDisponiblidadeMensalDeVagasParaAgendamento(mes, ano, unidadeId);
     }
+
+    function listarHorariosCalendario(data, turno) {
+        $("#agenda_data_exame").val(data);
+        $("#modalHorarios #modalData").text(data);
+        $("#modalHorarios #modalTurno").text(turno === 'manha' ? 'Manhã' : 'Tarde');
+        $("#modalHorarios .modal-body").html('<div class="alert alert-warning"><i class="fa fa-refresh"></i> Carregando...</div>');
+        var json = { unidade: $("#fk_unidade_id").val(), data: data, turno: turno };
+        fetch('/ajax/html/servico/obter-vagas-por-horario-na-data', { method: 'POST', body: JSON.stringify(json) })
+            .then(function(r) { return r.text(); })
+            .then(function(html) { $("#modalHorarios .modal-body").html(html); });
+        $("#modalHorarios").modal("show");
+    }
+
+    window.agendarNaData = function(a) {
+        var horario_id = a.getAttribute('horario-id');
+        var horario = a.getAttribute('horario');
+        $("#horario_id").val(horario_id);
+        $("#horario").val(horario);
+        $(".bt-agendar-modal").removeClass("btn-success").addClass("btn-default");
+        $(a).addClass("btn-success").removeClass("btn-default");
+        $("#modalHorarios").modal("hide");
+    };
 
     function ajaxResgatarAtributosFuncionario() {
         var funcionarioId = $("#funcionario_id").val();
@@ -219,6 +241,11 @@
             var imprimirRetorno = function (resposta) {
                 if (resposta && resposta.length > 0) {
                     $('#datas_atendimento').html(resposta);
+                    var $cal = $('#datas_atendimento .calendario-vagas');
+                    if ($cal.length) {
+                        $('#calendario-mes').val($cal.data('mes') || mes);
+                        $('#calendario-ano').val($cal.data('ano') || ano);
+                    }
                 }
             };
             $.post(url, {mes: mes, ano: ano, unidadeId: unidadeId}, imprimirRetorno);
@@ -247,14 +274,27 @@
         $("#verificar-disponibilidade").click(function () {
             listarDiasAtendimento();
         });
-        $("#disponibilidade-mes").click(function () {
-            listarDiasAtendimento();
-        });
 
-        $("#disponibilidade-ano").change(function () {
-            listarDiasAtendimento();
+        $(document).on("click", ".btn-prev-mes", function() {
+            var $cal = $(".calendario-vagas");
+            var mes = parseInt($cal.data("mes"), 10) || new Date().getMonth() + 1;
+            var ano = parseInt($cal.data("ano"), 10) || new Date().getFullYear();
+            if (mes <= 1) { mes = 12; ano--; } else { mes--; }
+            listarDiasAtendimento(mes < 10 ? '0' + mes : '' + mes, ano);
         });
-
+        $(document).on("click", ".btn-prox-mes", function() {
+            var $cal = $(".calendario-vagas");
+            var mes = parseInt($cal.data("mes"), 10) || new Date().getMonth() + 1;
+            var ano = parseInt($cal.data("ano"), 10) || new Date().getFullYear();
+            if (mes >= 12) { mes = 1; ano++; } else { mes++; }
+            listarDiasAtendimento(mes < 10 ? '0' + mes : '' + mes, ano);
+        });
+        $(document).on("click", ".bt-agendar-manha", function() {
+            listarHorariosCalendario($(this).attr("data"), "manha");
+        });
+        $(document).on("click", ".bt-agendar-tarde", function() {
+            listarHorariosCalendario($(this).attr("data"), "tarde");
+        });
     });
 
 
@@ -284,7 +324,7 @@
 
     <div class="row">
 
-        <div class="col-md-4">
+        <div class="col-md-5">
 
             <div class="panel panel-primary">
 
@@ -292,27 +332,8 @@
 
                 <div class="panel-body">
 
-                    <div class=" row">
-
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label>Mês</label>
-                                <select class="form-control" id="disponibilidade-mes">
-                                    <?php foreach ($meses as $numero => $extenso): ?>
-                                        <option <?php echo (int) ($numero == (int) date('m')) ? 'selected="selected"' : ''; ?> value="<?php echo $numero ?>"><?php echo $extenso ?></option>
-                                    <?php endforeach ?>
-                                </select>
-                            </div>
-                        </div>
-
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label>Ano</label>
-                                <input id="disponibilidade-ano" type="text" class="form-control" value="<?php echo date('Y') ?>"/>
-                            </div>
-                        </div>
-
-                    </div>
+                    <input type="hidden" id="calendario-mes" value="<?php echo date('m') ?>"/>
+                    <input type="hidden" id="calendario-ano" value="<?php echo date('Y') ?>"/>
 
                     <div id="datas_atendimento" style="text-align: center">
                         <img src="/img/ajax.gif"/>
@@ -324,7 +345,7 @@
 
         </div>
 
-        <div class="col-md-8">
+        <div class="col-md-7">
 
             <div class="panel panel-primary">
 
@@ -341,7 +362,7 @@
                             </div>
                         </div>
 
-                        <div class="col-md-4">
+                        <div class="col-md-3">
                             <div class="form-group">
                                 <label for="turno">Horário</label>
                                 <input type="text" id="horario" value="<?php echo Util::horarioGlobalCompleto($this->atributos) ?>" class="form-control input-sm" disabled />
@@ -349,7 +370,7 @@
                             </div>
                         </div>
 
-                        <div class="col-md-6">
+                        <div class="col-md-7">
                             <div class="form-group">
                                 <label>Tipo de Exame</label>
                                 <select class="form-control" name="fk_tipoexame_id" id="fk_tipoexame_id">
@@ -366,7 +387,7 @@
 
                     <div class="row">
 
-                        <div class="col-md-9">
+                        <div class="col-md-8">
                             <div class="form-group">
                                 <label>Nome</label>
                                 <select class="form-control" name="fk_alocacao_id" id="fk_alocacao_id" disabled="true">
@@ -378,7 +399,7 @@
                             </div>
                         </div>
 
-                        <div class="col-md-3">
+                        <div class="col-md-4">
                             <div class="form-group">
                                 <label>CPF</label>
                                 <input disabled="disabled" class="form-control" type="text" name="pessoa_cpf" id="pessoa_cpf" value=""/>

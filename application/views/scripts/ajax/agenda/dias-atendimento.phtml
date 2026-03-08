@@ -1,79 +1,108 @@
-<table class="table table-condensed">
-    <thead>
-        <tr>
-            <th class="text-center">Data</th>
-            <th class="text-center">Vagas</th>
-            <th class="text-center">Agendar</th>
-        </tr>
-    </thead>
-    <tbody>
-        <?php foreach ($this->vagas as $vaga): ?>
-        <tr>
-            <td class="text-center"><?php echo $vaga['data'] ?></td>
-            <td class="text-center"><?php echo $vaga['vagas'] ?></td>
-            <td class="text-center">
-                <?php if ($vaga['vagas'] > 0): ?>
-                <a href="javascript:void(0);" class="btn btn-default bt-agendar btn-xs" onclick="listarHorarios(this)" data="<?php echo $vaga['data'] ?>">Agendar</a>
-                <?php endif;?>
-            </td>
-        </tr>
-        <?php endforeach;?>
-    </tbody>
-</table>
+<?php
+$mes = $this->mes;
+$ano = $this->ano;
+$mesExtenso = $this->mesExtenso;
+$vagas = $this->vagas;
+$primeiroDia = (int) date('N', strtotime("{$ano}-{$mes}-01"));
+$ultimoDia = count($vagas);
+$mapaDias = [];
+foreach ($vagas as $v) { $mapaDias[$v['dia']] = $v; }
+$diasSemana = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+$celulasVaziasInicio = ($primeiroDia % 7);
+?>
+
+<div class="calendario-vagas" data-mes="<?php echo $mes ?>" data-ano="<?php echo $ano ?>">
+    <div class="calendario-header">
+        <button type="button" class="btn btn-default btn-sm btn-prev-mes" title="Mês anterior">
+            <i class="fa fa-chevron-left"></i>
+        </button>
+        <span class="calendario-mes-ano"><?php echo $mesExtenso ?> <?php echo $ano ?></span>
+        <button type="button" class="btn btn-default btn-sm btn-prox-mes" title="Próximo mês">
+            <i class="fa fa-chevron-right"></i>
+        </button>
+    </div>
+
+    <table class="table table-bordered table-condensed calendario-grid">
+        <thead>
+            <tr>
+                <?php foreach ($diasSemana as $d): ?>
+                <th class="text-center"><?php echo $d ?></th>
+                <?php endforeach; ?>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <?php
+                $col = 0;
+                for ($i = 0; $i < $celulasVaziasInicio; $i++, $col++): ?>
+                <td class="calendario-vazio"></td>
+                <?php endfor;
+                for ($dia = 1; $dia <= $ultimoDia; $dia++):
+                    $v = $mapaDias[$dia];
+                    $isWeekend = $v['dia_semana'] > 5;
+                    $isPassado = $v['passado'];
+                    $classe = 'calendario-dia';
+                    if ($isWeekend) $classe .= ' calendario-fim-semana';
+                    if ($isPassado) $classe .= ' calendario-passado';
+                ?>
+                <?php if ($col > 0 && $col % 7 === 0): ?></tr><tr><?php endif; ?>
+                <td class="<?php echo $classe ?>">
+                    <div class="calendario-dia-num"><?php echo $dia ?></div>
+                    <?php if (!$isWeekend): ?>
+                    <div class="calendario-dia-vagas">
+                        <small><?php echo ($v['vagas_manha'] + $v['vagas_tarde']) ?> vagas</small>
+                    </div>
+                    <div class="calendario-dia-botoes">
+                        <?php if ($v['vagas_manha'] > 0 && !$isPassado): ?>
+                        <button type="button" class="btn btn-default btn-xs bt-agendar-manha" data="<?php echo $v['data'] ?>">Agendar manhã</button>
+                        <?php endif; ?>
+                        <?php if ($v['vagas_tarde'] > 0 && !$isPassado): ?>
+                        <button type="button" class="btn btn-default btn-xs bt-agendar-tarde" data="<?php echo $v['data'] ?>">Agendar tarde</button>
+                        <?php endif; ?>
+                    </div>
+                    <?php else: ?>
+                    <div class="calendario-dia-vagas"><small>—</small></div>
+                    <?php endif; ?>
+                </td>
+                <?php $col++; endfor;
+                while ($col % 7 !== 0): ?>
+                <td class="calendario-vazio"></td>
+                <?php $col++; endwhile; ?>
+            </tr>
+        </tbody>
+    </table>
+</div>
 
 <style>
-.modal { text-align: left; }
+.calendario-vagas { font-size: 12px; }
+.calendario-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+.calendario-mes-ano { font-weight: bold; font-size: 14px; }
+.calendario-grid { margin-bottom: 0; table-layout: fixed; }
+.calendario-grid td, .calendario-grid th { padding: 4px; text-align: center; vertical-align: middle; }
+.calendario-vazio { background: #f9f9f9; }
+.calendario-fim-semana { background: #f5f5f5; color: #999; }
+.calendario-passado { background: #eee; color: #999; }
+.calendario-dia-num { font-weight: bold; margin-bottom: 2px; }
+.calendario-dia-vagas { margin: 2px 0; }
+.calendario-dia-botoes { display: flex; flex-wrap: wrap; gap: 4px; justify-content: center; }
+.calendario-dia-botoes .btn { flex: 1; min-width: 60px; padding: 4px 6px; font-size: 10px; }
+.bt-agendar-manha { background-color: #fff8e1 !important; border-color: #ffe082 !important; color: #f57c00 !important; }
+.bt-agendar-manha:hover { background-color: #ffecb3 !important; border-color: #ffca28 !important; }
+.bt-agendar-tarde { background-color: #e3f2fd !important; border-color: #90caf9 !important; color: #1565c0 !important; }
+.bt-agendar-tarde:hover { background-color: #bbdefb !important; border-color: #64b5f6 !important; }
 </style>
 
 <div id="modalHorarios" class="modal fade" tabindex="-1" role="dialog">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
-
             <div class="modal-header">
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-                <h4 class="modal-title" id="modalTitle"><i class="fa fa-clock-o"></i> Horários disponíveis para <span id="modalData">00/00/0000</span></h4>
+                <h4 class="modal-title"><i class="fa fa-clock-o"></i> Horários para <span id="modalData">00/00/0000</span> - <span id="modalTurno"></span></h4>
             </div>
-
-            <div class="modal-body" id="modalBody"><!-- JS --></div>
-
+            <div class="modal-body" id="modalBody"></div>
             <div class="modal-footer">
-                <button id="modalHorariosClose" type="button" class="btn btn-default" data-dismiss="modal">Fechar</button>
+                <button type="button" class="btn btn-default" data-dismiss="modal">Fechar</button>
             </div>
-
         </div>
     </div>
 </div>
-
-<script>
-
-    function listarHorarios(a) {
-
-        var data = a.getAttribute('data');
-        $("#agenda_data_exame").val(data);
-
-        $("#modalData").html(data);
-        $("#modalBody").html(`<div class="alert alert-warning"><i class="fa fa-refresh"></i> Carregando tabela de vagas por horário...</div>`);
-
-        var url = '/ajax/html/servico/obter-vagas-por-horario-na-data';
-        var json = { unidade: $("#fk_unidade_id").val(), data: data };
-
-        fetch(url, { method: 'POST', body: JSON.stringify(json) })
-
-            .then(p => p.text()).then(html => {
-
-                $("#modalBody").html(html);
-
-            });
-
-        $("#modalHorarios").modal("show");
-
-        var bts = $(".bt-agendar");
-
-        for (var i = 0; i < bts.length; i++)
-
-            bts[i].className = 'btn btn-default btn-xs bt-agendar';
-
-        a.className = 'btn btn-success bt-agendar btn-xs';
-    }
-
-</script>

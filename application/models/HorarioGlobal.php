@@ -20,6 +20,31 @@ class Application_Model_HorarioGlobal extends Zend_Db_Table {
         return $this->getDefaultAdapter()->fetchAll($sql, [(int) $unidade]);
     }
 
+    /**
+     * Retorna horários da unidade que valem para o dia da semana informado.
+     * Considera horario_global_dia (vagas por dia) e fallback para legado (horario_global_vagas).
+     *
+     * @param int $unidadeID ID da unidade
+     * @param int $diaSemana 1=Segunda … 5=Sexta
+     * @return array
+     */
+    public function obterHorariosDaUnidadePorDiaSemana($unidadeID, $diaSemana)
+    {
+        $sql = "SELECT hg.horario_global_id AS id,
+                       COALESCE(hgd.vagas, hg.horario_global_vagas) AS vagas,
+                       hg.horario_global_de AS horario1,
+                       hg.horario_global_ate AS horario2
+                FROM horario_global hg
+                LEFT JOIN horario_global_dia hgd ON hgd.fk_horario_global_id = hg.horario_global_id AND hgd.dia_semana = ?
+                WHERE hg.fk_unidade_id = ?
+                  AND (hg.horario_global_status = 0 OR hg.horario_global_status IS NULL)
+                  AND (hgd.horario_global_dia_id IS NOT NULL
+                       OR (SELECT COUNT(*) FROM horario_global_dia hgd2 WHERE hgd2.fk_horario_global_id = hg.horario_global_id) = 0)
+                ORDER BY hg.horario_global_de";
+
+        return $this->getDefaultAdapter()->fetchAll($sql, [(int) $diaSemana, (int) $unidadeID]);
+    }
+
     public function obter($id) {
         $sql = "SELECT * FROM horario_global WHERE horario_global_id = ?";
         return $this->getDefaultAdapter()->fetchRow($sql, [(int) $id]);

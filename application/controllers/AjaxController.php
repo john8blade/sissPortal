@@ -1097,13 +1097,25 @@ class AjaxController extends Controller
             $_ = explode('/', $data);
             $ymd = "{$_[2]}-{$_[1]}-{$_[0]}";
             $unidadeID = (int) $params['unidade'];
+            $diaSemana = (int) date('N', strtotime($ymd));
+            $turno = isset($params['turno']) ? $params['turno'] : null;
 
             $Agenda = new Application_Model_Agenda();
             $HorarioGlobal = new Application_Model_HorarioGlobal();
             $HorarioDiario = new Application_Model_HorarioDiario();
 
-            $horarios = $HorarioGlobal->obterHorariosDaUnidade($unidadeID);
+            $horarios = $diaSemana <= 5
+                ? $HorarioGlobal->obterHorariosDaUnidadePorDiaSemana($unidadeID, $diaSemana)
+                : [];
             $horarios = $HorarioDiario->atualizar($horarios, $ymd);
+
+            if ($turno === 'manha' || $turno === 'tarde') {
+                $horarios = array_filter($horarios, function ($h) use ($turno) {
+                    $hora = isset($h['horario1']) ? (int) substr($h['horario1'], 0, 2) : 0;
+                    return $turno === 'manha' ? $hora < 12 : $hora >= 12;
+                });
+                $horarios = array_values($horarios);
+            }
 
             for ($i = 0; $i < count($horarios); $i++)
             {
@@ -1132,45 +1144,54 @@ class AjaxController extends Controller
             $mes = $params['mes'];
             $ano = $params['ano'];
             $unidadeID = (int) $params['unidadeId'];
-            $dias = Util::obterUtimoDoMes($mes, $ano);
-            $dia = $mes == date('m') ? date('d') : '01';
-            $data = new DateTime("{$ano}-{$mes}-{$dia}");
+            $ultimoDia = Util::obterUtimoDoMes($mes, $ano);
             if ($ano < date('Y')) die(Util::alertWarning("Data retroativa"));
-            if ($ano = date('Y') && $mes < date('m')) die(Util::alertWarning("Data retroativa"));
+            if ($ano == date('Y') && $mes < date('m')) die(Util::alertWarning("Data retroativa"));
 
             $Agenda = new Application_Model_Agenda();
             $HorarioGlobal = new Application_Model_HorarioGlobal();
             $HorarioDiario = new Application_Model_HorarioDiario();
 
-            $horarios = $HorarioGlobal->obterHorariosDaUnidade($unidadeID);
-
-            $data->add(new DateInterval('P1D'));
-            if ($data->format('N') == 7) $data->add(new DateInterval('P1D'));
-            if ($data->format('N') == 6) $data->add(new DateInterval('P2D'));
-
-            for ($i = 0; $i < $dias; $i++)
-            {
-
-                if ($i > 0) $data->add(new DateInterval('P1D'));
+            $hoje = date('Y-m-d');
+            $meses = Util::obterVetorAssociativoDosMesesDoAno();
+            for ($diaMes = 1; $diaMes <= $ultimoDia; $diaMes++) {
+                $data = new DateTime(sprintf('%04d-%02d-%02d', $ano, $mes, $diaMes));
                 $ymd = $data->format('Y-m-d');
                 $dmy = $data->format('d/m/Y');
-                $dia = $data->format('N');
-                if ($dia > 5) continue;
-                $dispo = 0;
+                $diaSemana = (int) $data->format('N');
+                $vagasManha = 0;
+                $vagasTarde = 0;
 
-                foreach ($horarios as $h) {
-
-                    $total = $Agenda->contarAgendaDaUnidadePorDataHorario($unidadeID, $ymd, $h['id']);
-                    $vagas = $HorarioDiario->vagasDaUnidadeNaDataNoHorario($unidadeID, $ymd, $h['id']);
-                    $dispo += $vagas - $total > 0 ? $vagas - $total : 0;
-
+                if ($diaSemana <= 5) {
+                    $horarios = $HorarioGlobal->obterHorariosDaUnidadePorDiaSemana($unidadeID, $diaSemana);
+                    foreach ($horarios as $h) {
+                        $horaInicio = isset($h['horario1']) ? (int) substr($h['horario1'], 0, 2) : 0;
+                        $total = $Agenda->contarAgendaDaUnidadePorDataHorario($unidadeID, $ymd, $h['id']);
+                        $vagas = $HorarioDiario->vagasDaUnidadeNaDataNoHorario($unidadeID, $ymd, $h['id']);
+                        $disp = max(0, $vagas - $total);
+                        if ($horaInicio < 12) {
+                            $vagasManha += $disp;
+                        } else {
+                            $vagasTarde += $disp;
+                        }
+                    }
                 }
 
-                $grid[] = ['data' => $dmy, 'vagas' => $dispo];
-
+                $grid[] = [
+                    'dia' => $diaMes,
+                    'data' => $dmy,
+                    'ymd' => $ymd,
+                    'dia_semana' => $diaSemana,
+                    'vagas_manha' => $vagasManha,
+                    'vagas_tarde' => $vagasTarde,
+                    'passado' => $ymd < $hoje,
+                ];
             }
 
             $this->view->vagas = $grid;
+            $this->view->mes = $mes;
+            $this->view->ano = $ano;
+            $this->view->mesExtenso = isset($meses[$mes]) ? $meses[$mes] : $mes;
             $this->renderScript('/ajax/agenda/dias-atendimento.phtml');
 
         } catch (Exception $ex) { die(Util::alertDanger($ex->getMessage())); }
