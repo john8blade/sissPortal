@@ -47,7 +47,9 @@ var STO;
                 Util.carregador(1);
                 clearTimeout(STO);
                 STO = setTimeout(function () {
-                    Util.gebi("aguarde").innerHTML = "Sua conexão parece estar lenta...";
+                    if (Util.gebi("aguarde")) {
+                        Util.gebi("aguarde").innerHTML = "Sua conexão parece estar lenta...";
+                    }
                     clearTimeout(STO);
                     STO = setTimeout(function () {
                         window.stop();
@@ -103,14 +105,16 @@ var STO;
          * Exibe/Oculta a camada de carregamento.
          */
         carregador: function (num) {
-            Util.gebi("aguarde").innerHTML = "Aguarde...";
+            if (Util.gebi("aguarde")) {
+                Util.gebi("aguarde").innerHTML = "Aguarde...";
+            }
             if (num > 0) {
-                Util.gebi("sombra").style.display = "block";
-                Util.gebi("aguarde").style.display = "block";
+                if (Util.gebi("sombra")) Util.gebi("sombra").style.display = "block";
+                if (Util.gebi("aguarde")) Util.gebi("aguarde").style.display = "block";
             } else {
                 clearTimeout(STO);
-                Util.gebi("sombra").style.display = "none";
-                Util.gebi("aguarde").style.display = "none";
+                if (Util.gebi("sombra")) Util.gebi("sombra").style.display = "none";
+                if (Util.gebi("aguarde")) Util.gebi("aguarde").style.display = "none";
             }
             return this;
         },
@@ -171,7 +175,7 @@ var STO;
             var tr = link.parentNode.parentNode;
             var id = tr.id;
             tr.className = tr.className + ' alert-danger';
-            Util.alerta('warning', texto + ' <a target="iframe-receptor" onclick="util.requisicao();Util.removeElemento(Util.gebi(\'' + id + '\'))" href="' + url + '"><i class="icon-ok"></i> Sim</a> | <a href="#" onclick="this.parentNode.parentNode.innerHTML=\'\';util.gebi(\'' + id + '\').className=\'\'"><i class="icon-remove"></i> Não</a>');
+            Util.alerta('warning', texto + ' <a target="iframe-receptor" onclick="Util.requisicao();Util.removeElemento(Util.gebi(\'' + id + '\'))" href="' + url + '"><i class="icon-ok"></i> Sim</a> | <a href="#" onclick="this.parentNode.parentNode.innerHTML=\'\';Util.gebi(\'' + id + '\').className=\'\'"><i class="icon-remove"></i> Não</a>');
             return this;
         },
         /*

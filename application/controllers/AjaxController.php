@@ -3,6 +3,54 @@
 class AjaxController extends Controller
 {
 
+    public function obterExamesPcmsoPorAlocacao() {
+        try {
+            $alocacaoId = (int) $this->_getParam('alocacao_id', 0);
+            $tipoExameId = (int) $this->_getParam('tipoexame_id', 0);
+            $empresaId = isset($_SESSION['empresa']['empresa_id']) ? $_SESSION['empresa']['empresa_id'] : 0;
+            $contratoId = isset($_SESSION['contrato_id']) ? $_SESSION['contrato_id'] : 0;
+
+            if ($alocacaoId == 0 || $tipoExameId == 0 || $empresaId == 0 || $contratoId == 0) {
+                $this->json(array());
+                return;
+            }
+
+            $modeloAlocacao = new Application_Model_Alocacao();
+            $alocacao = $modeloAlocacao->fetchRow(array('alocacao_id = ?' => $alocacaoId));
+
+            if ($alocacao) {
+                $cargoId = (int) $alocacao->fk_cargo_id;
+                $funcaoId = (int) $alocacao->fk_funcao_id;
+                $setorId = (int) $alocacao->fk_setor_id;
+
+                $Cnx = Zend_Db_Table::getDefaultAdapter();
+                $comandoSp = "CALL SpObterColecaoExameParaFuncaoDoPcmsoRecente({$contratoId}, {$empresaId}, {$cargoId}, {$funcaoId}, {$setorId}, {$tipoExameId})";
+                $Comando = $Cnx->query($comandoSp);
+                $rstExamesPcmso = $Comando->fetchAll();
+                $Comando->closeCursor();
+
+                // Remove exames duplicados baseados no ID do produto
+                $examesUnicos = array();
+                $idsVistos = array();
+                
+                if (is_array($rstExamesPcmso)) {
+                    foreach ($rstExamesPcmso as $exame) {
+                        if (!in_array($exame['produto_id'], $idsVistos)) {
+                            $examesUnicos[] = $exame;
+                            $idsVistos[] = $exame['produto_id'];
+                        }
+                    }
+                }
+
+                $this->json($examesUnicos);
+            } else {
+                $this->json(array());
+            }
+        } catch (Exception $ex) {
+            $this->json(array('erro' => $ex->getMessage()));
+        }
+    }
+
     public function eventoEnviado() {
         try {
 

@@ -305,6 +305,52 @@ class AgendaController extends Controller {
                                 // Comando de inserção
                                 $tabelaAgenda['agenda_criada_em'] = date('Y-m-d H:i:s');
                                 $agendaId = $agenda->insert($tabelaAgenda);
+
+                                // =========================================================================
+                                // VINCULAR EXAMES DO PCMSO AUTOMATICAMENTE AO SALVAR PELO PORTAL
+                                // =========================================================================
+                                if ($agendaId > 0) {
+                                    try {
+                                        $modeloAlocacao = new Application_Model_Alocacao();
+                                        $alocacao = $modeloAlocacao->fetchRow(array('alocacao_id = ?' => $parametros['fk_alocacao_id']));
+                                        
+                                        if ($alocacao) {
+                                            $cargoId = (int) $alocacao->fk_cargo_id;
+                                            $funcaoId = (int) $alocacao->fk_funcao_id;
+                                            $setorId = (int) $alocacao->fk_setor_id;
+                                            $tipoExameId = (int) $parametros['fk_tipoexame_id'];
+                                            
+                                            $Cnx = Zend_Db_Table::getDefaultAdapter();
+                                            $comandoSp = "CALL SpObterColecaoExameParaFuncaoDoPcmsoRecente({$contratoId}, {$empresaId}, {$cargoId}, {$funcaoId}, {$setorId}, {$tipoExameId})";
+                                            $Comando = $Cnx->query($comandoSp);
+                                            $rstExamesPcmso = $Comando->fetchAll();
+                                            $Comando->closeCursor(); 
+                                            
+                                            if (is_array($rstExamesPcmso) && count($rstExamesPcmso) > 0) {
+                                                // Remove exames duplicados baseados no ID do produto
+                                                $idsVistos = array();
+                                                
+                                                foreach ($rstExamesPcmso as $exame) {
+                                                    if (!in_array($exame['produto_id'], $idsVistos)) {
+                                                        $produtoAgenda = array(
+                                                            'produto_agenda_executado' => 0,
+                                                            'produto_agenda_data_programada' => null, // Data individual do exame inicia nula
+                                                            'fk_produto_id' => $exame['produto_id'],
+                                                            'fk_agenda_id' => $agendaId,
+                                                            'produto_agenda_status' => 0
+                                                        );
+                                                        $Cnx->insert('produto_agenda', $produtoAgenda);
+                                                        $idsVistos[] = $exame['produto_id'];
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    } catch (Exception $eExames) {
+                                        // Apenas previne que um erro nos exames quebre a criacao da agenda
+                                    }
+                                }
+                                // =========================================================================
+
                                 //$resposta = $this->_salvarOrdemAtendimento($agendaId);
                                 $rst = self::_processarApiRegistroSenhaFilaMedicina($agendaId);
 
@@ -355,6 +401,54 @@ class AgendaController extends Controller {
                                 $onde = array('agenda_id = ?' => $agendaId);
                                 $agendaId = $agenda->update($tabelaAgenda, $onde);
                                 $agendaId = $antigo;
+                                
+                                // =========================================================================
+                                // ATUALIZAR EXAMES DO PCMSO AO EDITAR O AGENDAMENTO
+                                // =========================================================================
+                                try {
+                                    $Cnx = Zend_Db_Table::getDefaultAdapter();
+                                    
+                                    // 1. Inativa os exames antigos que ainda não foram executados
+                                    $Cnx->update('produto_agenda', 
+                                        array('produto_agenda_status' => 2),
+                                        array('fk_agenda_id = ?' => $agendaId, 'produto_agenda_executado = ?' => 0)
+                                    );
+                                    
+                                    // 2. Busca e insere os novos exames
+                                    $modeloAlocacao = new Application_Model_Alocacao();
+                                    $alocacao = $modeloAlocacao->fetchRow(array('alocacao_id = ?' => $parametros['fk_alocacao_id']));
+                                    
+                                    if ($alocacao) {
+                                        $cargoId = (int) $alocacao->fk_cargo_id;
+                                        $funcaoId = (int) $alocacao->fk_funcao_id;
+                                        $setorId = (int) $alocacao->fk_setor_id;
+                                        $tipoExameId = (int) $parametros['fk_tipoexame_id'];
+                                        
+                                        $comandoSp = "CALL SpObterColecaoExameParaFuncaoDoPcmsoRecente({$contratoId}, {$empresaId}, {$cargoId}, {$funcaoId}, {$setorId}, {$tipoExameId})";
+                                        $Comando = $Cnx->query($comandoSp);
+                                        $rstExamesPcmso = $Comando->fetchAll();
+                                        $Comando->closeCursor(); 
+                                        
+                                        if (is_array($rstExamesPcmso) && count($rstExamesPcmso) > 0) {
+                                            $idsVistos = array();
+                                            foreach ($rstExamesPcmso as $exame) {
+                                                if (!in_array($exame['produto_id'], $idsVistos)) {
+                                                    $produtoAgenda = array(
+                                                        'produto_agenda_executado' => 0,
+                                                        'produto_agenda_data_programada' => null,
+                                                        'fk_produto_id' => $exame['produto_id'],
+                                                        'fk_agenda_id' => $agendaId,
+                                                        'produto_agenda_status' => 0
+                                                    );
+                                                    $Cnx->insert('produto_agenda', $produtoAgenda);
+                                                    $idsVistos[] = $exame['produto_id'];
+                                                }
+                                            }
+                                        }
+                                    }
+                                } catch (Exception $eExamesUpdate) {}
+                                // =========================================================================
+
                                 if (strtotime(Util::dataBD($parametros['data_antiga'])) == strtotime(Util::dataBD($parametros['agenda_data_exame']))) {
 
                                 } else {

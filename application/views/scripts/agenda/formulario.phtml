@@ -159,6 +159,47 @@
 
     function UtilitariosAjax() {
 
+        this.obterExamesPcmso = function(alocacaoId, tipoExameId) {
+            if (!alocacaoId || !tipoExameId) {
+                $("#container-exames-pcmso").hide();
+                return;
+            }
+            
+            $("#container-exames-pcmso").show();
+            $("#lista-exames-pcmso").html('<span class="text-muted"><i class="fa fa-refresh fa-spin"></i> Carregando exames...</span>');
+            
+            var url = '/ajax/json/servico/obter-exames-pcmso-por-alocacao/';
+            $.post(url, {alocacao_id: alocacaoId, tipoexame_id: tipoExameId}, function(resposta) {
+                if (resposta && resposta.length > 0) {
+                    var html = '<div class="row">';
+                    
+                    // Divide os exames em duas colunas
+                    var metade = Math.ceil(resposta.length / 2);
+                    
+                    html += '<div class="col-md-6"><ul class="list-unstyled" style="margin-bottom: 0;">';
+                    for (var i = 0; i < metade; i++) {
+                        html += '<li><i class="fa fa-check-square-o text-success"></i> ' + resposta[i].produto_nome + '</li>';
+                    }
+                    html += '</ul></div>';
+                    
+                    if (resposta.length > 1) {
+                        html += '<div class="col-md-6"><ul class="list-unstyled" style="margin-bottom: 0;">';
+                        for (var i = metade; i < resposta.length; i++) {
+                            html += '<li><i class="fa fa-check-square-o text-success"></i> ' + resposta[i].produto_nome + '</li>';
+                        }
+                        html += '</ul></div>';
+                    }
+                    
+                    html += '</div>';
+                    $("#lista-exames-pcmso").html(html);
+                } else {
+                    $("#lista-exames-pcmso").html('<span class="text-danger"><i class="fa fa-warning"></i> Nenhum exame encontrado para esta função/cargo no PCMSO atual.</span>');
+                }
+            }, 'json').fail(function() {
+                $("#lista-exames-pcmso").html('<span class="text-danger"><i class="fa fa-warning"></i> Erro ao carregar exames.</span>');
+            });
+        };
+
         this.obterAlocacaoPorId = function (alocacaoId) {
             $('#pessoa_cpf', '#pessoa_identidade', '#funcionario_matricula', '#pessoa_data_nascimento', '#funcionario_data_admissao', '#setor_nome', '#cargo_nome', '#funcao_nome', '#fk_pessoa_id').val('');
             var onde = "/ajax/json/servico/obter-alocacao-pelo-id/";
@@ -227,6 +268,12 @@
                   $("#funcao_nome").val(alocacao.ppra_item_funcao); 
               }
               $("#fk_pessoa_id").val(alocacao.pessoa_id);
+              
+              // Busca os exames do PCMSO
+              var tipoExameId = $("#fk_tipoexame_id").val();
+              if (tipoExameId) {
+                  UtilitariosAjax.obterExamesPcmso(alocacaoId, tipoExameId);
+              }
           }
 
         }
@@ -255,6 +302,17 @@
 
 
     $(function () {
+        
+        $("#fk_tipoexame_id").change(function() {
+            var alocacaoId = $("#fk_alocacao_id").val();
+            var tipoExameId = $(this).val();
+            if (alocacaoId && tipoExameId) {
+                UtilitariosAjax.obterExamesPcmso(alocacaoId, tipoExameId);
+            } else {
+                $("#container-exames-pcmso").hide();
+            }
+        });
+
         /*
         $("#fk_tipoexame_id").change(function() {
             document.getElementById("fk_alocacao_id").disabled = false;
@@ -468,6 +526,15 @@
                     </div>
 
                     <div class="row">
+
+                        <div class="col-md-12">
+                            <div class="form-group" id="container-exames-pcmso" style="display: none;">
+                                <label>Exames que o colaborador será submetido, segundo PCMSO</label>
+                                <div class="well well-sm" id="lista-exames-pcmso" style="background-color: #f9f9f9; min-height: 40px; margin-bottom: 0;">
+                                    <span class="text-muted">Selecione o funcionário e o tipo de exame para carregar os exames...</span>
+                                </div>
+                            </div>
+                        </div>
 
                         <div class="col-md-12">
                             <div class="form-group">

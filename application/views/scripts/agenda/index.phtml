@@ -52,9 +52,8 @@
                                 <?php if (strtotime($item['agenda_data_exame']) < strtotime(date('Y-m-d'))) { ?>
                                     <?php $cores = " background-color: #EEE9E9"; ?>
                                 <?php } else { ?>
-                                                                                                                            <!--<a rel="tooltip" title="Alterar" href="/agenda/alterar/id/<?php echo $item['agenda_id']; ?>/"><i class="fa fa-edit"></i></a>-->
-                                    <!--                                                                                        
-                                    <a class="btn btn-xs btn-default" rel="tooltip" title="Excluir" href="javascript:void(0);" onclick="Util.confirma('Deseja excluir o registro?', '/ajax/excluir/registro/agenda/id/<?php echo $item['agenda_id'] ?>/', this)"><i class="fa fa-remove no-margin"></i></a>-->
+                                    <a class="btn btn-xs btn-default" rel="tooltip" title="Alterar" href="/agenda/alterar/id/<?php echo $item['agenda_id']; ?>/"><i class="fa fa-edit no-margin"></i></a>
+                                    <a class="btn btn-xs btn-default" rel="tooltip" title="Excluir" href="javascript:void(0);" onclick="Util.confirma('Deseja excluir o agendamento?', '/ajax/excluir/registro/agenda/id/<?php echo $item['agenda_id'] ?>/', this)"><i class="fa fa-remove no-margin"></i></a>
                                 <?php } ?>
                             </td>
                             <td style="<?php echo $cores ?>"><?php echo str_replace($like, "<strong>$like</strong>", $item['pessoa_nome']) ?></td>
