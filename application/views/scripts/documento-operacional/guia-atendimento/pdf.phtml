@@ -4,6 +4,24 @@ $localScripts = '../application/views/scripts/documento-operacional/';
 require_once "{$localScripts}include/funcoes.php";
 
 $htmlRodape = obterHtmlDoRodapeEmPdf();
+
+if (!empty($this->agenda['local_agenda_id'])) {
+    $enderecoLocal = array_filter([
+        $this->agenda['local_agenda_logradouro'], 
+        $this->agenda['local_agenda_numero'], 
+        $this->agenda['local_agenda_bairro'], 
+        $this->agenda['local_agenda_cidade'] . ($this->agenda['local_agenda_uf'] ? '-' . $this->agenda['local_agenda_uf'] : '')
+    ]);
+    $enderecoCompleto = implode(', ', $enderecoLocal);
+    
+    // Substitui o endereço padrão da HTMED mantendo apenas o telefone
+    $htmlRodape = preg_replace(
+        '/HTMED[^\|]+\|/', 
+        '<strong>Local de Atendimento:</strong> ' . $this->agenda['local_agenda_nome'] . ' - ' . $enderecoCompleto . ' |', 
+        $htmlRodape
+    );
+}
+
 $htmlCabecalho = file_get_contents($localScripts . 'guia-exames/' . 'cabecalho.html');
 
 if (!is_null($this->agenda['horario_global_de'])) {

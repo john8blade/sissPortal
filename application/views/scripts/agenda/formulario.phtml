@@ -22,7 +22,6 @@
     var UtilitariosAjax = new UtilitariosAjax();
 
     $(document).ready(function () {
-        renderizarModalInformativo();
         $('#tipoexame_id').change(function () {
             ajaxResgataExamesDoPcmso();
         });
@@ -95,14 +94,19 @@
     }
 
     function renderizarModalInformativo() {
-        $("#modalInformacao").modal('show');
+        // Removido
     }
 
     function listarDiasAtendimento(mes, ano) {
         mes = mes || $('#calendario-mes').val();
         ano = ano || $('#calendario-ano').val();
         var unidadeId = $('#fk_unidade_id').val();
-        UtilitariosAjax.obterDisponiblidadeMensalDeVagasParaAgendamento(mes, ano, unidadeId);
+        var localAgendaId = $('#fk_local_agenda_id').val();
+        if (!localAgendaId) {
+            $('#datas_atendimento').html('<div class="alert alert-info" style="margin: 15px;">Selecione um Local de Agenda para visualizar o calendário.</div>');
+            return;
+        }
+        UtilitariosAjax.obterDisponiblidadeMensalDeVagasParaAgendamento(mes, ano, unidadeId, localAgendaId);
     }
 
     function listarHorariosCalendario(data, turno) {
@@ -110,7 +114,12 @@
         $("#modalHorarios #modalData").text(data);
         $("#modalHorarios #modalTurno").text(turno === 'manha' ? 'Manhã' : 'Tarde');
         $("#modalHorarios .modal-body").html('<div class="alert alert-warning"><i class="fa fa-refresh"></i> Carregando...</div>');
-        var json = { unidade: $("#fk_unidade_id").val(), data: data, turno: turno };
+        var json = { 
+            unidade: $("#fk_unidade_id").val(), 
+            localAgendaId: $("#fk_local_agenda_id").val(),
+            data: data, 
+            turno: turno 
+        };
         fetch('/ajax/html/servico/obter-vagas-por-horario-na-data', { method: 'POST', body: JSON.stringify(json) })
             .then(function(r) { return r.text(); })
             .then(function(html) { $("#modalHorarios .modal-body").html(html); });
@@ -283,7 +292,7 @@
         };
 
 
-        this.obterDisponiblidadeMensalDeVagasParaAgendamento = function (mes, ano, unidadeId) {
+        this.obterDisponiblidadeMensalDeVagasParaAgendamento = function (mes, ano, unidadeId, localAgendaId) {
             var url = '/ajax/html/servico/obter-dias-atendimento/';
             var imprimirRetorno = function (resposta) {
                 if (resposta && resposta.length > 0) {
@@ -295,7 +304,7 @@
                     }
                 }
             };
-            $.post(url, {mes: mes, ano: ano, unidadeId: unidadeId}, imprimirRetorno);
+            $.post(url, {mes: mes, ano: ano, unidadeId: unidadeId, localAgendaId: localAgendaId}, imprimirRetorno);
         }
     }
 
@@ -379,6 +388,92 @@
     <input type="hidden" name="fk_pessoa_id"  id="fk_pessoa_id" value=""/>
     <input type="hidden" name="fk_unidade_id"  id="fk_unidade_id" value="<?php echo $_SESSION['fk_unidade_id'] ?>"/>
     <input type="hidden" name="data_antiga"  id="data_antiga" value="<?php echo $this->atributos['agenda_data_exame']; ?>"/>
+
+    <div class="row">
+        <div class="col-md-12">
+            <div class="panel panel-primary">
+                <div class="panel-heading"><i class="fa fa-map-marker"></i> Local de Atendimento</div>
+                <div class="panel-body">
+                    <div class="form-group">
+                        <label style="margin-bottom: 15px;">Selecione o Local de Agenda (Fornecedor)</label>
+                        <input type="hidden" name="fk_local_agenda_id" id="fk_local_agenda_id" value="<?php echo isset($this->atributos['fk_local_agenda_id']) ? $this->atributos['fk_local_agenda_id'] : ''; ?>">
+                        
+                        <div class="list-group" id="lista-locais-agenda">
+                            <?php if (isset($this->locaisAgenda) && count($this->locaisAgenda) > 0): ?>
+                                <?php foreach ($this->locaisAgenda as $local): ?>
+                                    <?php 
+                                        $endereco = array_filter([
+                                            $local['endereco_logradouro'], 
+                                            $local['empresa_numero'], 
+                                            $local['endereco_bairro'], 
+                                            $local['endereco_cidade'] . ($local['endereco_uf'] ? '-' . $local['endereco_uf'] : '')
+                                        ]);
+                                        $enderecoCompleto = implode(', ', $endereco);
+                                        $isSelected = (isset($this->atributos['fk_local_agenda_id']) && $this->atributos['fk_local_agenda_id'] == $local['local_agenda_id']);
+                                    ?>
+                                    <button type="button" class="list-group-item list-group-item-action btn-local-agenda <?php echo $isSelected ? 'active' : ''; ?>" data-id="<?php echo $local['local_agenda_id']; ?>" data-nome="<?php echo htmlspecialchars($local['empresa_fantasia']); ?>" data-endereco="<?php echo htmlspecialchars($enderecoCompleto ? $enderecoCompleto : 'Endereço não informado'); ?>" onclick="confirmarLocalAgenda(this, <?php echo $local['local_agenda_id']; ?>)">
+                                        <h4 class="list-group-item-heading" style="margin-bottom: 5px;"><i class="fa <?php echo $isSelected ? 'fa-check-circle' : 'fa-circle-o'; ?> me-2 icone-check"></i> <?php echo $local['empresa_fantasia']; ?></h4>
+                                        <p class="list-group-item-text text-muted" style="<?php echo $isSelected ? 'color: #d0e9c6;' : ''; ?>"><i class="fa fa-map-marker"></i> <?php echo $enderecoCompleto ? $enderecoCompleto : 'Endereço não informado'; ?></p>
+                                    </button>
+                                <?php endforeach; ?>
+                            <?php else: ?>
+                                <div class="alert alert-warning">Nenhum local disponível para agendamento.</div>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        var localAgendaSelecionadoElemento = null;
+        var localAgendaSelecionadoId = null;
+
+        function confirmarLocalAgenda(elemento, id) {
+            localAgendaSelecionadoElemento = elemento;
+            localAgendaSelecionadoId = id;
+            
+            var nome = elemento.getAttribute('data-nome');
+            var endereco = elemento.getAttribute('data-endereco');
+            
+            document.getElementById('modalConfirmarLocalNome').innerText = nome;
+            document.getElementById('modalConfirmarLocalEndereco').innerText = endereco;
+            
+            $('#modalConfirmarLocal').modal('show');
+        }
+
+        function aplicarLocalAgenda() {
+            if (!localAgendaSelecionadoElemento || !localAgendaSelecionadoId) return;
+            
+            // Atualiza o input hidden
+            document.getElementById('fk_local_agenda_id').value = localAgendaSelecionadoId;
+            
+            // Remove a classe active de todos os botões e reseta os ícones e cores
+            var botoes = document.querySelectorAll('.btn-local-agenda');
+            botoes.forEach(function(btn) {
+                btn.classList.remove('active');
+                var icone = btn.querySelector('.icone-check');
+                icone.classList.remove('fa-check-circle');
+                icone.classList.add('fa-circle-o');
+                var texto = btn.querySelector('.list-group-item-text');
+                texto.style.color = '';
+            });
+            
+            // Adiciona a classe active no botão clicado e muda o ícone e cor
+            localAgendaSelecionadoElemento.classList.add('active');
+            var iconeClicado = localAgendaSelecionadoElemento.querySelector('.icone-check');
+            iconeClicado.classList.remove('fa-circle-o');
+            iconeClicado.classList.add('fa-check-circle');
+            var textoClicado = localAgendaSelecionadoElemento.querySelector('.list-group-item-text');
+            textoClicado.style.color = '#d0e9c6';
+            
+            $('#modalConfirmarLocal').modal('hide');
+            
+            // Carrega o calendário
+            listarDiasAtendimento();
+        }
+    </script>
 
     <div class="row">
 
@@ -582,23 +677,24 @@
 </div>
 -->
 
-<div id="modalInformacao" class="modal fade" tabindex="-1" role="dialog">
+<div id="modalConfirmarLocal" class="modal fade" tabindex="-1" role="dialog">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header">
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-                <h4 class="modal-title"><i class="icone-chamar-atencao">&nbsp;</i> IMPORTANTE</h4>
+                <h4 class="modal-title"><i class="fa fa-map-marker text-primary">&nbsp;</i> CONFIRMAÇÃO DE LOCAL</h4>
             </div>
-            <div class="modal-body">
-                
-                <!--<p>A REALIZAÇÃO DO EXAME DE AUDIOMETRIA APARTIR DO DIA <strong>09</strong> ACONTECERÁ DE <strong>SEGUNDA</strong> A <strong->SEXTAS-FEIRAS.</strong></p>-->
-                <!--<p>A REALIZAÇÃO DOS EXAMES DE RAIO-X ACONTECERÁ DE <strong>SEGUNDA</strong> À <strong>QUINTAS-FEIRAS.</strong></p>-->
-                <p>ENDEREÇO DE ATENDIMENTO - AVENIDA ABÍLIO MACHADO, 1594.</p>
-                <p>Atenciosamente,</p>
-
+            <div class="modal-body" style="font-size: 16px;">
+                <p>Você está selecionando o seguinte local para agendamento:</p>
+                <div class="well">
+                    <strong id="modalConfirmarLocalNome" style="font-size: 18px; display: block; margin-bottom: 10px;"></strong>
+                    <span id="modalConfirmarLocalEndereco"></span>
+                </div>
+                <p>Deseja confirmar este local de atendimento?</p>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-default" data-dismiss="modal">OK</button>
+                <button type="button" class="btn btn-default" data-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" onclick="aplicarLocalAgenda()">Confirmar Local</button>
             </div>
         </div>
     </div>

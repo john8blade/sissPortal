@@ -180,7 +180,8 @@ function UtilitariosAjax() {
   this.obterDisponiblidadeMensalDeVagasParaAgendamento = function(
     mes,
     ano,
-    unidadeId
+    unidadeId,
+    localAgendaId
   ) {
     var url = "/ajax/html/servico/obter-dias-atendimento";
     var imprimirRetorno = function(resposta) {
@@ -188,15 +189,15 @@ function UtilitariosAjax() {
         $("#datas_atendimento").html(resposta);
       }
     };
-    $.post(
-      url,
-      {
+    var payload = {
         mes: mes,
         ano: ano,
         unidadeId: unidadeId
-      },
-      imprimirRetorno
-    );
+    };
+    if (localAgendaId) {
+        payload.localAgendaId = localAgendaId;
+    }
+    $.post(url, payload, imprimirRetorno);
   };
 }
 

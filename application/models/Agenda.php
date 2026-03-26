@@ -357,6 +357,23 @@ class Application_Model_Agenda extends Zend_Db_Table
         return $total;
     }
 
+    public function contarAgendaDoLocalPorDataHorario($localAgendaId, $data, $horarioID)
+    {
+        $total = 0;
+        try {
+            $resultado = $this->fetchAll([
+                'agenda_status = ?' => 0,
+                'agenda_data_exame = ?' => $data,
+                'fk_local_agenda_id = ?' => $localAgendaId,
+                'fk_horario_global_id = ?' => $horarioID,
+            ]);
+            $total = $resultado->count();
+        } catch (Exception $exc) {
+            throw $exc;
+        }
+        return $total;
+    }
+
     public function contarAgendaDaUnidadePorData($unidadeID, $data)
     {
         $total = 0;
@@ -490,7 +507,11 @@ class Application_Model_Agenda extends Zend_Db_Table
                         u.unidade_sigla, u.unidade_descricao, te.tipoexame_nome, fl.fila_senha, 
                         fl.fila_cod_prefixo, fl.fila_cod_sufixo, fl.fila_id, 
                         ia.intervalo_atendimento_nome, hg.horario_global_de, hg.horario_global_ate,
-                        (SELECT pp.ppra_item_funcao FROM item_pcmso i JOIN ppra_item pp ON pp.ppra_item_id = i.fk_ppra_item_id WHERE i.item_pcmso_id = al.fk_item_pcmso_id LIMIT 1) AS ppra_item_funcao
+                        (SELECT pp.ppra_item_funcao FROM item_pcmso i JOIN ppra_item pp ON pp.ppra_item_id = i.fk_ppra_item_id WHERE i.item_pcmso_id = al.fk_item_pcmso_id LIMIT 1) AS ppra_item_funcao,
+                        la.local_agenda_id, emp_la.empresa_fantasia AS local_agenda_nome, 
+                        end_la.endereco_logradouro AS local_agenda_logradouro, emp_la.empresa_numero AS local_agenda_numero, 
+                        end_la.endereco_bairro AS local_agenda_bairro, end_la.endereco_cidade AS local_agenda_cidade, 
+                        end_la.endereco_uf AS local_agenda_uf
                     FROM agenda AS a
                         INNER JOIN pessoa AS p ON p.pessoa_id = a.fk_pessoa_id
                         INNER JOIN alocacao AS al ON al.alocacao_id = a.fk_alocacao_id
@@ -502,6 +523,9 @@ class Application_Model_Agenda extends Zend_Db_Table
                         LEFT JOIN fila AS fl ON fl.fila_id = a.fk_fila_id
                         LEFT JOIN intervalo_atendimento AS ia ON ia.intervalo_atendimento_id = fl.fk_intervalo_atendimento
                         LEFT JOIN horario_global AS hg ON hg.horario_global_id = a.fk_horario_global_id
+                        LEFT JOIN local_agenda AS la ON la.local_agenda_id = a.fk_local_agenda_id
+                        LEFT JOIN empresa AS emp_la ON emp_la.empresa_id = la.fk_empresa_id
+                        LEFT JOIN endereco AS end_la ON end_la.endereco_id = emp_la.fk_endereco_id
                     WHERE a.agenda_status = 0 
                         AND a.agenda_id = {$id}";
 

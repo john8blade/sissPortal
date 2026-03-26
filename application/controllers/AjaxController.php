@@ -1145,6 +1145,7 @@ class AjaxController extends Controller
             $_ = explode('/', $data);
             $ymd = "{$_[2]}-{$_[1]}-{$_[0]}";
             $unidadeID = (int) $params['unidade'];
+            $localAgendaId = isset($params['localAgendaId']) ? (int) $params['localAgendaId'] : null;
             $diaSemana = (int) date('N', strtotime($ymd));
             $turno = isset($params['turno']) ? $params['turno'] : null;
 
@@ -1152,9 +1153,16 @@ class AjaxController extends Controller
             $HorarioGlobal = new Application_Model_HorarioGlobal();
             $HorarioDiario = new Application_Model_HorarioDiario();
 
-            $horarios = $diaSemana <= 5
-                ? $HorarioGlobal->obterHorariosDaUnidadePorDiaSemana($unidadeID, $diaSemana)
-                : [];
+            if ($localAgendaId) {
+                $horarios = $diaSemana <= 5
+                    ? $HorarioGlobal->obterHorariosDoLocalAgendaPorDiaSemana($localAgendaId, $diaSemana)
+                    : [];
+            } else {
+                $horarios = $diaSemana <= 5
+                    ? $HorarioGlobal->obterHorariosDaUnidadePorDiaSemana($unidadeID, $diaSemana)
+                    : [];
+            }
+            
             $horarios = $HorarioDiario->atualizar($horarios, $ymd);
 
             if ($turno === 'manha' || $turno === 'tarde') {
@@ -1167,7 +1175,12 @@ class AjaxController extends Controller
 
             for ($i = 0; $i < count($horarios); $i++)
             {
-                $agendados = $Agenda->contarAgendaDaUnidadePorDataHorario($unidadeID, $ymd, $horarios[$i]['id']);
+                if ($localAgendaId) {
+                    $agendados = $Agenda->contarAgendaDoLocalPorDataHorario($localAgendaId, $ymd, $horarios[$i]['id']);
+                } else {
+                    $agendados = $Agenda->contarAgendaDaUnidadePorDataHorario($unidadeID, $ymd, $horarios[$i]['id']);
+                }
+                
                 $vagas = (int) ($horarios[$i]['vagas'] - $agendados);
                 $horarios[$i]['vagas'] = $vagas > 0 ? $vagas : 0;
             }
@@ -1192,6 +1205,8 @@ class AjaxController extends Controller
             $mes = $params['mes'];
             $ano = $params['ano'];
             $unidadeID = (int) $params['unidadeId'];
+            $localAgendaId = isset($params['localAgendaId']) ? (int) $params['localAgendaId'] : null;
+            
             $ultimoDia = Util::obterUtimoDoMes($mes, $ano);
             if ($ano < date('Y')) die(Util::alertWarning("Data retroativa"));
             if ($ano == date('Y') && $mes < date('m')) die(Util::alertWarning("Data retroativa"));
@@ -1211,11 +1226,22 @@ class AjaxController extends Controller
                 $vagasTarde = 0;
 
                 if ($diaSemana <= 5) {
-                    $horarios = $HorarioGlobal->obterHorariosDaUnidadePorDiaSemana($unidadeID, $diaSemana);
+                    if ($localAgendaId) {
+                        $horarios = $HorarioGlobal->obterHorariosDoLocalAgendaPorDiaSemana($localAgendaId, $diaSemana);
+                    } else {
+                        $horarios = $HorarioGlobal->obterHorariosDaUnidadePorDiaSemana($unidadeID, $diaSemana);
+                    }
+                    
                     foreach ($horarios as $h) {
                         $horaInicio = isset($h['horario1']) ? (int) substr($h['horario1'], 0, 2) : 0;
-                        $total = $Agenda->contarAgendaDaUnidadePorDataHorario($unidadeID, $ymd, $h['id']);
-                        $vagas = $HorarioDiario->vagasDaUnidadeNaDataNoHorario($unidadeID, $ymd, $h['id']);
+                        if ($localAgendaId) {
+                            $total = $Agenda->contarAgendaDoLocalPorDataHorario($localAgendaId, $ymd, $h['id']);
+                            $vagas = $HorarioDiario->vagasDoLocalNaDataNoHorario($localAgendaId, $ymd, $h['id']);
+                        } else {
+                            $total = $Agenda->contarAgendaDaUnidadePorDataHorario($unidadeID, $ymd, $h['id']);
+                            $vagas = $HorarioDiario->vagasDaUnidadeNaDataNoHorario($unidadeID, $ymd, $h['id']);
+                        }
+                        
                         $disp = max(0, $vagas - $total);
                         if ($horaInicio < 12) {
                             $vagasManha += $disp;

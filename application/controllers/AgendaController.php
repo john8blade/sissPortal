@@ -79,6 +79,29 @@ class AgendaController extends Controller {
             $filtro .= " AND funcionario_status = 0";
             $resultadoAlocacao = $funcionario->obterPeloFiltro($filtro);
             $atributos["alocacao"] = $resultadoAlocacao;
+
+            // Fetch Local Agenda available for this client
+            $db = Zend_Db_Table::getDefaultAdapter();
+            $fkFaturaCedenteId = $db->fetchOne("SELECT fk_fatura_cedente_id FROM empresa WHERE empresa_id = ?", [$empresaId]);
+            
+            $sqlLocais = "
+                SELECT DISTINCT la.local_agenda_id, e.empresa_fantasia, 
+                       end.endereco_logradouro, e.empresa_numero, end.endereco_bairro, end.endereco_cidade, end.endereco_uf
+                FROM local_agenda la
+                JOIN empresa e ON e.empresa_id = la.fk_empresa_id
+                LEFT JOIN endereco end ON end.endereco_id = e.fk_endereco_id
+                LEFT JOIN local_agenda_cedentes lac ON la.local_agenda_id = lac.local_agenda_id
+                LEFT JOIN empresa_local_agenda_acesso elaa ON la.local_agenda_id = elaa.fk_local_agenda_id AND elaa.fk_empresa_id = ?
+                WHERE la.local_agenda_status = 0
+                AND (
+                    lac.local_agenda_id IS NULL
+                    OR lac.fatura_cedente_id = ?
+                    OR elaa.fk_empresa_id IS NOT NULL
+                )
+                ORDER BY e.empresa_fantasia ASC
+            ";
+            $this->view->locaisAgenda = $db->fetchAll($sqlLocais, [$empresaId, $fkFaturaCedenteId]);
+
         } catch (Exception $ex) {
             $this->_enviarCapturaExcecaoParaView($ex->getMessage());
         }
@@ -113,6 +136,29 @@ class AgendaController extends Controller {
             $filtro .= " AND funcionario_status = 0";
             $resultadoAlocacao = $funcionario->obterPeloFiltro($filtro);
             $atributos["alocacao"] = $resultadoAlocacao;
+
+            // Fetch Local Agenda available for this client
+            $db = Zend_Db_Table::getDefaultAdapter();
+            $fkFaturaCedenteId = $db->fetchOne("SELECT fk_fatura_cedente_id FROM empresa WHERE empresa_id = ?", [$empresaId]);
+            
+            $sqlLocais = "
+                SELECT DISTINCT la.local_agenda_id, e.empresa_fantasia, 
+                       end.endereco_logradouro, e.empresa_numero, end.endereco_bairro, end.endereco_cidade, end.endereco_uf
+                FROM local_agenda la
+                JOIN empresa e ON e.empresa_id = la.fk_empresa_id
+                LEFT JOIN endereco end ON end.endereco_id = e.fk_endereco_id
+                LEFT JOIN local_agenda_cedentes lac ON la.local_agenda_id = lac.local_agenda_id
+                LEFT JOIN empresa_local_agenda_acesso elaa ON la.local_agenda_id = elaa.fk_local_agenda_id AND elaa.fk_empresa_id = ?
+                WHERE la.local_agenda_status = 0
+                AND (
+                    lac.local_agenda_id IS NULL
+                    OR lac.fatura_cedente_id = ?
+                    OR elaa.fk_empresa_id IS NOT NULL
+                )
+                ORDER BY e.empresa_fantasia ASC
+            ";
+            $this->view->locaisAgenda = $db->fetchAll($sqlLocais, [$empresaId, $fkFaturaCedenteId]);
+
         } catch (Exception $ex) {
             $this->_enviarCapturaExcecaoParaView($ex->getMessage());
         }
@@ -132,6 +178,7 @@ class AgendaController extends Controller {
             $parametros = $this->getRequest()->getParams();
             $agendaId = (isset($parametros['agenda_id'])) ? (int) $parametros['agenda_id'] : 0;
             $validarCampos = array(
+                'fk_local_agenda_id' => ['tipo' => 'texto', 'nome' => 'Local de Agenda (Fornecedor)'],
                 'fk_horario_global_id' => ['tipo' => 'texto', 'nome' => 'Horário'],
                 'agenda_data_exame' => array('tipo' => 'texto', 'nome' => 'Data Agendamento'),
                 'fk_tipoexame_id' => array('tipo' => 'texto', 'nome' => 'Tipo de Exame'),
@@ -272,7 +319,8 @@ class AgendaController extends Controller {
                         'agenda_data_exame' => Util::dataBD($parametros['agenda_data_exame']),
                         'agenda_observacao' => $parametros['agenda_observacao'],
                         'fk_unidade_id' => $unidadeId,
-                        'fk_horario_global_id' => $parametros['fk_horario_global_id']
+                        'fk_horario_global_id' => $parametros['fk_horario_global_id'],
+                        'fk_local_agenda_id' => !empty($parametros['fk_local_agenda_id']) ? $parametros['fk_local_agenda_id'] : null
                     );
                     //var_dump($tabelaAgenda);die;
                     try {

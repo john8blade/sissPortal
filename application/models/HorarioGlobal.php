@@ -45,6 +45,24 @@ class Application_Model_HorarioGlobal extends Zend_Db_Table {
         return $this->getDefaultAdapter()->fetchAll($sql, [(int) $diaSemana, (int) $unidadeID]);
     }
 
+    public function obterHorariosDoLocalAgendaPorDiaSemana($localAgendaId, $diaSemana)
+    {
+        $sql = "SELECT hg.horario_global_id AS id,
+                       COALESCE(hgd.vagas, hg.horario_global_vagas) AS vagas,
+                       hg.horario_global_de AS horario1,
+                       hg.horario_global_ate AS horario2
+                FROM horario_global hg
+                LEFT JOIN horario_global_dia hgd ON hgd.fk_horario_global_id = hg.horario_global_id AND hgd.dia_semana = ?
+                WHERE hg.fk_local_agenda_id = ?
+                  AND hg.horario_global_status = 0
+                  AND (hg.fk_local_atend_id IS NULL OR hg.fk_local_atend_id = 0)
+                  AND (hgd.horario_global_dia_id IS NOT NULL
+                       OR (SELECT COUNT(*) FROM horario_global_dia hgd2 WHERE hgd2.fk_horario_global_id = hg.horario_global_id) = 0)
+                ORDER BY hg.horario_global_de";
+
+        return $this->getDefaultAdapter()->fetchAll($sql, [(int) $diaSemana, (int) $localAgendaId]);
+    }
+
     public function obter($id) {
         $sql = "SELECT * FROM horario_global WHERE horario_global_id = ?";
         return $this->getDefaultAdapter()->fetchRow($sql, [(int) $id]);

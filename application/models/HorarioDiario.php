@@ -79,4 +79,35 @@ class Application_Model_HorarioDiario extends Zend_Db_Table
         return 0;
     }
 
+    public function vagasDoLocalNaDataNoHorario($localAgendaId, $data, $horarioID)
+    {
+        $sql = "SELECT SUM(hd.horario_diario_quantidade) AS total FROM horario_diario hd
+                JOIN horario_global hg ON hg.horario_global_id = hd.fk_horario_global_id
+                WHERE hg.fk_local_agenda_id = ? AND hd.horario_diario_data = ? AND hd.fk_horario_global_id = ?";
+        $res = $this->getDefaultAdapter()->fetchRow($sql, [(int) $localAgendaId, $data, $horarioID]);
+
+        if ($res && !is_null($res['total'])) {
+            return (int) $res['total'];
+        }
+
+        $diaSemana = (int) date('N', strtotime($data));
+        if ($diaSemana > 5) {
+            return 0;
+        }
+
+        $sqlHgd = "SELECT vagas FROM horario_global_dia WHERE fk_horario_global_id = ? AND dia_semana = ?";
+        $resHgd = $this->getDefaultAdapter()->fetchRow($sqlHgd, [(int) $horarioID, $diaSemana]);
+        if ($resHgd && !is_null($resHgd['vagas'])) {
+            return $resHgd['vagas'];
+        }
+
+        $sqlLegacy = "SELECT COUNT(*) AS cnt FROM horario_global_dia WHERE fk_horario_global_id = ?";
+        $legacy = $this->getDefaultAdapter()->fetchRow($sqlLegacy, [(int) $horarioID]);
+        if ($legacy['cnt'] == 0) {
+            $hg = (new Application_Model_HorarioGlobal())->obter($horarioID);
+            return $hg ? (int) $hg['horario_global_vagas'] : 0;
+        }
+
+        return 0;
+    }
 }
