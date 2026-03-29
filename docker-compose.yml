@@ -12,7 +12,8 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '0.8'
+          cpus: '0.7'
+          memory: '800M'
 
 networks:
   proxy-tier:
