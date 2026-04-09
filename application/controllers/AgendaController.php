@@ -308,6 +308,28 @@ class AgendaController extends Controller {
                 if ($teraAtentimento) {
                     $empresaId = $_SESSION['empresa']['empresa_id'];
                     $contratoId = $_SESSION['contrato_id'];
+                    $fkItemPcmsoId = null;
+                    $fkPpraItemId = null;
+                    if (isset($parametros['fk_item_pcmso_id'])) {
+                        $fkItemPcmsoId = $parametros['fk_item_pcmso_id'];
+                    }
+                    if (isset($parametros['fk_ppra_item_id'])) {
+                        $fkPpraItemId = $parametros['fk_ppra_item_id'];
+                    }
+
+                    if (empty($fkItemPcmsoId) || empty($fkPpraItemId)) {
+                        $modeloAlocacao = new Application_Model_Alocacao();
+                        $alocacao = $modeloAlocacao->fetchRow(array('alocacao_id = ?' => $parametros['fk_alocacao_id']));
+                        if ($alocacao) {
+                            if (empty($fkItemPcmsoId) && isset($alocacao->fk_item_pcmso_id)) {
+                                $fkItemPcmsoId = $alocacao->fk_item_pcmso_id;
+                            }
+                            if (empty($fkPpraItemId) && isset($alocacao->fk_ppra_item_id)) {
+                                $fkPpraItemId = $alocacao->fk_ppra_item_id;
+                            }
+                        }
+                    }
+
                     $tabelaAgenda = array(
                         'agenda_criada_em' => date('Y-m-d H:i:s'),
                         'agenda_inserida_via' => 'ONLINE',
@@ -316,6 +338,8 @@ class AgendaController extends Controller {
                         'fk_tipoexame_id' => $parametros['fk_tipoexame_id'],
                         'fk_pessoa_id' => $parametros['fk_pessoa_id'],
                         'fk_alocacao_id' => $parametros['fk_alocacao_id'],
+                        'fk_item_pcmso_id' => $fkItemPcmsoId,
+                        'fk_ppra_item_id' => $fkPpraItemId,
                         'agenda_data_exame' => Util::dataBD($parametros['agenda_data_exame']),
                         'agenda_observacao' => $parametros['agenda_observacao'],
                         'fk_unidade_id' => $unidadeId,
