@@ -16,4 +16,20 @@ class Application_Model_Arquivo extends Zend_Db_Table {
         echo ($imprimirComando) ? $comando : null;
         return $this->getDefaultAdapter()->fetchAll($comando);
     }
+
+    /**
+     * Total de registros distintos de arquivo para a mesma cláusula de buscaCompletaUsandoClausula.
+     *
+     * @param string $clausulaComando Condições do WHERE (sem a palavra WHERE).
+     * @return int
+     */
+    public function contarUsandoClausula($clausulaComando = '1 = 1') {
+        $comando = "SELECT COUNT(DISTINCT arquivo.arquivo_id) AS total
+                             FROM {$this->_name}
+                                        JOIN contrato ON contrato.contrato_id = arquivo.fk_contrato_id
+                                        JOIN empresa ON empresa.empresa_id = arquivo.fk_empresa_id
+                             WHERE {$clausulaComando}";
+        $linha = $this->getDefaultAdapter()->fetchRow($comando);
+        return isset($linha['total']) ? (int) $linha['total'] : 0;
+    }
 }

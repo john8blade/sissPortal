@@ -2,8 +2,7 @@
 <div class="panel panel-primary">
     <div class="panel-heading"><i class="fa fa-folder"></i>Meus Documentos</div>
     <div class="panel-body table-responsive">
-        <?php $paginator = $this->itensGrid->getPages(); ?>
-        <?php if ($paginator->pageCount): ?>
+        <?php if (count($this->itensGrid)): ?>
             <table class="table table-hover table-bordered">
                 <thead>
                     <tr>
@@ -31,6 +30,6 @@
                 </tbody>
             </table>
         <?php endif; ?>
-        <?php echo $this->render('criar-paginador.phtml'); ?>
+        <?php echo $this->render('documento/paginador.phtml'); ?>
     </div>
 </div>

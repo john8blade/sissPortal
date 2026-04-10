@@ -1,0 +1,34 @@
+<?php
+if (empty($this->paginacaoDocumento) || (int) $this->paginacaoDocumento['totalPaginas'] <= 1) {
+    return;
+}
+$p = $this->paginacaoDocumento;
+$opcoesUrl = array('controller' => 'documento', 'action' => 'index');
+?>
+<ul class="pagination">
+    <?php if ($p['paginaAnterior'] !== null): ?>
+        <li>
+            <a href="<?php echo $this->escape($this->url(array_merge($opcoesUrl, array('page' => $p['paginaAnterior'])), null, true)); ?>">«</a>
+        </li>
+    <?php else: ?>
+        <li><a class="disabled" href="javascript:void(0);">«</a></li>
+    <?php endif; ?>
+
+    <?php foreach ($p['paginasNoIntervalo'] as $numeroPagina): ?>
+        <?php if ((int) $numeroPagina === (int) $p['paginaAtual']): ?>
+            <li class="active"><a href="javascript:void(0);"><?php echo (int) $numeroPagina; ?></a></li>
+        <?php else: ?>
+            <li>
+                <a href="<?php echo $this->escape($this->url(array_merge($opcoesUrl, array('page' => $numeroPagina)), null, true)); ?>"><?php echo (int) $numeroPagina; ?></a>
+            </li>
+        <?php endif; ?>
+    <?php endforeach; ?>
+
+    <?php if ($p['proximaPagina'] !== null): ?>
+        <li>
+            <a href="<?php echo $this->escape($this->url(array_merge($opcoesUrl, array('page' => $p['proximaPagina'])), null, true)); ?>">»</a>
+        </li>
+    <?php else: ?>
+        <li><a class="disabled" href="javascript:void(0);">»</a></li>
+    <?php endif; ?>
+</ul>
