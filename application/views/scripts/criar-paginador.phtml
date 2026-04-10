@@ -8,26 +8,28 @@
     unset($urlParams['controller']);
     unset($urlParams['action']);
     unset($urlParams['page']);
+    // Evita aspas duplas no JSON dentro de onclick="..." (quebrava o atributo HTML e o JS).
+    $jsonFlagsPaginator = JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP;
     ?>
 
     <?php if ($paginator->pageCount): ?>
         <ul class="pagination">
             <?php if (isset($paginator->previous)): ?>
-                <li><a class="item-inicial" href="javascript:;" onclick="post('<?php echo $this->url() ?>', <?php echo json_encode(array_merge($urlParams, ['page' => $paginator->previous, 'like' => $this->like])) ?>)">«</a></li>
+                <li><a class="item-inicial" href="javascript:;" onclick="post('<?php echo $this->url() ?>', <?php echo json_encode(array_merge($urlParams, ['page' => $paginator->previous, 'like' => $this->like]), $jsonFlagsPaginator) ?>)">«</a></li>
             <?php else: ?>
                 <li><a class="disabled" href="javascript:void(0);">«</a></li>
             <?php endif; ?>
 
             <?php foreach ($paginator->pagesInRange as $page): ?>
                 <?php if ($page != $paginator->current): ?>
-                    <li><a href="javascript:;" onclick="post('<?php echo $this->url() ?>', <?php echo json_encode(array_merge($urlParams, ['page' => $page, 'like' => $this->like])) ?>)"><?php echo $page ?></a></li>
+                    <li><a href="javascript:;" onclick="post('<?php echo $this->url() ?>', <?php echo json_encode(array_merge($urlParams, ['page' => $page, 'like' => $this->like]), $jsonFlagsPaginator) ?>)"><?php echo $page ?></a></li>
                 <?php else: ?>
                     <li class="active"><a href="javascript:void(0);"><?php echo $page ?></a></li>
                 <?php endif; ?>
             <?php endforeach; ?>
 
             <?php if (isset($paginator->next)): ?>
-                <li><a href="javascript:;" onclick="post('<?php echo $this->url() ?>', <?php echo json_encode(array_merge($urlParams, ['page' => $paginator->next, 'like' => $this->like])) ?>)">»</a></li>
+                <li><a href="javascript:;" onclick="post('<?php echo $this->url() ?>', <?php echo json_encode(array_merge($urlParams, ['page' => $paginator->next, 'like' => $this->like]), $jsonFlagsPaginator) ?>)">»</a></li>
             <?php else: ?>
                 <li><a class="disabled" href="javascript:void(0);">»</a></li>
                 <?php endif ?>

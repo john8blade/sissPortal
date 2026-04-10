@@ -19,7 +19,7 @@ class DocumentoController extends Controller {
             $filtro = "arquivo.arquivo_status = 0";
             $filtro .= " AND arquivo.fk_empresa_id = {$empresaId}";
             $filtro .= " AND arquivo.fk_contrato_id = {$contratoId}";
-            $resultadoComando = $arquivo->buscaCompletaUsandoClausula($filtro, 'arquivo.arquivo_descricao ASC', '0,99999999999', $imprimirComando);
+            $resultadoComando = $arquivo->buscaCompletaUsandoClausula($filtro, 'arquivo.arquivo_data_registro DESC, arquivo.arquivo_id DESC', '0,99999999999', $imprimirComando);
             $resultado = Zend_Paginator::factory($resultadoComando);
             $resultado->setCurrentPageNumber($parametroPagina);
             $parametrosPesquisa = array(
@@ -34,6 +34,8 @@ class DocumentoController extends Controller {
         $this->view->parametrosPesquisa = $parametrosPesquisa;
         $this->view->itensPaginados = $resultado;
         $this->view->itensGrid = $resultado;
+        $this->view->like = '';
+        $this->view->params = $this->getAllParams();
     }
 
     public function visualizarAction() {
