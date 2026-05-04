@@ -66,24 +66,105 @@ class DocumentoController extends Controller {
         $this->view->paginacaoDocumento = $paginacaoDocumento;
     }
 
+    /**
+     * Slice 4.5 do projeto migracao-arquivos-s3 (vault no repositório SISS):
+     *  - se a linha tem `arquivo_s3_key`: pede presigned URL ao Laravel via
+     *    cURL autenticado por X-API-Key/X-API-Secret e redireciona o cliente
+     *    direto pro S3.
+     *  - senão, se `arquivo_conteudo` (BLOB) ainda está populado: caminho
+     *    legado intacto (echo do binário). Vale até o backfill (slice 05) zerar.
+     *  - senão: 404.
+     */
     public function visualizarAction() {
-        $arquivoId = $this->getParam('id', 0);
+        $arquivoId = (int) $this->getParam('id', 0);
+        $this->_desabilitarTodoCarregamentoDeVisualizacao();
+
         try {
+            $empresaId  = isset($_SESSION['empresa']['empresa_id']) ? (int) $_SESSION['empresa']['empresa_id'] : 0;
+            $contratoId = isset($_SESSION['contrato_id']) ? (int) $_SESSION['contrato_id'] : 0;
+
             $arquivo = new Application_Model_Arquivo();
-            $resultadoComando = $arquivo->fetchRow(array('arquivo_id = ?' => $arquivoId));
-            if (is_null($resultadoComando) == false) {
-                $resultadoComando = $resultadoComando->toArray();
-                header("Content-type:{$resultadoComando['arquivo_mime_type']}");
+            $row = $arquivo->fetchRow(array('arquivo_id = ?' => $arquivoId));
+
+            if (is_null($row)) {
+                $this->getResponse()->setHttpResponseCode(404);
+                return;
+            }
+            $row = $row->toArray();
+
+            // Defesa em profundidade: o portal só serve arquivos do escopo do
+            // cliente logado. O Laravel valida de novo no endpoint, mas barrar
+            // aqui evita uma viagem desnecessária.
+            if ((int) $row['fk_empresa_id'] !== $empresaId || (int) $row['fk_contrato_id'] !== $contratoId) {
+                $this->getResponse()->setHttpResponseCode(403);
+                return;
+            }
+
+            if (!empty($row['arquivo_s3_key'])) {
+                $url = $this->_pegarUrlPresignedDoLaravel($arquivoId, $empresaId, $contratoId);
+                if ($url === null) {
+                    $this->getResponse()->setHttpResponseCode(502);
+                    return;
+                }
+                header('Location: ' . $url);
+                exit(0);
+            }
+
+            if (!is_null($row['arquivo_conteudo'])) {
+                header("Content-type:{$row['arquivo_mime_type']}");
                 header("Content-Description: Arquivo gerado pelo sistema automaticamente");
                 header('Cache-Control: no-cache, no-store, must-revalidate');
                 header('Pragma: no-cache');
-                echo $resultadoComando['arquivo_conteudo'];
+                echo $row['arquivo_conteudo'];
                 exit(0);
             }
+
+            $this->getResponse()->setHttpResponseCode(404);
         } catch (Exception $ex) {
-            $this->_enviarCapturaExcecaoParaView($ex->getMessage());
+            $this->getResponse()->setHttpResponseCode(500);
+            error_log('documento visualizar falhou: ' . $ex->getMessage());
         }
-        $this->_desabilitarTodoCarregamentoDeVisualizacao();
+    }
+
+    /**
+     * Server-to-server pro Laravel: GET /api/portal/arquivo/{id}/url.
+     * Lê URL/key/secret do application.ini (seção [production] ou herdada).
+     * Retorna a URL presigned ou null em qualquer falha.
+     */
+    private function _pegarUrlPresignedDoLaravel($arquivoId, $empresaId, $contratoId) {
+        $bootstrap = $this->getInvokeArg('bootstrap');
+        $opts = $bootstrap ? $bootstrap->getOptions() : array();
+        $cfg = isset($opts['portal']['arquivo']['api']) ? $opts['portal']['arquivo']['api'] : array();
+
+        if (empty($cfg['url']) || empty($cfg['key']) || empty($cfg['secret'])) {
+            error_log('documento visualizar: config portal.arquivo.api ausente em application.ini');
+            return null;
+        }
+
+        $endpoint = rtrim($cfg['url'], '/') . '/' . (int) $arquivoId . '/url'
+                  . '?empresa_id=' . (int) $empresaId
+                  . '&contrato_id=' . (int) $contratoId;
+
+        $ch = curl_init($endpoint);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 5);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+            'Accept: application/json',
+            'X-API-Key: ' . $cfg['key'],
+            'X-API-Secret: ' . $cfg['secret'],
+        ));
+        $body = curl_exec($ch);
+        $http = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        $err  = curl_error($ch);
+        curl_close($ch);
+
+        if ($http !== 200 || empty($body)) {
+            error_log('documento visualizar: presigned falhou (http ' . $http . ', err=' . $err . ') arquivo_id=' . $arquivoId);
+            return null;
+        }
+
+        $json = json_decode($body, true);
+        return isset($json['url']) ? $json['url'] : null;
     }
 
 //    public function salvarAction() {
