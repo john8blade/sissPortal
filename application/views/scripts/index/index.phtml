@@ -122,6 +122,136 @@ if (empty($banners)) {
 
 </div>
 
+<div class="row" style="margin-top: 15px;">
+    <div class="col-md-12">
+        <div class="panel panel-default">
+            <div class="panel-heading"><i class="fa fa-stethoscope"></i> Últimos exames realizados pelos colaboradores</div>
+            <div class="panel-body" style="padding: 0;">
+                <?php if (count($this->ultimosExames) === 0) : ?>
+                    <p class="text-muted" style="padding: 12px; margin: 0;">Nenhum exame com anexo encontrado para este contrato ainda.</p>
+                <?php else : ?>
+                    <table class="table table-striped" style="margin-bottom: 0;">
+                        <thead>
+                            <tr>
+                                <th>Colaborador</th>
+                                <th style="width: 140px;">Data do exame</th>
+                                <th style="width: 200px;">Tipo</th>
+                                <th style="width: 130px; text-align: center;">Download do ASO</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php foreach ($this->ultimosExames as $exame) :
+                                $agendaId = (int) $exame['agenda_id'];
+                                $dataExameBr = Util::dataBR($exame['data_exame']);
+                                $modalPayload = array(
+                                    'colaborador' => $exame['pessoa_nome'],
+                                    'data_exame' => $dataExameBr,
+                                    'tipo' => $exame['tipoexame_nome'],
+                                    'anexos' => isset($this->anexosPorAgenda[$agendaId]) ? $this->anexosPorAgenda[$agendaId] : array(),
+                                );
+                                $payloadJson = htmlspecialchars(json_encode($modalPayload), ENT_QUOTES, 'UTF-8');
+                            ?>
+                                <tr>
+                                    <td><?php echo htmlspecialchars($exame['pessoa_nome'], ENT_QUOTES, 'UTF-8') ?></td>
+                                    <td><?php echo $dataExameBr ?></td>
+                                    <td><?php echo htmlspecialchars($exame['tipoexame_nome'], ENT_QUOTES, 'UTF-8') ?></td>
+                                    <td style="text-align: center;">
+                                        <button type="button"
+                                                class="btn btn-xs btn-info"
+                                                title="Ver arquivos do exame"
+                                                data-toggle="modal"
+                                                data-target="#modal-ultimo-exame"
+                                                data-payload="<?php echo $payloadJson ?>">
+                                            <i class="fa fa-download"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                            <?php endforeach ?>
+                        </tbody>
+                    </table>
+                <?php endif ?>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de detalhes do exame realizado. Conteúdo populado por JS no evento show.bs.modal -->
+<div class="modal fade" id="modal-ultimo-exame" tabindex="-1" role="dialog" aria-labelledby="modal-ultimo-exame-label">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Fechar"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title" id="modal-ultimo-exame-label">Exame realizado</h4>
+            </div>
+            <div class="modal-body">
+                <dl class="dl-horizontal" style="margin-bottom: 12px;">
+                    <dt>Colaborador</dt>
+                    <dd id="modal-exame-colaborador">—</dd>
+                    <dt>Data do exame</dt>
+                    <dd id="modal-exame-data">—</dd>
+                    <dt>Tipo</dt>
+                    <dd id="modal-exame-tipo">—</dd>
+                </dl>
+                <hr style="margin-top: 6px; margin-bottom: 12px;"/>
+                <h5 style="margin-top: 0;"><i class="fa fa-paperclip"></i> Arquivos disponíveis</h5>
+                <ul class="list-group" id="modal-exame-anexos" style="margin-bottom: 0;"></ul>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Fechar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    (function () {
+        // Mapa simples pra rotular o tipo do anexo de forma humana.
+        var rotuloTipo = {
+            'EXAME': 'Exame',
+            'LAUDO_EXAME': 'Laudo',
+            'AVALIACAO': 'Avaliação',
+            'CERTIFICADO': 'Certificado'
+        };
+
+        $('#modal-ultimo-exame').on('show.bs.modal', function (event) {
+            var trigger = $(event.relatedTarget);
+            var raw = trigger.attr('data-payload') || '{}';
+            var payload;
+            try { payload = JSON.parse(raw); } catch (e) { payload = {}; }
+
+            $('#modal-exame-colaborador').text(payload.colaborador || '—');
+            $('#modal-exame-data').text(payload.data_exame || '—');
+            $('#modal-exame-tipo').text(payload.tipo || '—');
+
+            var $lista = $('#modal-exame-anexos').empty();
+            var anexos = payload.anexos || [];
+            if (anexos.length === 0) {
+                $lista.append('<li class="list-group-item text-muted">Nenhum arquivo anexado.</li>');
+                return;
+            }
+            anexos.forEach(function (anexo) {
+                // Padrão "<Tipo> - <Colaborador> - <Data>" (ex.: "Exame - WESLEY LUCAS LELIS DE AGUIAR - 30/01/2017").
+                // Vale só pro rótulo no list-group; o nome do arquivo real do download vem do
+                // Content-Disposition do presigned (Laravel monta de arquivo_upload_descricao).
+                var partes = [
+                    rotuloTipo[anexo.tipo] || (anexo.tipo ? anexo.tipo : 'Arquivo'),
+                    payload.colaborador || '',
+                    payload.data_exame || ''
+                ].filter(function (s) { return s && String(s).trim() !== ''; });
+                var rotulo = partes.join(' - ');
+                var href = '/arquivo-upload/descarregar/id/' + encodeURIComponent(anexo.id);
+                var $item = $('<li class="list-group-item"></li>');
+                var $icone = $('<i class="fa fa-file-o" style="margin-right: 6px;"></i>');
+                var $link = $('<a></a>').attr('href', href).attr('target', '_blank').text(rotulo);
+                var $btn = $('<a class="btn btn-xs btn-primary pull-right"><i class="fa fa-download"></i> Baixar</a>')
+                              .attr('href', href).attr('target', '_blank');
+                $item.append($icone).append($link).append($btn);
+                $lista.append($item);
+            });
+        });
+    })();
+</script>
+
 <div id="carousel-example-generic" class="carousel slide" data-ride="carousel">
     <!-- Indicators     
     <ol class="carousel-indicators">
