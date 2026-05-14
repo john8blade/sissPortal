@@ -240,11 +240,29 @@ if (empty($banners)) {
                 ].filter(function (s) { return s && String(s).trim() !== ''; });
                 var rotulo = partes.join(' - ');
                 var href = '/arquivo-upload/descarregar/id/' + encodeURIComponent(anexo.id);
+
+                // Abrir em nova aba via window.open (mais confiável que target="_blank" em <a>,
+                // que ocasionalmente é ignorado pelo navegador em redirects 302). O href fica
+                // mantido pra preservar UX de right-click → "Abrir em nova guia"/"Copiar link".
+                var abrirNovaAba = function (e) {
+                    if (e) e.preventDefault();
+                    window.open(href, '_blank', 'noopener,noreferrer');
+                };
+
                 var $item = $('<li class="list-group-item"></li>');
                 var $icone = $('<i class="fa fa-file-o" style="margin-right: 6px;"></i>');
-                var $link = $('<a></a>').attr('href', href).attr('target', '_blank').text(rotulo);
-                var $btn = $('<a class="btn btn-xs btn-primary pull-right"><i class="fa fa-download"></i> Baixar</a>')
-                              .attr('href', href).attr('target', '_blank');
+                var $link = $('<a></a>')
+                    .attr('href', href)
+                    .attr('target', '_blank')
+                    .attr('rel', 'noopener noreferrer')
+                    .text(rotulo)
+                    .on('click', abrirNovaAba);
+                var $btn = $('<a class="btn btn-xs btn-primary pull-right"></a>')
+                    .attr('href', href)
+                    .attr('target', '_blank')
+                    .attr('rel', 'noopener noreferrer')
+                    .html('<i class="fa fa-download"></i> Baixar')
+                    .on('click', abrirNovaAba);
                 $item.append($icone).append($link).append($btn);
                 $lista.append($item);
             });
