@@ -386,23 +386,31 @@ class AgendaController extends Controller {
                                         $modeloAlocacao = new Application_Model_Alocacao();
                                         $alocacao = $modeloAlocacao->fetchRow(array('alocacao_id = ?' => $parametros['fk_alocacao_id']));
                                         
-                                        if ($alocacao) {
+                                        if ($alocacao && (int) $alocacao->fk_item_pcmso_id > 0) {
+                                            // So vincula os exames do item_pcmso que a alocacao aponta.
+                                            // A SP retorna a uniao dos itens da tripla cargo/funcao/setor;
+                                            // sem este filtro o agendamento grava exames de outros itens.
+                                            $itemPcmsoAlocacao = (int) $alocacao->fk_item_pcmso_id;
                                             $cargoId = (int) $alocacao->fk_cargo_id;
                                             $funcaoId = (int) $alocacao->fk_funcao_id;
                                             $setorId = (int) $alocacao->fk_setor_id;
                                             $tipoExameId = (int) $parametros['fk_tipoexame_id'];
-                                            
+
                                             $Cnx = Zend_Db_Table::getDefaultAdapter();
                                             $comandoSp = "CALL SpObterColecaoExameParaFuncaoDoPcmsoRecente({$contratoId}, {$empresaId}, {$cargoId}, {$funcaoId}, {$setorId}, {$tipoExameId})";
                                             $Comando = $Cnx->query($comandoSp);
                                             $rstExamesPcmso = $Comando->fetchAll();
-                                            $Comando->closeCursor(); 
-                                            
+                                            $Comando->closeCursor();
+
                                             if (is_array($rstExamesPcmso) && count($rstExamesPcmso) > 0) {
                                                 // Remove exames duplicados baseados no ID do produto
                                                 $idsVistos = array();
-                                                
+
                                                 foreach ($rstExamesPcmso as $exame) {
+                                                    // So o item_pcmso que a alocacao aponta
+                                                    if ((int) $exame['item_pcmso_id'] !== $itemPcmsoAlocacao) {
+                                                        continue;
+                                                    }
                                                     if (!in_array($exame['produto_id'], $idsVistos)) {
                                                         $produtoAgenda = array(
                                                             'produto_agenda_executado' => 0,
@@ -490,20 +498,27 @@ class AgendaController extends Controller {
                                     $modeloAlocacao = new Application_Model_Alocacao();
                                     $alocacao = $modeloAlocacao->fetchRow(array('alocacao_id = ?' => $parametros['fk_alocacao_id']));
                                     
-                                    if ($alocacao) {
+                                    if ($alocacao && (int) $alocacao->fk_item_pcmso_id > 0) {
+                                        // So reinsere os exames do item_pcmso que a alocacao aponta
+                                        // (os antigos nao executados ja foram inativados acima).
+                                        $itemPcmsoAlocacao = (int) $alocacao->fk_item_pcmso_id;
                                         $cargoId = (int) $alocacao->fk_cargo_id;
                                         $funcaoId = (int) $alocacao->fk_funcao_id;
                                         $setorId = (int) $alocacao->fk_setor_id;
                                         $tipoExameId = (int) $parametros['fk_tipoexame_id'];
-                                        
+
                                         $comandoSp = "CALL SpObterColecaoExameParaFuncaoDoPcmsoRecente({$contratoId}, {$empresaId}, {$cargoId}, {$funcaoId}, {$setorId}, {$tipoExameId})";
                                         $Comando = $Cnx->query($comandoSp);
                                         $rstExamesPcmso = $Comando->fetchAll();
-                                        $Comando->closeCursor(); 
-                                        
+                                        $Comando->closeCursor();
+
                                         if (is_array($rstExamesPcmso) && count($rstExamesPcmso) > 0) {
                                             $idsVistos = array();
                                             foreach ($rstExamesPcmso as $exame) {
+                                                // So o item_pcmso que a alocacao aponta
+                                                if ((int) $exame['item_pcmso_id'] !== $itemPcmsoAlocacao) {
+                                                    continue;
+                                                }
                                                 if (!in_array($exame['produto_id'], $idsVistos)) {
                                                     $produtoAgenda = array(
                                                         'produto_agenda_executado' => 0,

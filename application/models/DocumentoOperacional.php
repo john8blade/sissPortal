@@ -215,8 +215,15 @@ class Application_Model_DocumentoOperacional {
             $Comando->closeCursor();
 
             # PARA CADA EXAME NO ITEM-PCMSO...
+            $itemPcmsoAlocacao = (int) $consulta['fk_item_pcmso_id'];
             $consulta['retorno'] = array();
             foreach ($examesDoPCMSO as $exameDoPCMSO) {
+
+                # SO O ITEM-PCMSO QUE A ALOCACAO APONTA
+                # (a SP retorna a uniao dos itens da tripla cargo/funcao/setor)
+                if ((int) $exameDoPCMSO['item_pcmso_id'] !== $itemPcmsoAlocacao) {
+                    continue;
+                }
 
                 # SE O EXAME FOI REALIZADO...
                 if (in_array($exameDoPCMSO['produto_sigla'], $examesRealizados)) {
