@@ -19,6 +19,17 @@ class AjaxController extends Controller
             $alocacao = $modeloAlocacao->fetchRow(array('alocacao_id = ?' => $alocacaoId));
 
             if ($alocacao) {
+                // A SP casa os itens do PCMSO apenas pela tripla cargo/funcao/setor;
+                // quando ha mais de um item_pcmso ativo para a mesma tripla ela retorna
+                // a uniao dos exames. Filtramos pelo item que a alocacao realmente aponta.
+                $itemPcmsoAlocacao = (int) $alocacao->fk_item_pcmso_id;
+                if ($itemPcmsoAlocacao <= 0) {
+                    // Alocacao sem item_pcmso: nao ha como saber os exames corretos.
+                    // Exige atualizacao da alocacao antes de agendar (mesma regra do salvar).
+                    $this->json(array());
+                    return;
+                }
+
                 $cargoId = (int) $alocacao->fk_cargo_id;
                 $funcaoId = (int) $alocacao->fk_funcao_id;
                 $setorId = (int) $alocacao->fk_setor_id;
@@ -32,9 +43,13 @@ class AjaxController extends Controller
                 // Remove exames duplicados baseados no ID do produto
                 $examesUnicos = array();
                 $idsVistos = array();
-                
+
                 if (is_array($rstExamesPcmso)) {
                     foreach ($rstExamesPcmso as $exame) {
+                        // So o item_pcmso que a alocacao aponta
+                        if ((int) $exame['item_pcmso_id'] !== $itemPcmsoAlocacao) {
+                            continue;
+                        }
                         if (!in_array($exame['produto_id'], $idsVistos)) {
                             $examesUnicos[] = $exame;
                             $idsVistos[] = $exame['produto_id'];

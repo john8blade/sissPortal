@@ -4,6 +4,7 @@ SELECT
     ,sub1.fk_cargo_id
     ,sub1.fk_funcao_id
     ,sub1.fk_setor_id
+    ,sub1.fk_item_pcmso_id
     ,sub1.fk_tipoexame_id
     ,sub1.funcionario_id
     ,sub1.empresa_id
@@ -31,6 +32,7 @@ FROM contrato co
             ,al.fk_cargo_id
             ,al.fk_funcao_id
             ,al.fk_setor_id
+            ,al.fk_item_pcmso_id
             ,sub2.fk_tipoexame_id
             ,sub2.data_referencia
             ,sub2.fichamedica_resultado_aptidao
