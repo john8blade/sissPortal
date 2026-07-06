@@ -321,7 +321,13 @@ $(function() {
                                         </td>
                                         <td><?php echo $ppra_item['ghe_nome'] ?></td>
                                         <td><?php echo $ppra_item['setor_nome'] ?></td>
-                                        <td><?php echo $ppra_item['cargo_cbo'] ?></td>
+                                        <td><?php
+                                            // CBO da fonte de verdade (cargo do ppra_item); fallback pro cargo do item_pcmso
+                                            $cbo = (isset($ppra_item['ppra_item_cargo_cbo']) && trim($ppra_item['ppra_item_cargo_cbo']) !== '')
+                                                 ? $ppra_item['ppra_item_cargo_cbo']
+                                                 : $ppra_item['cargo_cbo'];
+                                            echo $cbo;
+                                        ?></td>
                                         <td><?php if ($ppra_item['ppra_item_funcao'] == NULL || $ppra_item['ppra_item_funcao'] == '') {
                                                     echo $ppra_item['cargo_nome'];
                                                 }else{
