@@ -508,6 +508,7 @@ class Application_Model_Agenda extends Zend_Db_Table
                         fl.fila_cod_prefixo, fl.fila_cod_sufixo, fl.fila_id, 
                         ia.intervalo_atendimento_nome, hg.horario_global_de, hg.horario_global_ate,
                         (SELECT pp.ppra_item_funcao FROM item_pcmso i JOIN ppra_item pp ON pp.ppra_item_id = i.fk_ppra_item_id WHERE i.item_pcmso_id = al.fk_item_pcmso_id LIMIT 1) AS ppra_item_funcao,
+                        (SELECT c_ppi.cargo_cbo FROM item_pcmso i2 JOIN ppra_item pp2 ON pp2.ppra_item_id = i2.fk_ppra_item_id JOIN cargo c_ppi ON c_ppi.cargo_id = pp2.fk_cargo_id WHERE i2.item_pcmso_id = al.fk_item_pcmso_id LIMIT 1) AS ppra_item_cargo_cbo,
                         la.local_agenda_id, emp_la.empresa_fantasia AS local_agenda_nome, 
                         end_la.endereco_logradouro AS local_agenda_logradouro, emp_la.empresa_numero AS local_agenda_numero, 
                         end_la.endereco_bairro AS local_agenda_bairro, end_la.endereco_cidade AS local_agenda_cidade, 
