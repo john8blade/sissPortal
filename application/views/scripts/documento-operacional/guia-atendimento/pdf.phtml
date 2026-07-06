@@ -82,7 +82,12 @@ ob_start();
             <td class="etiqueta" style="width: 15%; text-align: right;">NASC.:</td>
             <td style="width: 35%;">&nbsp;<?php echo Util::dataBR($this->agenda['pessoa_data_nascimento']) ?></td>
             <td class="etiqueta" style="width: 15%; text-align: right;">Cód. CBO:</td>
-            <td style="width: 35%;">&nbsp;<?php echo $this->agenda['cargo_cbo'] ?></td>
+            <td style="width: 35%;">&nbsp;<?php
+                // CBO do cargo do ppra_item (mesma fonte da FUNÇÃO); fallback pro cargo da alocação
+                echo (isset($this->agenda['ppra_item_cargo_cbo']) && trim($this->agenda['ppra_item_cargo_cbo']) !== '')
+                    ? $this->agenda['ppra_item_cargo_cbo']
+                    : $this->agenda['cargo_cbo'];
+            ?></td>
         </tr>
         <tr>
             <td class="etiqueta" style="width: 15%; text-align: right;">NOME:</td>
