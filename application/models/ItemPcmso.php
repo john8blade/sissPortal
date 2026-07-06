@@ -42,7 +42,10 @@ class Application_Model_ItemPcmso extends Zend_Db_Table {
     }
     
     public function buscarColecaoItensDoPcmsoMaisAtual($contratoId, $empresaId) {
-        $comando = "SELECT *
+        $comando = "SELECT *,
+                           (SELECT c_ppi.cargo_cbo
+                              FROM cargo c_ppi
+                             WHERE c_ppi.cargo_id = ppi.fk_cargo_id) AS ppra_item_cargo_cbo
                     FROM {$this->_name} ip
                          JOIN (
                                 SELECT *
