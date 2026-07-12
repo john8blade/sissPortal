@@ -493,28 +493,21 @@ class AcervoDigitalController extends Controller {
     }
 
     public function salvarAction() {
-        $form = strtolower($this->_getParam('frm'));
-        $forms = array('dossie-medico', 'dossie-treinamento');
         /*
-         * Como existe mais de um formulário para ser processado nesse
-         * controller precisei criar um parâmetro atribuido na URL (Query String)
-         * que define qual formulário deve ser processado
+         * Upload de anexos pelo portal descontinuado (2026-07-12, projeto
+         * migracao-arquivo-upload-s3): a coluna arquivo_upload_binario saiu
+         * do banco e o formulário da UI já estava desativado no form.phtml.
+         * Este bloqueio garante resposta amigável a qualquer POST remanescente
+         * — os processadores antigos (_processarUploadDossieMedico e
+         * _processarFormularioDossieTreinamentos) fariam INSERT numa coluna
+         * que não existe mais.
          */
-        $t = (in_array('/treinamento-digital/adicionar', $this->view->acesso) or in_array('/treinamento-digital/alterar', $this->view->acesso));
-        $m = (in_array('/prontuario-digital/adicionar', $this->view->acesso) or in_array('/prontuario-digital/alterar', $this->view->acesso));
-        if (in_array($form, $forms) && ($t or $m) && $this->getRequest()->isPost()) {
-            if ($form == 'dossie-medico')
-                $this->_processarUploadDossieMedico();
-            if ($form == 'dossie-treinamento')
-                $this->_processarFormularioDossieTreinamentos();
-        } else {
-            $feedback = array(
-                'erro' => 1,
-                'msg' => 'O formulário que você tentou enviar não está autorizado ou não possui o parametro que o identifica',
-                'corrigir' => null
-            );
-            $this->feedback($feedback);
-        }
+        $feedback = array(
+            'erro' => 1,
+            'msg' => 'O envio de anexos pelo portal foi descontinuado. Precisando anexar um documento, fale com a equipe HTMED.',
+            'corrigir' => null
+        );
+        $this->feedback($feedback);
     }
 
 }
