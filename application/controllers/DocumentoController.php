@@ -71,9 +71,8 @@ class DocumentoController extends Controller {
      *  - se a linha tem `arquivo_s3_key`: pede presigned URL ao Laravel via
      *    cURL autenticado por X-API-Key/X-API-Secret e redireciona o cliente
      *    direto pro S3.
-     *  - senão, se `arquivo_conteudo` (BLOB) ainda está populado: caminho
-     *    legado intacto (echo do binário). Vale até o backfill (slice 05) zerar.
-     *  - senão: 404.
+     *  - senão: 404. (O caminho BLOB legado foi removido no slice 06 — a
+     *    coluna de conteúdo binário não existe mais na tabela.)
      */
     public function visualizarAction() {
         $arquivoId = (int) $this->getParam('id', 0);
@@ -107,15 +106,6 @@ class DocumentoController extends Controller {
                     return;
                 }
                 header('Location: ' . $url);
-                exit(0);
-            }
-
-            if (!is_null($row['arquivo_conteudo'])) {
-                header("Content-type:{$row['arquivo_mime_type']}");
-                header("Content-Description: Arquivo gerado pelo sistema automaticamente");
-                header('Cache-Control: no-cache, no-store, must-revalidate');
-                header('Pragma: no-cache');
-                echo $row['arquivo_conteudo'];
                 exit(0);
             }
 
@@ -167,24 +157,4 @@ class DocumentoController extends Controller {
         return isset($json['url']) ? $json['url'] : null;
     }
 
-//    public function salvarAction() {
-//        $arquivo = $_FILES['campoUpload'];
-//        $ponteiroArquivo = fopen($_FILES['campoUpload']['tmp_name'], "rb");
-//        $binario = fread($ponteiroArquivo, $_FILES['campoUpload']['size']);
-//        $empresaId = $_SESSION['empresa']['empresa_id'];
-//        $contratoId = $_SESSION['contrato_id'];
-//        $colunas = array(
-//            'arquivo_descricao' => 'Arquivo de Upload automático',
-//            'arquivo_data_registro' => date('Y-m-d'),
-//            'arquivo_mime_type' => $arquivo['type'],
-//            'arquivo_tipo' => 'OUTRO',
-//            'fk_empresa_id' => $empresaId,
-//            'fk_contrato_id' => $contratoId,
-//            'arquivo_conteudo' => $binario
-//        );
-//        // ALTER TABLE  `arquivo` CHANGE  `arquivo_conteudo`  `arquivo_conteudo` LONGBLOB NULL DEFAULT NULL
-//        $arquivo = new Application_Model_Arquivo();
-//        $arquivo->insert($colunas);
-//        $this->_desabilitarTodoCarregamentoDeVisualizacao();
-//    }
 }
