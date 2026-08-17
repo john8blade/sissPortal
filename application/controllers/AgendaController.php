@@ -86,7 +86,7 @@ class AgendaController extends Controller {
             
             $sqlLocais = "
                 SELECT DISTINCT la.local_agenda_id, e.empresa_fantasia, 
-                       end.endereco_logradouro, e.empresa_numero, end.endereco_bairro, end.endereco_cidade, end.endereco_uf
+                       end.endereco_logradouro, e.empresa_numero, end.endereco_bairro, end.endereco_cidade, end.endereco_uf, end.endereco_complemento
                 FROM local_agenda la
                 JOIN empresa e ON e.empresa_id = la.fk_empresa_id
                 LEFT JOIN endereco end ON end.endereco_id = e.fk_endereco_id
@@ -143,7 +143,7 @@ class AgendaController extends Controller {
             
             $sqlLocais = "
                 SELECT DISTINCT la.local_agenda_id, e.empresa_fantasia, 
-                       end.endereco_logradouro, e.empresa_numero, end.endereco_bairro, end.endereco_cidade, end.endereco_uf
+                       end.endereco_logradouro, e.empresa_numero, end.endereco_bairro, end.endereco_cidade, end.endereco_uf, end.endereco_complemento
                 FROM local_agenda la
                 JOIN empresa e ON e.empresa_id = la.fk_empresa_id
                 LEFT JOIN endereco end ON end.endereco_id = e.fk_endereco_id

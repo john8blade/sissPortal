@@ -409,11 +409,15 @@
                                             $local['endereco_cidade'] . ($local['endereco_uf'] ? '-' . $local['endereco_uf'] : '')
                                         ]);
                                         $enderecoCompleto = implode(', ', $endereco);
+                                        $complementoLocal = isset($local['endereco_complemento']) ? trim($local['endereco_complemento']) : '';
                                         $isSelected = (isset($this->atributos['fk_local_agenda_id']) && $this->atributos['fk_local_agenda_id'] == $local['local_agenda_id']);
                                     ?>
-                                    <button type="button" class="list-group-item list-group-item-action btn-local-agenda <?php echo $isSelected ? 'active' : ''; ?>" data-id="<?php echo $local['local_agenda_id']; ?>" data-nome="<?php echo htmlspecialchars($local['empresa_fantasia']); ?>" data-endereco="<?php echo htmlspecialchars($enderecoCompleto ? $enderecoCompleto : 'Endereço não informado'); ?>" onclick="confirmarLocalAgenda(this, <?php echo $local['local_agenda_id']; ?>)">
+                                    <button type="button" class="list-group-item list-group-item-action btn-local-agenda <?php echo $isSelected ? 'active' : ''; ?>" data-id="<?php echo $local['local_agenda_id']; ?>" data-nome="<?php echo htmlspecialchars($local['empresa_fantasia']); ?>" data-endereco="<?php echo htmlspecialchars($enderecoCompleto ? $enderecoCompleto : 'Endereço não informado'); ?>" data-complemento="<?php echo htmlspecialchars($complementoLocal); ?>" onclick="confirmarLocalAgenda(this, <?php echo $local['local_agenda_id']; ?>)">
                                         <h4 class="list-group-item-heading" style="margin-bottom: 5px;"><i class="fa <?php echo $isSelected ? 'fa-check-circle' : 'fa-circle-o'; ?> me-2 icone-check"></i> <?php echo $local['empresa_fantasia']; ?></h4>
                                         <p class="list-group-item-text text-muted" style="<?php echo $isSelected ? 'color: #d0e9c6;' : ''; ?>"><i class="fa fa-map-marker"></i> <?php echo $enderecoCompleto ? $enderecoCompleto : 'Endereço não informado'; ?></p>
+                                        <?php if ($complementoLocal): ?>
+                                        <p class="list-group-item-text text-muted" style="<?php echo $isSelected ? 'color: #d0e9c6;' : ''; ?>"><i class="fa fa-building"></i> <?php echo $complementoLocal; ?></p>
+                                        <?php endif; ?>
                                     </button>
                                 <?php endforeach; ?>
                             <?php else: ?>
@@ -436,10 +440,20 @@
             
             var nome = elemento.getAttribute('data-nome');
             var endereco = elemento.getAttribute('data-endereco');
-            
+            var complemento = elemento.getAttribute('data-complemento') || '';
+
             document.getElementById('modalConfirmarLocalNome').innerText = nome;
             document.getElementById('modalConfirmarLocalEndereco').innerText = endereco;
-            
+
+            var elComplemento = document.getElementById('modalConfirmarLocalComplemento');
+            elComplemento.innerText = complemento;
+            elComplemento.style.display = complemento ? 'block' : 'none';
+
+            // Aviso temporário de mudança de endereço da unidade de Ribeirão das Neves
+            // (local_agenda_id = 2 em produção). Remover quando não for mais necessário.
+            var avisoNeves = document.getElementById('modalConfirmarLocalAvisoNeves');
+            avisoNeves.style.display = (parseInt(id, 10) === 2) ? 'block' : 'none';
+
             $('#modalConfirmarLocal').modal('show');
         }
 
@@ -689,6 +703,11 @@
                 <div class="well">
                     <strong id="modalConfirmarLocalNome" style="font-size: 18px; display: block; margin-bottom: 10px;"></strong>
                     <span id="modalConfirmarLocalEndereco"></span>
+                    <span id="modalConfirmarLocalComplemento" style="display: none; margin-top: 6px; color: #31708f;"></span>
+                </div>
+                <div id="modalConfirmarLocalAvisoNeves" class="alert alert-warning" style="display: none;">
+                    <i class="fa fa-exclamation-triangle"></i> <strong>A unidade de Ribeirão das Neves mudou de endereço.</strong>
+                    Agora atendemos dentro do <strong>Hospital Dia</strong> &mdash; 3º andar do Shopping Justinópolis (Av. Denise Cristina Rocha, 857).
                 </div>
                 <p>Deseja confirmar este local de atendimento?</p>
             </div>
