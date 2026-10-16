@@ -5,15 +5,36 @@ class Application_Model_UsuarioPortal extends Zend_Db_Table {
     protected $_name = 'usuario_portal';
     protected $_primary = 'usuario_portal_id';
 
+    /**
+     * Login do portal. HOTFIX 2026-10-16: antes, login e senha entravam no SQL sem escape
+     * (injeção) e a senha alternativa era comparada com LIKE '%senha%' — qualquer pedaço
+     * da senha (ex.: "p" de "portal:") autenticava. Agora:
+     *  - login numérico compara como número (preserva "9341" == "09341", como era);
+     *  - senha compara por IGUALDADE: sha1 (senha_padrao) OU texto puro com/sem prefixo
+     *    "portal:" (senha_alternativa) — o modelo de senha em claro do legado continua;
+     *  - senha vazia nunca autentica.
+     */
     public function selecionarComRegraLogin($usuario, $senhaPadrao, $senhaAlternativa = null) {
         $resultado = array();
+        $usuario = trim((string) $usuario);
+        $senhaAlternativa = (string) $senhaAlternativa;
+        if ($usuario === '' || $senhaAlternativa === '') {
+            return $resultado;
+        }
+        $db = $this->getDefaultAdapter();
+        if (ctype_digit($usuario)) {
+            $condicaoLogin = "CAST(up.usuario_portal_login AS UNSIGNED) = " . (int) $usuario;
+        } else {
+            $condicaoLogin = "up.usuario_portal_login = " . $db->quote($usuario);
+        }
         $comando = "SELECT *,up.fk_contrato_id
                              FROM  usuario_portal up
                                         JOIN contrato c ON c.contrato_id = up.fk_contrato_id
-                             WHERE up.usuario_portal_login = {$usuario}
+                             WHERE {$condicaoLogin}
                                          AND (
-                                                    up.usuario_portal_senha_padrao = '{$senhaPadrao}'
-                                                    OR usuario_portal_senha_alternativa LIKE '%{$senhaAlternativa}%'
+                                                    up.usuario_portal_senha_padrao = " . $db->quote((string) $senhaPadrao) . "
+                                                    OR up.usuario_portal_senha_alternativa = " . $db->quote('portal:' . $senhaAlternativa) . "
+                                                    OR up.usuario_portal_senha_alternativa = " . $db->quote($senhaAlternativa) . "
                                          )
                                          AND c.contrato_status = 0
                                          AND up.usuario_portal_status = 0";
