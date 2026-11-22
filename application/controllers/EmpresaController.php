@@ -314,14 +314,31 @@ class EmpresaController extends Controller {
 
                 // Valida e formata alguns parametros opicionais e se for o caso adiciona
                 // o valor padrão.
-                $dados_empresa['empresa_iss_recolhido_fonte'] = (is_numeric($dados_empresa['empresa_iss_recolhido_fonte'])) ? $dados_empresa['empresa_iss_recolhido_fonte'] : null;
-                $dados_empresa['empresa_optante_simples'] = (is_numeric($dados_empresa['empresa_optante_simples'])) ? $dados_empresa['empresa_optante_simples'] : null;
-                $dados_empresa['empresa_destacar_inss_nota'] = (is_numeric($dados_empresa['empresa_destacar_inss_nota'])) ? $dados_empresa['empresa_destacar_inss_nota'] : null;
-                $dados_empresa['fk_fatura_cedente_id'] = (is_numeric($dados_empresa['fk_fatura_cedente_id'])) ? $dados_empresa['fk_fatura_cedente_id'] : null;
+                // O formulário "Seus Dados" do portal NÃO tem estes campos (são do cadastro
+                // interno do SISS: cedente que fatura, ISS/Simples/INSS, clínica credenciada).
+                // Antes eram forçados para NULL/0 em todo salvar e o cliente apagava, sem saber,
+                // o cedente da própria empresa — o faturamento automático do SISS deixava de
+                // faturá-la ("O parametro ID do Cedente não foi localizado!").
+                // Regra: só grava o campo se ele veio no POST; numa alteração, o que não veio
+                // fica como está no banco. Num cadastro novo, mantém o padrão antigo.
+                $camposNumericosOpcionais = array('empresa_iss_recolhido_fonte', 'empresa_optante_simples', 'empresa_destacar_inss_nota', 'fk_fatura_cedente_id');
+                foreach ($camposNumericosOpcionais as $campoOpcional) {
+                    if (array_key_exists($campoOpcional, $post)) {
+                        $dados_empresa[$campoOpcional] = (is_numeric($post[$campoOpcional])) ? $post[$campoOpcional] : null;
+                    } else if ($empresa_id > 0) {
+                        unset($dados_empresa[$campoOpcional]);
+                    } else {
+                        $dados_empresa[$campoOpcional] = null;
+                    }
+                }
 
-                # CLINICA CREDENCIADA
-                $dados_empresa['empresa_clinica_credenciada'] = 1;
-                if (!isset($post['empresa_clinica_credenciada']) || (int) $post['empresa_clinica_credenciada'] == 0) {
+                # CLINICA CREDENCIADA (checkbox: ausente no POST = desmarcado, mas só se o
+                # formulário tiver o campo — o do portal não tem, então não mexe na alteração)
+                if (array_key_exists('empresa_clinica_credenciada', $post)) {
+                    $dados_empresa['empresa_clinica_credenciada'] = ((int) $post['empresa_clinica_credenciada'] == 0) ? 0 : 1;
+                } else if ($empresa_id > 0) {
+                    unset($dados_empresa['empresa_clinica_credenciada']);
+                } else {
                     $dados_empresa['empresa_clinica_credenciada'] = 0;
                 }
 
