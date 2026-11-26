@@ -30,6 +30,7 @@ class Controller extends Zend_Controller_Action {
         if ((!Util::usuarioAceitouTermos() && $cont != 'index')) 
         {
             header("location: http://".$_SERVER['HTTP_HOST']."/");
+            exit; // hotfix 2026-11-26: sem o exit a action rodava mesmo sem aceite dos termos
         }
 
         unset($params['controller']);

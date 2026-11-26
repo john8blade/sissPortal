@@ -17,7 +17,8 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap {
      * 
      */
     protected function _initRedirecionarUsuarioNaoAutenticado() {
-        $url = $_SERVER["REQUEST_URI"];
+        // Compara só o caminho (sem query string), para /auth/login/?x não cair em loop.
+        $url = strtok($_SERVER["REQUEST_URI"], '?');
         $enderecos = array(
             '/auth/login/',
             '/auth/login',
@@ -29,7 +30,10 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap {
         );
         $enderecoReservado = in_array(strtolower($url), $enderecos);
         if ((!isset($_SESSION['usuario_portal_id']) or count($_SESSION) == 0) && $enderecoReservado == false) {
+            // Hotfix 2026-11-26: sem o exit o despacho continuava e a action respondia
+            // (PDFs, JSON) no corpo do 302 para quem não estava logado.
             header('location:/auth/login/');
+            exit;
         }
     }
 
